@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Slicer</title>
+    <!-- Load JSZip in head so it is ready when needed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --hover-color: #0056b3;
+            --disabled-color: #ccc;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        .instructions {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button, input[type="file"]::file-selector-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        button:hover:not(:disabled), input[type="file"]::file-selector-button:hover {
+            background-color: var(--hover-color);
+        }
+        button:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+        }
+        #canvasContainer {
+            position: relative;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background-color: white;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+        canvas {
+            display: block;
+            cursor: crosshair;
+            /* Disable selection outline when focused */
+            outline: none;
+            /* Prevent user text selection while dragging */
+            user-select: none;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>Image Slicer</h2>
+    <p class="instructions">
+        <b>Instruction:</b> Upload an image. Click to add a <b>horizontal</b> line. Hold <b>Shift + Click</b> for a <b>vertical</b> line.<br>
+        <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move it precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with <b>Delete</b>.
+    </p>
+    
+    <div class="controls">
+        <input type="file" id="fileInput" accept="image/*">
+        <button id="cutButton" disabled>Calculate Slices</button>
+        <button id="downloadButton" disabled>Download Archive</button>
+        <button id="resetButton" disabled>Reset Lines</button>
+    </div>
+    
+    <div id="canvasContainer">
+        <!-- Added tabindex="0" to allow the canvas to receive keyboard focus -->
+        <canvas id="canvas" tabindex="0"></canvas>
+    </div>
+
+    <script>
+        // DOM Elements
+        const fileInput = document.getElementById("fileInput");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const cutButton = document.getElementById("cutButton");
+        const downloadButton = document.getElementById("downloadButton");
+        const resetButton = document.getElementById("resetButton");
+        
+        // Application State
+        const image = new Image();
+        let lines = [];
+        let cutRegions = [];
+        let isImageLoaded = false;
+        
+        // Drag and selection state
+        let isDragging = false;
+        let draggedLine = null;
+        let selectedLine = null;
+        let hoverLine = null;
+        let startMousePos = { x: 0, y: 0 };
+        let hasMoved = false;
+
+        // Preview state
+        let isMouseOverCanvas = false;
+        let currentMousePos = { x: 0, y: 0 };
+        let isShiftPressed = false;
+
+        // --- Event Handlers ---
+
+        // File upload
+        fileInput.addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                image.onload = () => {
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    isImageLoaded = true;
+                    resetState();
+                    redraw();
+                };
+                image.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function getMousePos(event) {
+            const rect = canvas.getBoundingClientRect();
+            // Calculate click coordinates relative to the real canvas size
+            // considering CSS scaling (if any)
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (event.clientX - rect.left) * scaleX,
+                y: (event.clientY - rect.top) * scaleY
+            };
+        }
+
+        function findLineNear(x, y) {
+            let closest = null;
+            let minDistance = 10; // hit tolerance in pixels
+
+            for (const line of lines) {
+                if (line.x !== null) {
+                    const dist = Math.abs(line.x - x);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closest = line;
+                    }
+                } else if (line.y !== null) {
+                    const dist = Math.abs(line.y - y);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closest = line;
+                    }
+                }
+            }
+            return closest;
+        }
+
+        // Mouse Down (Start Dragging / Selecting)
+        canvas.addEventListener("mousedown", (e) => {
+            if (!isImageLoaded) return;
+            
+            // Focus canvas to catch keyboard events
+            canvas.focus();
+            
+            const pos = getMousePos(e);
+            startMousePos = pos;
+            hasMoved = false;
+            
+            const hitLine = findLineNear(pos.x, pos.y);
+            if (hitLine) {
+                if (e.shiftKey) {
+                    draggedLine = hitLine;
+                    isDragging = true;
+                }
+                selectedLine = hitLine;
+            } else {
+                selectedLine = null;
+            }
+            redraw();
+        });
+
+        canvas.addEventListener("mouseenter", () => {
+            isMouseOverCanvas = true;
+            redraw();
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+            isMouseOverCanvas = false;
+            redraw();
+        });
+
+        // Mouse Move (Dragging / Hovering)
+        canvas.addEventListener("mousemove", (e) => {
+            if (!isImageLoaded) return;
+            const pos = getMousePos(e);
+            currentMousePos = pos;
+            isShiftPressed = e.shiftKey;
+            
+            // If moved more than 3px, consider it a drag so click doesn't add a line
+            if (Math.hypot(pos.x - startMousePos.x, pos.y - startMousePos.y) > 3) {
+                hasMoved = true;
+            }
+
+            if (isDragging && draggedLine) {
+                if (!e.shiftKey) {
+                    isDragging = false;
+                    draggedLine = null;
+                } else {
+                    if (draggedLine.x !== null) {
+                        draggedLine.x = Math.max(0, Math.min(canvas.width, pos.x));
+                    } else if (draggedLine.y !== null) {
+                        draggedLine.y = Math.max(0, Math.min(canvas.height, pos.y));
+                    }
+                    downloadButton.disabled = true;
+                }
+                redraw();
+            } else {
+                // Determine hover state
+                hoverLine = findLineNear(pos.x, pos.y);
+                
+                if (hoverLine && e.shiftKey) {
+                    canvas.style.cursor = hoverLine.x !== null ? 'ew-resize' : 'ns-resize';
+                } else {
+                    canvas.style.cursor = 'crosshair';
+                }
+                redraw(); // update preview line position and hover styles continuously
+            }
+        });
+
+        // Mouse Up (End Dragging) covering whole window in case cursor leaves canvas
+        window.addEventListener("mouseup", () => {
+            if (isDragging) {
+                isDragging = false;
+                draggedLine = null;
+            }
+        });
+
+        // Click to add new line
+        canvas.addEventListener("click", (e) => {
+            if (!isImageLoaded) return;
+            if (hasMoved) return; // Discard click if dragged
+            
+            const pos = getMousePos(e);
+            const hitLine = findLineNear(pos.x, pos.y);
+            
+            if (!hitLine) {
+                const newLine = e.shiftKey ? { x: pos.x, y: null } : { x: null, y: pos.y };
+                lines.push(newLine);
+                selectedLine = newLine; // Auto-select the new line
+                
+                cutButton.disabled = false;
+                resetButton.disabled = false;
+                downloadButton.disabled = true;
+                redraw();
+            }
+        });
+
+        // Keyboard movement, deletion, and shift key toggle
+        window.addEventListener("keyup", (e) => {
+            if (e.key === "Shift") {
+                isShiftPressed = false;
+                if (isDragging) {
+                    isDragging = false;
+                    draggedLine = null;
+                }
+                if (isMouseOverCanvas && isImageLoaded) {
+                    canvas.style.cursor = 'crosshair';
+                    redraw();
+                }
+            }
+        });
+
+        window.addEventListener("keydown", (e) => {
+            // Fast preview update on Shift press
+            if (e.key === "Shift") {
+                isShiftPressed = true;
+                if (isMouseOverCanvas && isImageLoaded) {
+                    if (hoverLine) {
+                        canvas.style.cursor = hoverLine.x !== null ? 'ew-resize' : 'ns-resize';
+                    }
+                    redraw();
+                }
+            }
+
+            if (!isImageLoaded || !selectedLine) return;
+            
+            // Do not capture keys if typing in an input
+            if (e.target.tagName === 'INPUT') return;
+
+            let step = e.shiftKey ? 10 : 1;
+            let handled = false;
+
+            if (selectedLine.x !== null) { // Vertical line
+                if (e.key === "ArrowLeft") {
+                    selectedLine.x = Math.max(0, selectedLine.x - step);
+                    handled = true;
+                } else if (e.key === "ArrowRight") {
+                    selectedLine.x = Math.min(canvas.width, selectedLine.x + step);
+                    handled = true;
+                }
+            } else if (selectedLine.y !== null) { // Horizontal line
+                if (e.key === "ArrowUp") {
+                    selectedLine.y = Math.max(0, selectedLine.y - step);
+                    handled = true;
+                } else if (e.key === "ArrowDown") {
+                    selectedLine.y = Math.min(canvas.height, selectedLine.y + step);
+                    handled = true;
+                }
+            }
+
+            if (e.key === "Delete" || e.key === "Backspace") {
+                lines = lines.filter(l => l !== selectedLine);
+                selectedLine = null;
+                cutButton.disabled = lines.length === 0;
+                resetButton.disabled = lines.length === 0;
+                handled = true;
+            }
+
+            if (handled) {
+                e.preventDefault(); // Prevent page scrolling
+                downloadButton.disabled = true;
+                redraw();
+            }
+        });
+
+        // Reset lines
+        resetButton.addEventListener("click", () => {
+            resetState();
+            if (isImageLoaded) redraw();
+        });
+
+        // Calculate cut regions
+        cutButton.addEventListener("click", () => {
+            if (lines.length === 0) return;
+            calculateCutRegions();
+            downloadButton.disabled = cutRegions.length === 0;
+        });
+
+        // Create ZIP archive and download (async to save memory)
+        downloadButton.addEventListener("click", async () => {
+            if (cutRegions.length === 0) return;
+            
+            // Disable buttons to prevent multiple clicks during generation
+            const originalText = downloadButton.textContent;
+            downloadButton.disabled = true;
+            downloadButton.textContent = "Preparing...";
+
+            try {
+                await generateAndDownloadZip();
+            } catch (error) {
+                console.error("Error creating archive:", error);
+                alert("An error occurred while creating the archive.");
+            } finally {
+                downloadButton.disabled = false;
+                downloadButton.textContent = originalText;
+            }
+        });
+
+        // --- Core Functions ---
+
+        function resetState() {
+            lines = [];
+            cutRegions = [];
+            selectedLine = null;
+            hoverLine = null;
+            isDragging = false;
+            draggedLine = null;
+            cutButton.disabled = true;
+            downloadButton.disabled = true;
+            resetButton.disabled = true;
+        }
+
+        function drawLinePath(line) {
+            if (line.x !== null) {
+                ctx.moveTo(line.x, 0);
+                ctx.lineTo(line.x, canvas.height);
+            } else if (line.y !== null) {
+                ctx.moveTo(0, line.y);
+                ctx.lineTo(canvas.width, line.y);
+            }
+        }
+
+        function redraw() {
+            if (!isImageLoaded) return;
+
+            // Draw original image
+            ctx.drawImage(image, 0, 0);
+            
+            // If lines exist, draw them
+            if (lines.length > 0) {
+                // Draw normal lines
+                ctx.beginPath();
+                for (const line of lines) {
+                    if (line === selectedLine || line === hoverLine) continue;
+                    drawLinePath(line);
+                }
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw hovered line
+                if (hoverLine && hoverLine !== selectedLine) {
+                    ctx.beginPath();
+                    drawLinePath(hoverLine);
+                    ctx.strokeStyle = "rgba(0, 123, 255, 0.6)"; // Light blue
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                }
+
+                // Draw selected line
+                if (selectedLine) {
+                    ctx.beginPath();
+                    drawLinePath(selectedLine);
+                    ctx.strokeStyle = "#007bff"; // Solid blue
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
+
+            // Draw preview line
+            if (isMouseOverCanvas && !isDragging && !hoverLine) {
+                ctx.beginPath();
+                if (isShiftPressed) {
+                    ctx.moveTo(currentMousePos.x, 0);
+                    ctx.lineTo(currentMousePos.x, canvas.height);
+                } else {
+                    ctx.moveTo(0, currentMousePos.y);
+                    ctx.lineTo(canvas.width, currentMousePos.y);
+                }
+                ctx.strokeStyle = "rgba(255, 0, 0, 0.4)"; // Semi-transparent red
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]); // Dashed line for preview
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset dash
+            }
+        }
+
+        function calculateCutRegions() {
+            cutRegions = [];
+            let index = 1;
+            
+            // Separate x and y coordinates
+            const sortedX = [];
+            const sortedY = [];
+            
+            for (const l of lines) {
+                if (l.x !== null) sortedX.push(l.x);
+                else if (l.y !== null) sortedY.push(l.y);
+            }
+
+            // Sort coordinates in ascending order
+            sortedX.sort((a, b) => a - b);
+            sortedY.sort((a, b) => a - b);
+            
+            // Add image boundaries
+            sortedX.push(canvas.width);
+            sortedY.push(canvas.height);
+
+            let lastY = 0;
+            for (const y of sortedY) {
+                let lastX = 0;
+                for (const x of sortedX) {
+                    const width = x - lastX;
+                    const height = y - lastY;
+                    
+                    if (width > 0 && height > 0) {
+                        // Save only coordinates of regions to save memory (do not create canvas for each piece)
+                        cutRegions.push({ 
+                            index: index++, 
+                            x: lastX, 
+                            y: lastY, 
+                            w: width, 
+                            h: height 
+                        });
+                    }
+                    lastX = x;
+                }
+                lastY = y;
+            }
+        }
+
+        async function generateAndDownloadZip() {
+            const zip = new JSZip();
+            
+            // Reuse single canvas for cutting (memory saving compared to storing N canvases)
+            const tempCanvas = document.createElement("canvas");
+            const tempCtx = tempCanvas.getContext("2d");
+
+            for (const region of cutRegions) {
+                tempCanvas.width = region.w;
+                tempCanvas.height = region.h;
+                
+                // IMPORTANT: Draw from original image, not canvas, so red lines won't get on fragments
+                tempCtx.drawImage(
+                    image, 
+                    region.x, region.y, region.w, region.h, 
+                    0, 0, region.w, region.h
+                );
+                
+                const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+                zip.file(`piece_${region.index}.png`, blob);
+            }
+
+            const content = await zip.generateAsync({ type: "blob" });
+            
+            // Downloading
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(content);
+            a.download = "cut_images.zip";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href); // Clean up memory
+        }
+    </script>
+</body>
+</html>
