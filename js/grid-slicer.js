@@ -2,6 +2,7 @@
 
 // DOM Elements
 const fileInput = document.getElementById("fileInput");
+const prefixInput = document.getElementById("prefixInput");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const downloadButton = document.getElementById("downloadButton");
@@ -55,6 +56,7 @@ fileInput.addEventListener("change", async (event) => {
     
     // Define name for the archive cutting out the extension
     originalFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+    prefixInput.value = originalFileName + "-";
 
     if (file.type === "application/pdf") {
         isPdf = true;
@@ -536,6 +538,7 @@ async function generateAndDownloadZip() {
     const zip = new JSZip();
     const tempCanvas = document.createElement("canvas");
     const tempCtx = tempCanvas.getContext("2d");
+    const prefix = prefixInput.value;
 
     if (isPdf && pdfDoc) {
         const startPage = allPagesCheckbox.checked ? 1 : currentPreviewPage;
@@ -574,9 +577,9 @@ async function generateAndDownloadZip() {
                     
                     const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
                     // Pad page numbers and region indexes with zeros so they sort correctly in OS exploror
-                    const padPage = String(pageNum).padStart(3, '0');
-                    const padPiece = String(region.index).padStart(3, '0');
-                    zip.file(`page_${padPage}_piece_${padPiece}.png`, blob);
+                    const padPage = String(pageNum).padStart(2, '0');
+                    const padPiece = String(region.index).padStart(2, '0');
+                    zip.file(`${prefix}${padPage}_${padPiece}.png`, blob);
                 }
             }
             
@@ -596,7 +599,7 @@ async function generateAndDownloadZip() {
             );
             
             const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
-            zip.file(`piece_${String(region.index).padStart(3, '0')}.png`, blob);
+            zip.file(`${prefix}${String(region.index).padStart(2, '0')}.png`, blob);
         }
     }
 

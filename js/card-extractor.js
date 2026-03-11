@@ -2,6 +2,7 @@
 (function() {
     // DOM Elements
     const ceFileInput = document.getElementById("ceFileInput");
+    const cePrefixInput = document.getElementById("cePrefixInput");
     const ceProcessButton = document.getElementById("ceProcessButton");
     const ceAddManualButton = document.getElementById("ceAddManualButton");
     const ceDeleteButton = document.getElementById("ceDeleteButton");
@@ -83,6 +84,7 @@
 
         resetState();
         originalFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+        cePrefixInput.value = originalFileName + "-";
 
         if (file.type === "application/pdf") {
             isPdf = true;
@@ -674,6 +676,7 @@
         ceDownloadButton.disabled = true;
         const origText = ceDownloadButton.textContent;
         ceDownloadButton.textContent = "Processing Archive...";
+        const prefix = cePrefixInput.value;
         
         try {
             const zip = new JSZip();
@@ -730,8 +733,8 @@
 
                 // To Blob
                 const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
-                const padIndex = String(i + 1).padStart(3, '0');
-                zip.file(`card_${padIndex}.png`, blob);
+                const padIndex = String(i + 1).padStart(2, '0');
+                zip.file(`${prefix}${padIndex}.png`, blob);
             }
 
             srcMat.delete();
