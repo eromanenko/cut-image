@@ -6,6 +6,7 @@
     <title>Image & PDF Slicer</title>
     <!-- Load libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://unpkg.com/utif@3.1.0/UTIF.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         // Set worker immediately for pdf.js
@@ -36,22 +37,30 @@
     <!-- Tab 1: Grid Slicing (Existing) -->
     <div id="tab-grid" class="tab-content active">
     <p class="instructions">
-        <b>Instruction:</b> Upload an image or a <b>PDF document</b>. Click to add a <b>horizontal</b> line. Hold <b>Shift + Click</b> for a <b>vertical</b> line.<br>
-        <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move it precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with <b>Delete</b>.
+        <b>Instruction:</b> Upload an image or a <b>PDF document</b>. Click to add a <b>horizontal</b> line. Hold <b>Shift + Click</b> for a <b>vertical</b> line. Or use <b>Auto-Detect Cut Marks</b> to find separator lines automatically.<br>
+        <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move it precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with <b>Delete</b>.<br>
+        <b>Filtering:</b> Set <b>Min size</b> to exclude small fragments from the archive. Set <b>DPI</b> to match your image resolution for accurate mm conversion.
     </p>
     
     <div class="controls">
-        <input type="file" id="fileInput" accept="image/*,application/pdf">
+        <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf">
         <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
+        <button id="autoDetectButton" disabled>Auto-Detect Cut Marks</button>
         <button id="downloadButton" disabled>Download Archive</button>
         <button id="resetButton" disabled>Reset Lines</button>
     </div>
 
-    <!-- Checkbox for skipping edges -->
+    <!-- Checkbox for skipping edges + minimum size -->
     <div class="controls" style="margin-top: -10px;">
         <label class="checkbox-container">
             <input type="checkbox" id="skipEdgesCheckbox"> 
             Keep only inner slices (discard edges)
+        </label>
+        <label class="checkbox-container">
+            Min size (mm): <input type="number" id="minSizeInput" value="20" min="0" step="1" style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+        </label>
+        <label class="checkbox-container">
+            DPI: <input type="number" id="dpiInput" value="300" min="72" step="1" style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
         </label>
     </div>
 
@@ -80,7 +89,7 @@
         </p>
 
         <div class="controls">
-            <input type="file" id="ceFileInput" accept="image/*,application/pdf">
+            <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf">
             <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
             <button id="ceProcessButton" disabled>Auto-Detect Cards</button>
             <button id="ceAddManualButton" disabled>Add Manual Card</button>

@@ -8,6 +8,9 @@ const ctx = canvas.getContext("2d");
 const downloadButton = document.getElementById("downloadButton");
 const resetButton = document.getElementById("resetButton");
 const skipEdgesCheckbox = document.getElementById("skipEdgesCheckbox");
+const autoDetectButton = document.getElementById("autoDetectButton");
+const minSizeInput = document.getElementById("minSizeInput");
+const dpiInput = document.getElementById("dpiInput");
 
 // PDF DOM
 const pdfControls = document.getElementById("pdfControls");
@@ -58,15 +61,17 @@ fileInput.addEventListener("change", async (event) => {
     originalFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     prefixInput.value = originalFileName + "-";
 
+    // Try to auto-detect DPI from file metadata
+    const fileBuffer = await file.arrayBuffer();
+    
     if (file.type === "application/pdf") {
         isPdf = true;
         pdfControls.style.display = "flex";
         downloadButton.textContent = "Download Archive";
         
         try {
-            const arrayBuffer = await file.arrayBuffer();
             const pdfjsLib = window['pdfjs-dist/build/pdf'];
-            pdfDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+            pdfDoc = await pdfjsLib.getDocument({data: fileBuffer}).promise;
             currentPreviewPage = 1;
 
             if (pdfDoc.numPages <= 1) {
@@ -86,23 +91,73 @@ fileInput.addEventListener("change", async (event) => {
         isPdf = false;
         pdfControls.style.display = "none";
         downloadButton.textContent = "Download Archive";
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const image = new Image();
-            image.onload = () => {
-                sourceCanvas.width = image.width;
-                sourceCanvas.height = image.height;
-                sourceCtx.drawImage(image, 0, 0);
-                
-                canvas.width = image.width;
-                canvas.height = image.height;
+
+        // Check if file is TIFF (browsers can't render TIFF natively)
+        const isTiff = file.type === 'image/tiff' || file.type === 'image/tif' 
+            || file.name.toLowerCase().endsWith('.tif') 
+            || file.name.toLowerCase().endsWith('.tiff');
+
+        if (isTiff && typeof UTIF !== 'undefined') {
+            // Decode TIFF using UTIF.js
+            try {
+                const ifds = UTIF.decode(fileBuffer);
+                if (ifds.length === 0) {
+                    alert("Could not decode TIFF file.");
+                    return;
+                }
+                UTIF.decodeImage(fileBuffer, ifds[0]);
+                const rgba = UTIF.toRGBA8(ifds[0]);
+                const w = ifds[0].width;
+                const h = ifds[0].height;
+
+                // Extract DPI from TIFF IFD tags
+                const tiffDpi = extractTiffDpi(ifds[0]);
+                if (tiffDpi) {
+                    dpiInput.value = tiffDpi;
+                }
+
+                // Draw decoded RGBA data onto source canvas
+                sourceCanvas.width = w;
+                sourceCanvas.height = h;
+                const imgData = sourceCtx.createImageData(w, h);
+                imgData.data.set(new Uint8Array(rgba));
+                sourceCtx.putImageData(imgData, 0, 0);
+
+                canvas.width = w;
+                canvas.height = h;
                 isImageLoaded = true;
+                autoDetectButton.disabled = false;
                 redraw();
+            } catch (err) {
+                console.error("TIFF decode error:", err);
+                alert("Error decoding TIFF file: " + err.message);
+            }
+        } else {
+            // Standard image (JPEG, PNG, etc.)
+            // Auto-detect DPI from image metadata
+            const detectedDpi = extractImageDpi(new Uint8Array(fileBuffer), file.type);
+            if (detectedDpi) {
+                dpiInput.value = detectedDpi;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const image = new Image();
+                image.onload = () => {
+                    sourceCanvas.width = image.width;
+                    sourceCanvas.height = image.height;
+                    sourceCtx.drawImage(image, 0, 0);
+                    
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    isImageLoaded = true;
+                    autoDetectButton.disabled = false;
+                    redraw();
+                };
+                image.src = e.target.result;
             };
-            image.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+            reader.readAsDataURL(file);
+        }
     }
 });
 
@@ -129,7 +184,12 @@ async function renderPdfPageForPreview(pageNumber) {
         prevPageBtn.disabled = pageNumber <= 1;
         nextPageBtn.disabled = pageNumber >= pdfDoc.numPages;
         
+        // Auto-detect DPI for PDF: PDF uses 72 points/inch, we render at PDF_SCALE
+        const pdfDpi = Math.round(72 * PDF_SCALE);
+        dpiInput.value = pdfDpi;
+        
         isImageLoaded = true;
+        autoDetectButton.disabled = false;
         redraw();
     } catch (err) {
         console.error("Error rendering PDF page:", err);
@@ -349,6 +409,189 @@ window.addEventListener("keydown", (e) => {
     }
 });
 
+// --- DPI Extraction from Image Metadata ---
+
+/**
+ * Extract DPI from TIFF IFD parsed by UTIF.js.
+ * UTIF stores TIFF tags as properties: t282 = XResolution, t283 = YResolution,
+ * t296 = ResolutionUnit (1=no unit, 2=inch, 3=centimeter).
+ */
+function extractTiffDpi(ifd) {
+    try {
+        // t282 = XResolution, t283 = YResolution (stored as rational [num, den])
+        let xRes = ifd.t282;
+        const resUnit = ifd.t296 || 2; // default: inches
+
+        if (xRes) {
+            // UTIF may return it as an array [numerator, denominator] or a single number
+            let dpiValue;
+            if (Array.isArray(xRes)) {
+                dpiValue = xRes[0] / (xRes[1] || 1);
+            } else {
+                dpiValue = xRes;
+            }
+
+            if (resUnit === 3) {
+                // Centimeters → DPI
+                return Math.round(dpiValue * 2.54);
+            }
+            if (resUnit === 2 && dpiValue > 0) {
+                return Math.round(dpiValue);
+            }
+        }
+    } catch (e) {
+        console.warn('TIFF DPI extraction failed:', e);
+    }
+    return null;
+}
+
+/**
+ * Extract DPI from image file binary data.
+ * Supports JPEG (JFIF APP0, EXIF APP1) and PNG (pHYs chunk).
+ * Returns detected DPI as integer, or null if not detected.
+ */
+function extractImageDpi(bytes, mimeType) {
+    try {
+        if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
+            return extractJpegDpi(bytes);
+        } else if (mimeType === 'image/png') {
+            return extractPngDpi(bytes);
+        }
+    } catch (e) {
+        console.warn('DPI detection failed:', e);
+    }
+    return null;
+}
+
+function extractJpegDpi(bytes) {
+    // JPEG files consist of markers: 0xFF followed by marker type
+    // We look for APP0 (0xFFE0) for JFIF and APP1 (0xFFE1) for EXIF
+    if (bytes[0] !== 0xFF || bytes[1] !== 0xD8) return null; // Not a JPEG
+
+    let offset = 2;
+    while (offset < bytes.length - 4) {
+        if (bytes[offset] !== 0xFF) break;
+        const marker = bytes[offset + 1];
+        const segLen = (bytes[offset + 2] << 8) | bytes[offset + 3];
+
+        // APP0 - JFIF marker
+        if (marker === 0xE0) {
+            // Check JFIF signature
+            const sig = String.fromCharCode(bytes[offset + 4], bytes[offset + 5], bytes[offset + 6], bytes[offset + 7]);
+            if (sig === 'JFIF') {
+                const densityUnits = bytes[offset + 11]; // 0=no units, 1=dpi, 2=dpcm
+                const xDensity = (bytes[offset + 12] << 8) | bytes[offset + 13];
+                const yDensity = (bytes[offset + 14] << 8) | bytes[offset + 15];
+                
+                if (densityUnits === 1 && xDensity > 0) {
+                    // Already in DPI
+                    return xDensity;
+                } else if (densityUnits === 2 && xDensity > 0) {
+                    // Dots per cm → convert to DPI
+                    return Math.round(xDensity * 2.54);
+                }
+                // densityUnits === 0 means aspect ratio only, keep looking for EXIF
+            }
+        }
+
+        // APP1 - EXIF marker
+        if (marker === 0xE1) {
+            const exifDpi = parseExifForDpi(bytes, offset + 4, segLen - 2);
+            if (exifDpi) return exifDpi;
+        }
+
+        // Stop at SOS (Start Of Scan) - image data starts
+        if (marker === 0xDA) break;
+
+        offset += 2 + segLen;
+    }
+    return null;
+}
+
+function parseExifForDpi(bytes, start, length) {
+    // Check "Exif\0\0" signature
+    const sig = String.fromCharCode(bytes[start], bytes[start + 1], bytes[start + 2], bytes[start + 3]);
+    if (sig !== 'Exif') return null;
+
+    const tiffStart = start + 6; // After "Exif\0\0"
+    
+    // Determine byte order: "II" (little-endian) or "MM" (big-endian)
+    const byteOrder = String.fromCharCode(bytes[tiffStart], bytes[tiffStart + 1]);
+    const isLE = byteOrder === 'II';
+
+    function readU16(off) {
+        if (isLE) return bytes[off] | (bytes[off + 1] << 8);
+        return (bytes[off] << 8) | bytes[off + 1];
+    }
+    function readU32(off) {
+        if (isLE) return bytes[off] | (bytes[off + 1] << 8) | (bytes[off + 2] << 16) | (bytes[off + 3] << 24);
+        return (bytes[off] << 24) | (bytes[off + 1] << 16) | (bytes[off + 2] << 8) | bytes[off + 3];
+    }
+
+    // Read IFD0 offset
+    const ifdOffset = readU32(tiffStart + 4);
+    const ifdStart = tiffStart + ifdOffset;
+    const numEntries = readU16(ifdStart);
+
+    let resUnit = 2; // default: inches
+    let xRes = null;
+
+    for (let i = 0; i < numEntries; i++) {
+        const entryOffset = ifdStart + 2 + i * 12;
+        const tag = readU16(entryOffset);
+        const type = readU16(entryOffset + 2);
+
+        if (tag === 0x0128) { // ResolutionUnit: 2=inches, 3=centimeters
+            resUnit = readU16(entryOffset + 8);
+        }
+
+        if (tag === 0x011A) { // XResolution (RATIONAL = numerator/denominator)
+            const valueOffset = readU32(entryOffset + 8);
+            const num = readU32(tiffStart + valueOffset);
+            const den = readU32(tiffStart + valueOffset + 4);
+            if (den > 0) xRes = num / den;
+        }
+    }
+
+    if (xRes && xRes > 0) {
+        if (resUnit === 3) {
+            // Centimeters → DPI
+            return Math.round(xRes * 2.54);
+        }
+        return Math.round(xRes); // Already DPI (inches)
+    }
+    return null;
+}
+
+function extractPngDpi(bytes) {
+    // PNG file: 8-byte signature + chunks
+    // Look for pHYs chunk which stores pixels-per-unit info
+    if (bytes[0] !== 0x89 || bytes[1] !== 0x50) return null; // Not PNG
+
+    let offset = 8; // Skip PNG signature
+    while (offset < bytes.length - 12) {
+        const chunkLen = (bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3];
+        const chunkType = String.fromCharCode(bytes[offset + 4], bytes[offset + 5], bytes[offset + 6], bytes[offset + 7]);
+
+        if (chunkType === 'pHYs') {
+            const dataStart = offset + 8;
+            // pHYs: 4 bytes X pixels per unit, 4 bytes Y pixels per unit, 1 byte unit specifier
+            const xPPU = (bytes[dataStart] << 24) | (bytes[dataStart + 1] << 16) | (bytes[dataStart + 2] << 8) | bytes[dataStart + 3];
+            const yPPU = (bytes[dataStart + 4] << 24) | (bytes[dataStart + 5] << 16) | (bytes[dataStart + 6] << 8) | bytes[dataStart + 7];
+            const unit = bytes[dataStart + 8];
+
+            if (unit === 1 && xPPU > 0) {
+                // Unit 1 = meter. Convert to DPI: pixels/meter * 0.0254 = pixels/inch
+                return Math.round(xPPU * 0.0254);
+            }
+        }
+
+        if (chunkType === 'IDAT' || chunkType === 'IEND') break; // Stop at image data
+        offset += 12 + chunkLen; // 4 (len) + 4 (type) + data + 4 (CRC)
+    }
+    return null;
+}
+
 // Reset lines
 resetButton.addEventListener("click", () => {
     // Only reset lines, not the entire state
@@ -362,6 +605,180 @@ resetButton.addEventListener("click", () => {
     resetButton.disabled = true;
     if (isImageLoaded) redraw();
 });
+
+// --- Auto-Detect Cut Marks ---
+autoDetectButton.addEventListener("click", () => {
+    if (!isImageLoaded) return;
+    autoDetectCutMarks();
+});
+
+function autoDetectCutMarks() {
+    const w = sourceCanvas.width;
+    const h = sourceCanvas.height;
+    const imageData = sourceCtx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+
+    // Helper: get grayscale value at (x, y)
+    function gray(x, y) {
+        const i = (y * w + x) * 4;
+        return (data[i] + data[i + 1] + data[i + 2]) / 3;
+    }
+
+    // Compute row profiles (for horizontal cut detection)
+    const rowAvg = new Float32Array(h);
+    const rowVar = new Float32Array(h);
+    for (let y = 0; y < h; y++) {
+        let sum = 0, sumSq = 0, count = 0;
+        for (let x = 0; x < w; x += 2) {
+            const v = gray(x, y);
+            sum += v;
+            sumSq += v * v;
+            count++;
+        }
+        const mean = sum / count;
+        rowAvg[y] = mean;
+        rowVar[y] = sumSq / count - mean * mean;
+    }
+
+    // Compute column profiles (for vertical cut detection)
+    const colAvg = new Float32Array(w);
+    const colVar = new Float32Array(w);
+    for (let x = 0; x < w; x++) {
+        let sum = 0, sumSq = 0, count = 0;
+        for (let y = 0; y < h; y += 2) {
+            const v = gray(x, y);
+            sum += v;
+            sumSq += v * v;
+            count++;
+        }
+        const mean = sum / count;
+        colAvg[x] = mean;
+        colVar[x] = sumSq / count - mean * mean;
+    }
+
+    // Detect cut lines
+    const horizontalCuts = detectCutPositions(rowAvg, rowVar, h);
+    const verticalCuts = detectCutPositions(colAvg, colVar, w);
+
+    // Clear existing lines and add detected ones
+    lines = [];
+    for (const y of horizontalCuts) {
+        lines.push({ x: null, y: y });
+    }
+    for (const x of verticalCuts) {
+        lines.push({ x: x, y: null });
+    }
+
+    if (lines.length > 0) {
+        downloadButton.disabled = false;
+        resetButton.disabled = false;
+    }
+
+    selectedLine = null;
+    redraw();
+}
+
+/**
+ * Detect cut line positions by analyzing average brightness and
+ * variance profiles of rows/columns.
+ * 
+ * Uses a dual-strategy approach:
+ * 1. Low-variance bands: rows/cols that are very uniform (low variance)
+ *    compared to their neighborhood — typical of solid-colored separator lines.
+ * 2. Brightness dips: rows/cols that are significantly darker than
+ *    their surrounding neighborhood.
+ *
+ * Both strategies' candidates are merged and clustered.
+ */
+function detectCutPositions(avg, varArr, length) {
+    const windowSize = Math.max(15, Math.round(length * 0.015));
+    const bandWidth = Math.max(3, Math.round(length * 0.003)); // max width of a cut mark band
+    const candidates = [];
+
+    // Compute smoothed profiles for local comparison
+    for (let i = windowSize; i < length - windowSize; i++) {
+        // Compute neighborhood statistics (excluding the immediate band around i)
+        let neighborBrightSum = 0, neighborBrightCount = 0;
+        let neighborVarSum = 0, neighborVarCount = 0;
+
+        for (let j = i - windowSize; j < i - bandWidth; j++) {
+            neighborBrightSum += avg[j];
+            neighborVarSum += varArr[j];
+            neighborBrightCount++;
+            neighborVarCount++;
+        }
+        for (let j = i + bandWidth + 1; j <= i + windowSize; j++) {
+            neighborBrightSum += avg[j];
+            neighborVarSum += varArr[j];
+            neighborBrightCount++;
+            neighborVarCount++;
+        }
+
+        const neighborBrightAvg = neighborBrightSum / neighborBrightCount;
+        const neighborVarAvg = neighborVarSum / neighborVarCount;
+
+        // --- Strategy 1: low-variance uniform band ---
+        // Cut marks are uniform (low variance), while card content has high variance.
+        // Score = how much lower is this row's variance vs neighbors
+        const varRatio = neighborVarAvg > 0 ? varArr[i] / neighborVarAvg : 1;
+
+        // --- Strategy 2: brightness dip ---
+        // Cut marks tend to be darker than surrounding card content
+        const brightDiff = neighborBrightAvg - avg[i];
+
+        // Combine scores: a good candidate has low varRatio AND/OR high brightDiff
+        let score = 0;
+
+        // Low variance signal (row is much more uniform than neighbors)
+        if (varRatio < 0.3 && neighborVarAvg > 100) {
+            score += (1 - varRatio) * 30; // up to ~30 points
+        }
+
+        // Brightness dip signal
+        if (brightDiff > 10) {
+            score += brightDiff;
+        }
+
+        // Also detect light separator lines (brighter than content)
+        const brightRise = avg[i] - neighborBrightAvg;
+        if (brightRise > 10 && varRatio < 0.5) {
+            score += brightRise * 0.5;
+        }
+
+        if (score > 12) {
+            candidates.push({ pos: i, score: score });
+        }
+    }
+
+    if (candidates.length === 0) return [];
+
+    // Cluster nearby candidates
+    const minGap = Math.max(8, Math.round(length * 0.008));
+    const clusters = [];
+    let currentCluster = [candidates[0]];
+
+    for (let i = 1; i < candidates.length; i++) {
+        if (candidates[i].pos - candidates[i - 1].pos <= minGap) {
+            currentCluster.push(candidates[i]);
+        } else {
+            clusters.push(currentCluster);
+            currentCluster = [candidates[i]];
+        }
+    }
+    clusters.push(currentCluster);
+
+    // For each cluster, pick the position with the highest score
+    const result = [];
+    for (const cluster of clusters) {
+        let best = cluster[0];
+        for (const c of cluster) {
+            if (c.score > best.score) best = c;
+        }
+        result.push(Math.round(best.pos));
+    }
+
+    return result;
+}
 
 // Create ZIP archive and download
 downloadButton.addEventListener("click", async () => {
@@ -485,6 +902,11 @@ function calculateCutRegions() {
     const hasVerticalLines = lines.some(l => l.x !== null);
     const hasHorizontalLines = lines.some(l => l.y !== null);
     
+    // Minimum size filter: convert mm to pixels using DPI
+    const dpi = parseFloat(dpiInput.value) || 300;
+    const minSizeMm = parseFloat(minSizeInput.value) || 0;
+    const minSizePx = (minSizeMm / 25.4) * dpi; // mm -> inches -> pixels
+    
     // Separate x and y coordinates
     const sortedX = [];
     const sortedY = [];
@@ -518,15 +940,25 @@ function calculateCutRegions() {
                 if (!hasVerticalLines) isEdgeX = false;
                 if (!hasHorizontalLines) isEdgeY = false;
 
-                if (!skipEdgesCheckbox.checked || (!isEdgeX && !isEdgeY)) {
-                    cutRegions.push({ 
-                        index: index++, 
-                        x: lastX, 
-                        y: lastY, 
-                        w: width, 
-                        h: height 
-                    });
+                // Skip edges if checkbox is checked
+                if (skipEdgesCheckbox.checked && (isEdgeX || isEdgeY)) {
+                    lastX = x;
+                    continue;
                 }
+
+                // Skip regions smaller than minimum size
+                if (minSizePx > 0 && (width < minSizePx || height < minSizePx)) {
+                    lastX = x;
+                    continue;
+                }
+
+                cutRegions.push({ 
+                    index: index++, 
+                    x: lastX, 
+                    y: lastY, 
+                    w: width, 
+                    h: height 
+                });
             }
             lastX = x;
         }

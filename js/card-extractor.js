@@ -103,24 +103,60 @@
         } else {
             isPdf = false;
             cePdfControls.style.display = "none";
+
+            const fileBuffer = await file.arrayBuffer();
             
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const image = new Image();
-                image.onload = () => {
-                    ceSourceCanvas.width = image.width;
-                    ceSourceCanvas.height = image.height;
-                    ceSourceCtx.drawImage(image, 0, 0);
-                    
-                    ceCanvas.width = image.width;
-                    ceCanvas.height = image.height;
+            // Check if file is TIFF
+            const isTiff = file.type === 'image/tiff' || file.type === 'image/tif'
+                || file.name.toLowerCase().endsWith('.tif')
+                || file.name.toLowerCase().endsWith('.tiff');
+
+            if (isTiff && typeof UTIF !== 'undefined') {
+                try {
+                    const ifds = UTIF.decode(fileBuffer);
+                    if (ifds.length === 0) {
+                        alert("Could not decode TIFF file.");
+                        return;
+                    }
+                    UTIF.decodeImage(fileBuffer, ifds[0]);
+                    const rgba = UTIF.toRGBA8(ifds[0]);
+                    const w = ifds[0].width;
+                    const h = ifds[0].height;
+
+                    ceSourceCanvas.width = w;
+                    ceSourceCanvas.height = h;
+                    const imgData = ceSourceCtx.createImageData(w, h);
+                    imgData.data.set(new Uint8Array(rgba));
+                    ceSourceCtx.putImageData(imgData, 0, 0);
+
+                    ceCanvas.width = w;
+                    ceCanvas.height = h;
                     isImageLoaded = true;
                     redraw();
                     updateButtonStates();
+                } catch (err) {
+                    console.error("TIFF decode error:", err);
+                    alert("Error decoding TIFF file: " + err.message);
+                }
+            } else {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const image = new Image();
+                    image.onload = () => {
+                        ceSourceCanvas.width = image.width;
+                        ceSourceCanvas.height = image.height;
+                        ceSourceCtx.drawImage(image, 0, 0);
+                        
+                        ceCanvas.width = image.width;
+                        ceCanvas.height = image.height;
+                        isImageLoaded = true;
+                        redraw();
+                        updateButtonStates();
+                    };
+                    image.src = e.target.result;
                 };
-                image.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            }
         }
     });
 
@@ -245,25 +281,41 @@
             ceCtx.fillStyle = `rgba(${colorRgb.r}, ${colorRgb.g}, ${colorRgb.b}, ${opacity * 0.2})`;
             ceCtx.fill();
 
-            // Draw Corners (Points)
+            // Draw Corners (Points) — outlined rings so the corner is visible
             for (let j = 0; j < 4; j++) {
                 const pt = card[j];
-                ceCtx.beginPath();
-                ceCtx.arc(pt.x, pt.y, 10, 0, 2 * Math.PI);
+                const radius = 10;
+                const crossSize = 4;
                 
+                let color;
+                let lineW;
                 if (pt === selectedPoint) {
-                    ceCtx.fillStyle = "#007bff"; // Blue
-                    ceCtx.fill();
-                    ceCtx.lineWidth = 2;
-                    ceCtx.strokeStyle = "white";
-                    ceCtx.stroke();
+                    color = "#007bff"; // Blue
+                    lineW = 3;
                 } else if (pt === hoveredPoint) {
-                    ceCtx.fillStyle = "orange";
-                    ceCtx.fill();
+                    color = "orange";
+                    lineW = 2.5;
                 } else {
-                    ceCtx.fillStyle = "red";
-                    ceCtx.fill();
+                    color = "red";
+                    lineW = 2;
                 }
+
+                // Outer ring
+                ceCtx.beginPath();
+                ceCtx.arc(pt.x, pt.y, radius, 0, 2 * Math.PI);
+                ceCtx.strokeStyle = color;
+                ceCtx.lineWidth = lineW;
+                ceCtx.stroke();
+
+                // Crosshair in center
+                ceCtx.beginPath();
+                ceCtx.moveTo(pt.x - crossSize, pt.y);
+                ceCtx.lineTo(pt.x + crossSize, pt.y);
+                ceCtx.moveTo(pt.x, pt.y - crossSize);
+                ceCtx.lineTo(pt.x, pt.y + crossSize);
+                ceCtx.strokeStyle = color;
+                ceCtx.lineWidth = 1.5;
+                ceCtx.stroke();
             }
             
             // Label
