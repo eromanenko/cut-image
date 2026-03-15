@@ -48,6 +48,23 @@ let isMouseOverCanvas = false;
 let currentMousePos = { x: 0, y: 0 };
 let isShiftPressed = false;
 
+// --- Download Button Text ---
+function updateDownloadButtonText() {
+    if (lines.length === 0) {
+        downloadButton.textContent = 'Download Archive';
+        return;
+    }
+    calculateCutRegions();
+    downloadButton.textContent = cutRegions.length > 0
+        ? `Download ${cutRegions.length} slice${cutRegions.length !== 1 ? 's' : ''}`
+        : 'Download Archive';
+}
+
+// Listen for filter setting changes
+skipEdgesCheckbox.addEventListener('change', updateDownloadButtonText);
+minSizeInput.addEventListener('input', updateDownloadButtonText);
+dpiInput.addEventListener('input', updateDownloadButtonText);
+
 // --- Event Handlers ---
 
 // File upload
@@ -320,6 +337,7 @@ window.addEventListener("mouseup", () => {
     if (isDragging) {
         isDragging = false;
         draggedLine = null;
+        updateDownloadButtonText();
     }
 });
 
@@ -338,6 +356,7 @@ canvas.addEventListener("click", (e) => {
         
         downloadButton.disabled = false;
         resetButton.disabled = false;
+        updateDownloadButtonText();
         redraw();
     }
 });
@@ -400,6 +419,7 @@ window.addEventListener("keydown", (e) => {
         selectedLine = null;
         downloadButton.disabled = lines.length === 0;
         resetButton.disabled = lines.length === 0;
+        updateDownloadButtonText();
         handled = true;
     }
 
@@ -672,6 +692,7 @@ function autoDetectCutMarks() {
     if (lines.length > 0) {
         downloadButton.disabled = false;
         resetButton.disabled = false;
+        updateDownloadButtonText();
     }
 
     selectedLine = null;
@@ -806,7 +827,7 @@ downloadButton.addEventListener("click", async () => {
         alert("An error occurred while creating the archive.");
     } finally {
         downloadButton.disabled = false;
-        downloadButton.textContent = originalText;
+        updateDownloadButtonText();
         resetButton.disabled = false;
         if (isPdf) {
             prevPageBtn.disabled = currentPreviewPage <= 1;

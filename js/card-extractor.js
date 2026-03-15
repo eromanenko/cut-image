@@ -55,6 +55,9 @@
         ceAddManualButton.disabled = !isImageLoaded;
         ceDeleteButton.disabled = (selectedPoint === null);
         ceDownloadButton.disabled = detectedCards.length === 0;
+        ceDownloadButton.textContent = detectedCards.length > 0
+            ? `Download ${detectedCards.length} card${detectedCards.length !== 1 ? 's' : ''}`
+            : 'Download Cards';
     }
 
     // Wait for OpenCV ready event
@@ -525,9 +528,113 @@
         }
     });
 
+    // Scroll the browser so the selected corner appears near
+    // the corresponding viewport corner (TL→top-left, TR→top-right, etc.)
+    function scrollToCorner(point, cornerIndex) {
+        const rect = ceCanvas.getBoundingClientRect();
+        const scaleX = rect.width / ceCanvas.width;
+        const scaleY = rect.height / ceCanvas.height;
+
+        // Corner position in viewport coordinates
+        const vpX = rect.left + point.x * scaleX;
+        const vpY = rect.top + point.y * scaleY;
+
+        // Account for sticky header height
+        const stickyEl = ceCanvas.closest('.tab-content')?.querySelector('.sticky-controls');
+        const stickyH = stickyEl ? stickyEl.getBoundingClientRect().height : 0;
+
+        const pad = 20;
+        let targetX = window.scrollX;
+        let targetY = window.scrollY;
+
+        switch (cornerIndex) {
+            case 0: // TL — near top-left of viewport (below sticky header)
+                targetX += vpX - pad;
+                targetY += vpY - (stickyH + pad);
+                break;
+            case 1: // TR — near top-right of viewport (below sticky header)
+                targetX += vpX - (window.innerWidth - pad);
+                targetY += vpY - (stickyH + pad);
+                break;
+            case 2: // BR — near bottom-right of viewport
+                targetX += vpX - (window.innerWidth - pad);
+                targetY += vpY - (window.innerHeight - pad);
+                break;
+            case 3: // BL — near bottom-left of viewport
+                targetX += vpX - pad;
+                targetY += vpY - (window.innerHeight - pad);
+                break;
+        }
+
+        window.scrollTo({ left: targetX, top: targetY, behavior: 'smooth' });
+    }
+
     window.addEventListener("keydown", (e) => {
-        if (!isImageLoaded || !selectedPoint || detectedCards.length === 0) return;
+        if (!isImageLoaded || detectedCards.length === 0) return;
         if (e.target.tagName === 'INPUT') return;
+
+        // Tab / Shift+Tab corner navigation (only when ceCanvas is focused)
+        if (e.key === "Tab" && document.activeElement === ceCanvas) {
+            e.preventDefault();
+
+            if (e.shiftKey) {
+                // Shift+Tab: counter-clockwise through corners
+                if (!selectedPoint) {
+                    selectedPoint = detectedCards[0][0];
+                } else {
+                    const cardIdx = detectedCards.findIndex(c => c.includes(selectedPoint));
+                    if (cardIdx !== -1) {
+                        const cornerIdx = detectedCards[cardIdx].indexOf(selectedPoint);
+                        const prevCornerIdx = (cornerIdx + 3) % 4; // -1 mod 4
+                        selectedPoint = detectedCards[cardIdx][prevCornerIdx];
+                    }
+                }
+            } else {
+                // Tab: clockwise through corners
+                if (!selectedPoint) {
+                    selectedPoint = detectedCards[0][0];
+                } else {
+                    const cardIdx = detectedCards.findIndex(c => c.includes(selectedPoint));
+                    if (cardIdx !== -1) {
+                        const cornerIdx = detectedCards[cardIdx].indexOf(selectedPoint);
+                        const nextCornerIdx = (cornerIdx + 1) % 4;
+                        selectedPoint = detectedCards[cardIdx][nextCornerIdx];
+                    }
+                }
+            }
+
+            // Scroll to the selected corner
+            const cardIdx = detectedCards.findIndex(c => c.includes(selectedPoint));
+            if (cardIdx !== -1) {
+                const cornerIdx = detectedCards[cardIdx].indexOf(selectedPoint);
+                scrollToCorner(selectedPoint, cornerIdx);
+            }
+
+            updateButtonStates();
+            redraw();
+            return;
+        }
+
+        // Enter: jump to top-left corner of the next card
+        if (e.key === "Enter" && document.activeElement === ceCanvas) {
+            e.preventDefault();
+
+            if (!selectedPoint) {
+                selectedPoint = detectedCards[0][0];
+            } else {
+                const cardIdx = detectedCards.findIndex(c => c.includes(selectedPoint));
+                const nextCardIdx = (cardIdx + 1) % detectedCards.length;
+                selectedPoint = detectedCards[nextCardIdx][0];
+            }
+
+            scrollToCorner(selectedPoint, 0);
+            updateButtonStates();
+            redraw();
+            return;
+        }
+
+        // Arrow keys and Delete require a selected point
+        if (!selectedPoint) return;
 
         let step = e.shiftKey ? 10 : 1;
         let handled = false;
@@ -604,6 +711,12 @@
         if (!isCvReady) {
             alert("OpenCV is not ready yet.");
             return;
+        }
+
+        if (detectedCards.length > 0) {
+            if (!confirm(`You have ${detectedCards.length} card${detectedCards.length !== 1 ? 's' : ''} selected. Auto-detect will reset them. Continue?`)) {
+                return;
+            }
         }
 
         ceProcessButton.disabled = true;
@@ -726,7 +839,6 @@
         if (detectedCards.length === 0) return;
         
         ceDownloadButton.disabled = true;
-        const origText = ceDownloadButton.textContent;
         ceDownloadButton.textContent = "Processing Archive...";
         const prefix = cePrefixInput.value;
         
@@ -805,7 +917,7 @@
             alert("Error generating card archive.");
         } finally {
             ceDownloadButton.disabled = false;
-            ceDownloadButton.textContent = origText;
+            updateButtonStates();
         }
     });
 })();

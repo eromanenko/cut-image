@@ -21,4 +21,21 @@ window.switchTab = function(tabId) {
             if (tabId && document.getElementById(`tab-${tabId}`)) {
                 switchTab(tabId);
             }
+
+            // Sticky shadow: add 'stuck' class when controls are pinned
+            document.querySelectorAll('.sticky-controls').forEach(el => {
+                const sentinel = document.createElement('div');
+                sentinel.style.height = '1px';
+                sentinel.style.visibility = 'hidden';
+                sentinel.style.pointerEvents = 'none';
+                el.parentNode.insertBefore(sentinel, el);
+
+                const observer = new IntersectionObserver(
+                    ([entry]) => {
+                        el.classList.toggle('stuck', !entry.isIntersecting);
+                    },
+                    { threshold: 0 }
+                );
+                observer.observe(sentinel);
+            });
         });

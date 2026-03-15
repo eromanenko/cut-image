@@ -27,6 +27,18 @@ h2 {
     flex-wrap: wrap;
     gap: 10px;
 }
+.sticky-controls {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #f8f9fa;
+    padding-bottom: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
+    transition: box-shadow 0.2s;
+}
+.sticky-controls.stuck {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
 button, input[type="file"]::file-selector-button {
     background-color: var(--primary-color);
     color: white;

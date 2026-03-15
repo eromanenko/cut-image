@@ -41,7 +41,8 @@
         <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move it precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with <b>Delete</b>.<br>
         <b>Filtering:</b> Set <b>Min size</b> to exclude small fragments from the archive. Set <b>DPI</b> to match your image resolution for accurate mm conversion.
     </p>
-    
+
+    <div class="sticky-controls">
     <div class="controls">
         <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf">
         <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
@@ -74,6 +75,7 @@
             All pages
         </label>
     </div>
+    </div>
     
     <div id="canvasContainer">
         <!-- Added tabindex="0" to allow the canvas to receive keyboard focus -->
@@ -88,6 +90,7 @@
             <span id="opencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)... Please wait.</span>
         </p>
 
+        <div class="sticky-controls">
         <div class="controls">
             <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf">
             <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
@@ -114,6 +117,7 @@
             <span id="cePageIndicator" style="line-height: 38px; font-weight: bold; width: 120px;">Page 1 / 1</span>
             <button id="ceNextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
             <!-- Checkbox disabled for auto extractor for now, auto-extract works per page initially -->
+        </div>
         </div>
 
         <div id="canvasContainer">
