@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,19 +14,21 @@
         if (window['pdfjs-dist/build/pdf']) {
             window['pdfjs-dist/build/pdf'].GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
-        
+
         // OpenCV callback
-        window.onOpenCvReady = function() {
+        window.onOpenCvReady = function () {
             window.openCvReady = true;
             const statusLabel = document.getElementById('opencvStatus');
-            if(statusLabel) statusLabel.style.display = 'none';
+            if (statusLabel) statusLabel.style.display = 'none';
             // Trigger custom event so card-extractor.js knows it's ready
             document.dispatchEvent(new Event('opencv-ready'));
         };
     </script>
-    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();"
+        type="text/javascript"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <h2>Image & PDF Slicer</h2>
 
@@ -36,99 +39,116 @@
 
     <!-- Tab 1: Grid Slicing (Existing) -->
     <div id="tab-grid" class="tab-content active">
-    <p class="instructions">
-        <b>Instruction:</b> Upload an image or a <b>PDF document</b>. Click to add a <b>horizontal</b> line. Hold <b>Shift + Click</b> for a <b>vertical</b> line. Or use <b>Auto-Detect Cut Marks</b> to find separator lines automatically.<br>
-        <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move it precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with <b>Delete</b>.<br>
-        <b>Filtering:</b> Set <b>Min size</b> to exclude small fragments from the archive. Set <b>DPI</b> to match your image resolution for accurate mm conversion.
-    </p>
+        <p class="instructions">
+            <b>Instruction:</b> Upload an image or a <b>PDF document</b>. Click to add a <b>horizontal</b> line. Hold
+            <b>Shift + Click</b> for a <b>vertical</b> line. Or use <b>Auto-Detect Cut Marks</b> to find separator lines
+            automatically.<br>
+            <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move it
+            precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with <b>Delete</b>.<br>
+            <b>Filtering:</b> Set <b>Min size</b> to exclude small fragments from the archive. Set <b>DPI</b> to match
+            your image resolution for accurate mm conversion.
+        </p>
 
-    <div class="sticky-controls">
-    <div class="controls">
-        <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf">
-        <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
-        <button id="autoDetectButton" disabled>Auto-Detect Cut Marks</button>
-        <button id="downloadButton" disabled>Download Archive</button>
-        <button id="resetButton" disabled>Reset Lines</button>
-    </div>
+        <div class="sticky-controls">
+            <div class="controls">
+                <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf">
+                <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
+                <button id="autoDetectButton" disabled>Auto-Detect Cut Marks</button>
+                <button id="downloadButton" disabled>Download Archive</button>
+                <button id="resetButton" disabled>Reset Lines</button>
+            </div>
 
-    <!-- Checkbox for skipping edges + minimum size -->
-    <div class="controls" style="margin-top: -10px;">
-        <label class="checkbox-container">
-            <input type="checkbox" id="skipEdgesCheckbox"> 
-            Keep only inner slices (discard edges)
-        </label>
-        <label class="checkbox-container">
-            Min size (mm): <input type="number" id="minSizeInput" value="20" min="0" step="1" style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
-        </label>
-        <label class="checkbox-container">
-            DPI: <input type="number" id="dpiInput" value="300" min="72" step="1" style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
-        </label>
-    </div>
+            <!-- Checkbox for skipping edges + minimum size -->
+            <div class="controls" style="margin-top: -10px;">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="skipEdgesCheckbox">
+                    Keep only inner slices (discard edges)
+                </label>
+                <label class="checkbox-container">
+                    Min size (mm): <input type="number" id="minSizeInput" value="20" min="0" step="1"
+                        style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
+                <label class="checkbox-container">
+                    DPI: <input type="number" id="dpiInput" value="300" min="72" step="1"
+                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
+            </div>
 
-    <!-- Additional controls for PDF navigation -->
-    <div class="controls" id="pdfControls" style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
-        <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
-        <span id="pageIndicator" style="line-height: 38px; font-weight: bold; width: 120px;">Page 1 / 1</span>
-        <button id="nextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
-        <label class="checkbox-container" id="allPagesCheckContainer" style="margin-left: 20px;">
-            <input type="checkbox" id="allPagesCheckbox" checked> 
-            All pages
-        </label>
-    </div>
-    </div>
-    
-    <div id="canvasContainer">
-        <!-- Added tabindex="0" to allow the canvas to receive keyboard focus -->
-        <canvas id="canvas" tabindex="0"></canvas>
-    </div>
+            <!-- Additional controls for PDF navigation -->
+            <div class="controls" id="pdfControls"
+                style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
+                <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
+                <span id="pageIndicator" style="line-height: 38px; font-weight: bold; width: 120px;">Page 1 / 1</span>
+                <button id="nextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
+                <label class="checkbox-container" id="allPagesCheckContainer" style="margin-left: 20px;">
+                    <input type="checkbox" id="allPagesCheckbox" checked>
+                    All pages
+                </label>
+            </div>
+        </div>
+
+        <div id="canvasContainer">
+            <!-- Added tabindex="0" to allow the canvas to receive keyboard focus -->
+            <canvas id="canvas" tabindex="0"></canvas>
+        </div>
     </div>
 
     <!-- Tab 2: Card Extraction (New) -->
     <div id="tab-cards" class="tab-content">
         <p class="instructions">
-            <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. We will automatically detect cards. <b>Click and drag</b> the red corners to manually adjust borders. Use <b>Arrow Keys</b> (hold Shift for faster move) for precise tuning.<br>
-            <b>Navigation:</b> Use <b>Tab</b> / <b>Shift+Tab</b> to cycle through the corners of a card, and <b>Enter</b> to jump to the next card.<br>
-            <span id="opencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)... Please wait.</span>
+            <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. We will automatically
+            detect cards. <b>Click and drag</b> the red corners to manually adjust borders. Use <b>Arrow Keys</b> (hold
+            Shift for faster move) for precise tuning.<br>
+            <b>Navigation:</b> Use <b>Tab</b> / <b>Shift+Tab</b> to cycle through the corners of a card. Use
+            <b>Enter</b> to jump to the next card, or <b>Shift+Enter</b> to go to the previous card.<br>
+            <span id="opencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)...
+                Please wait.</span>
         </p>
 
         <div class="sticky-controls">
-        <div class="controls">
-            <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf">
-            <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
-            <button id="ceProcessButton" disabled>Auto-Detect Cards</button>
-            <button id="ceAddManualButton" disabled>Add Manual Card</button>
-            <button id="ceDeleteButton" disabled>Delete Card</button>
-            <button id="ceDownloadButton" disabled>Download Cards</button>
-        </div>
+            <div class="controls">
+                <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf" title="Open File (O)">
+                <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
+                <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
+                <button id="ceAddManualButton" disabled title="Add Manual Card (N)">Add Manual</button>
+                <button id="ceDeleteButton" disabled title="Delete Card (D)">Delete</button>
+                <button id="ceDownloadButton" disabled title="Download Cards (S)">Download</button>
+            </div>
 
-        <!-- Styling Controls -->
-        <div class="controls" style="margin-top: -10px;">
-            <label class="checkbox-container">
-                Line Color: <input type="color" id="ceLineColor" value="#00ff00" style="margin-left: 5px; cursor: pointer; height: 25px;">
-            </label>
-            <label class="checkbox-container">
-                Line Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.5" style="margin-left: 5px; cursor: pointer;">
-                <span id="ceLineOpacityVal">0.5</span>
-            </label>
-            <label class="checkbox-container">
-                <input type="checkbox" id="ceZoomCheckbox" checked>
-                Zoom Window
-            </label>
-        </div>
+            <!-- Styling Controls -->
+            <div class="controls" style="margin-top: -10px;">
+                <label class="checkbox-container">
+                    Line Color: <input type="color" id="ceLineColor" value="#00ff00"
+                        style="margin-left: 5px; cursor: pointer; height: 25px;">
+                </label>
+                <label class="checkbox-container">
+                    Line Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.5"
+                        style="margin-left: 5px; cursor: pointer;">
+                    <span id="ceLineOpacityVal">0.5</span>
+                </label>
+                <label class="checkbox-container" title="Toggle Zoom Window (Z)">
+                    <input type="checkbox" id="ceZoomCheckbox" checked>
+                    Zoom Window
+                </label>
+            </div>
 
-        <!-- Zoom Window Container -->
-        <div id="ceZoomContainer" style="display: none; position: fixed; top: 20px; left: 20px; z-index: 9999; border: 2px solid var(--primary-color); border-radius: 6px; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.2); pointer-events: none; overflow: hidden;">
-            <div style="background: var(--primary-color); color: white; font-size: 12px; font-weight: bold; padding: 4px; text-align: center;">Zoom Preview</div>
-            <canvas id="ceZoomCanvas" width="300" height="300" style="display: block;"></canvas>
-        </div>
+            <!-- Zoom Window Container -->
+            <div id="ceZoomContainer"
+                style="display: none; position: fixed; top: 20px; left: 20px; z-index: 9999; border: 2px solid var(--primary-color); border-radius: 6px; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.2); pointer-events: none; overflow: hidden;">
+                <div id="ceZoomTitle"
+                    style="background: var(--primary-color); color: white; font-size: 12px; font-weight: bold; padding: 4px; text-align: center;">
+                    Zoom Preview</div>
+                <canvas id="ceZoomCanvas" width="300" height="300" style="display: block;"></canvas>
+            </div>
 
-        <!-- Additional controls for PDF navigation -->
-        <div class="controls" id="cePdfControls" style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
-            <button id="cePrevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
-            <span id="cePageIndicator" style="line-height: 38px; font-weight: bold; width: 120px;">Page 1 / 1</span>
-            <button id="ceNextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
-            <!-- Checkbox disabled for auto extractor for now, auto-extract works per page initially -->
-        </div>
+            <!-- Additional controls for PDF navigation -->
+            <div class="controls" id="cePdfControls"
+                style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
+                <button id="cePrevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
+                <span id="cePageIndicator" style="line-height: 38px; font-weight: bold; width: 120px;">Page 1 / 1</span>
+                <button id="ceNextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
+                <!-- Checkbox disabled for auto extractor for now, auto-extract works per page initially -->
+            </div>
         </div>
 
         <div id="canvasContainer">
@@ -140,4 +160,5 @@
     <script src="js/grid-slicer.js"></script>
     <script src="js/card-extractor.js"></script>
 </body>
+
 </html>

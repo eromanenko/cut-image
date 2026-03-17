@@ -26,6 +26,7 @@
     const ceZoomContainer = document.getElementById("ceZoomContainer");
     const ceZoomCanvas = document.getElementById("ceZoomCanvas");
     const ceZoomCtx = ceZoomCanvas.getContext("2d");
+    const ceZoomTitle = document.getElementById("ceZoomTitle");
 
     // Application State
     const ceSourceCanvas = document.createElement("canvas");
@@ -63,7 +64,7 @@
         ceDownloadButton.disabled = detectedCards.length === 0;
         ceDownloadButton.textContent = detectedCards.length > 0
             ? `Download ${detectedCards.length} card${detectedCards.length !== 1 ? 's' : ''}`
-            : 'Download Cards';
+            : 'Download';
     }
 
     // Wait for OpenCV ready event
@@ -431,11 +432,22 @@
         const sourceSizeH = zoomHeight / zoomFactor;
 
         let cornerIndex = -1;
-        for (const card of detectedCards) {
+        let cardIndex = -1;
+        for (let i = 0; i < detectedCards.length; i++) {
+            const card = detectedCards[i];
             const idx = card.indexOf(selectedPoint);
             if (idx !== -1) {
                 cornerIndex = idx;
+                cardIndex = i;
                 break;
+            }
+        }
+
+        if (ceZoomTitle) {
+            if (cardIndex !== -1) {
+                ceZoomTitle.textContent = `Zoom Preview (${cardIndex + 1}/${detectedCards.length})`;
+            } else {
+                ceZoomTitle.textContent = "Zoom Preview";
             }
         }
 
@@ -654,8 +666,36 @@
     }
 
     window.addEventListener("keydown", (e) => {
-        if (!isImageLoaded || detectedCards.length === 0) return;
         if (e.target.tagName === 'INPUT') return;
+        const tabCards = document.getElementById("tab-cards");
+        if (tabCards && !tabCards.classList.contains("active")) return;
+
+        // Global hotkeys
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+            const key = e.key.toLowerCase();
+            if (key === 'o') {
+                ceFileInput.click();
+                return;
+            } else if (key === 'a') {
+                if (!ceProcessButton.disabled) ceProcessButton.click();
+                return;
+            } else if (key === 'n') {
+                if (!ceAddManualButton.disabled) ceAddManualButton.click();
+                return;
+            } else if (key === 'd') {
+                if (!ceDeleteButton.disabled) ceDeleteButton.click();
+                return;
+            } else if (key === 's') {
+                if (!ceDownloadButton.disabled) ceDownloadButton.click();
+                return;
+            } else if (key === 'z') {
+                ceZoomCheckbox.checked = !ceZoomCheckbox.checked;
+                ceZoomCheckbox.dispatchEvent(new Event('change'));
+                return;
+            }
+        }
+
+        if (!isImageLoaded || detectedCards.length === 0) return;
 
         // Tab / Shift+Tab corner navigation (only when ceCanvas is focused)
         if (e.key === "Tab" && document.activeElement === ceCanvas) {
@@ -699,7 +739,7 @@
             return;
         }
 
-        // Enter: jump to top-left corner of the next card
+        // Enter / Shift+Enter: jump to top-left corner of the next/previous card
         if (e.key === "Enter" && document.activeElement === ceCanvas) {
             e.preventDefault();
 
@@ -707,8 +747,13 @@
                 selectedPoint = detectedCards[0][0];
             } else {
                 const cardIdx = detectedCards.findIndex(c => c.includes(selectedPoint));
-                const nextCardIdx = (cardIdx + 1) % detectedCards.length;
-                selectedPoint = detectedCards[nextCardIdx][0];
+                if (e.shiftKey) {
+                    const prevCardIdx = (cardIdx - 1 + detectedCards.length) % detectedCards.length;
+                    selectedPoint = detectedCards[prevCardIdx][0];
+                } else {
+                    const nextCardIdx = (cardIdx + 1) % detectedCards.length;
+                    selectedPoint = detectedCards[nextCardIdx][0];
+                }
             }
 
             scrollToCorner(selectedPoint, 0);
@@ -748,6 +793,7 @@
 
     function deleteSelectedCard() {
         if (!selectedPoint) return;
+        if (!confirm("Are you sure you want to delete this card?")) return;
         const index = detectedCards.findIndex(card => card.includes(selectedPoint));
         if (index !== -1) {
             detectedCards.splice(index, 1);
