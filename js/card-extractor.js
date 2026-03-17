@@ -21,6 +21,12 @@
     const ceLineOpacity = document.getElementById("ceLineOpacity");
     const ceLineOpacityVal = document.getElementById("ceLineOpacityVal");
 
+    // Zoom Window DOM
+    const ceZoomCheckbox = document.getElementById("ceZoomCheckbox");
+    const ceZoomContainer = document.getElementById("ceZoomContainer");
+    const ceZoomCanvas = document.getElementById("ceZoomCanvas");
+    const ceZoomCtx = ceZoomCanvas.getContext("2d");
+
     // Application State
     const ceSourceCanvas = document.createElement("canvas");
     const ceSourceCtx = ceSourceCanvas.getContext("2d");
@@ -71,6 +77,10 @@
     ceLineOpacity.addEventListener("input", (e) => {
         ceLineOpacityVal.textContent = e.target.value;
         redraw();
+    });
+
+    ceZoomCheckbox.addEventListener("change", () => {
+        updateZoomWindow();
     });
 
     function hexToRgb(hex) {
@@ -226,6 +236,7 @@
         dragStartY = 0;
         
         updateButtonStates();
+        updateZoomWindow();
     }
 
     function sortDetectedCards() {
@@ -400,6 +411,79 @@
                 ceCtx.textBaseline = "alphabetic";
             }
         }
+        
+        updateZoomWindow();
+    }
+
+    function updateZoomWindow() {
+        if (!ceZoomCheckbox.checked || !selectedPoint || !isImageLoaded) {
+            ceZoomContainer.style.display = "none";
+            return;
+        }
+
+        ceZoomContainer.style.display = "block";
+
+        const zoomFactor = 3; // 3x zoom
+        const zoomWidth = ceZoomCanvas.width;
+        const zoomHeight = ceZoomCanvas.height;
+        
+        const sourceSizeW = zoomWidth / zoomFactor;
+        const sourceSizeH = zoomHeight / zoomFactor;
+
+        let cornerIndex = -1;
+        for (const card of detectedCards) {
+            const idx = card.indexOf(selectedPoint);
+            if (idx !== -1) {
+                cornerIndex = idx;
+                break;
+            }
+        }
+
+        // Default to center
+        let crosshairX = zoomWidth / 2;
+        let crosshairY = zoomHeight / 2;
+
+        const margin = 40; // Approx 30px for scaled radius (10px * 3) + line width padding
+
+        if (cornerIndex === 0) { // TL
+            crosshairX = margin;
+            crosshairY = margin;
+        } else if (cornerIndex === 1) { // TR
+            crosshairX = zoomWidth - margin;
+            crosshairY = margin;
+        } else if (cornerIndex === 2) { // BR
+            crosshairX = zoomWidth - margin;
+            crosshairY = zoomHeight - margin;
+        } else if (cornerIndex === 3) { // BL
+            crosshairX = margin;
+            crosshairY = zoomHeight - margin;
+        }
+
+        const sx = Math.round(selectedPoint.x - (crosshairX / zoomFactor));
+        const sy = Math.round(selectedPoint.y - (crosshairY / zoomFactor));
+
+        // Clear and draw background
+        ceZoomCtx.fillStyle = "#f8f9fa";
+        ceZoomCtx.fillRect(0, 0, zoomWidth, zoomHeight);
+
+        // Disable smoothing for sharp pixelated zoom
+        ceZoomCtx.imageSmoothingEnabled = false;
+        
+        ceZoomCtx.drawImage(
+            ceCanvas,
+            sx, sy, sourceSizeW, sourceSizeH,
+            0, 0, zoomWidth, zoomHeight
+        );
+        
+        // Draw crosshair at the calculated center
+        ceZoomCtx.beginPath();
+        ceZoomCtx.strokeStyle = "rgba(0, 0, 0, 0.4)";
+        ceZoomCtx.lineWidth = 1;
+        ceZoomCtx.moveTo(0, crosshairY);
+        ceZoomCtx.lineTo(zoomWidth, crosshairY);
+        ceZoomCtx.moveTo(crosshairX, 0);
+        ceZoomCtx.lineTo(crosshairX, zoomHeight);
+        ceZoomCtx.stroke();
     }
 
     function getMousePos(event) {
