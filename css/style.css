@@ -118,8 +118,8 @@ canvas {
     transition: all 0.2s;
     border-radius: 0;
 }
-.tab-btn:hover {
-    background-color: #f1f1f1;
+button.tab-btn:hover, button.tab-btn:hover:not(:disabled) {
+    background-color: #e9ecef;
     color: #333;
 }
 .tab-btn.active {
@@ -131,4 +131,21 @@ canvas {
 }
 .tab-content.active {
     display: block;
+}
+
+/* Fixed color buttons for color picker */
+.fixed-color-btn {
+    width: 25px;
+    height: 25px;
+    border-radius: 4px;
+    border: 1px solid #999;
+    padding: 0;
+    margin-left: 4px;
+    cursor: pointer;
+    box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.fixed-color-btn:hover:not(:disabled) {
+    transform: scale(1.15);
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
 }

@@ -99,7 +99,7 @@
             <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. We will automatically
             detect cards. <b>Click and drag</b> the red corners to manually adjust borders. Use <b>Arrow Keys</b> (hold
             Shift for faster move) for precise tuning.<br>
-            <b>Navigation:</b> Use <b>Tab</b> / <b>Shift+Tab</b> to cycle through the corners of a card. Use
+            <b>Navigation:</b> Use <b>Tab</b> / <b>Shift+Tab</b> (or <b>/</b> key) to cycle through the corners of a card. Use
             <b>Enter</b> to jump to the next card, or <b>Shift+Enter</b> to go to the previous card.<br>
             <span id="opencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)...
                 Please wait.</span>
@@ -118,8 +118,20 @@
             <!-- Styling Controls -->
             <div class="controls" style="margin-top: -10px;">
                 <label class="checkbox-container">
-                    Line Color: <input type="color" id="ceLineColor" value="#00ff00"
-                        style="margin-left: 5px; cursor: pointer; height: 25px;">
+                    Line Color: <input type="color" id="ceLineColor" value="#808080"
+                        style="margin-left: 5px; cursor: pointer; height: 25px;" title="Line Color (Press C to cycle)">
+                    <button type="button" class="fixed-color-btn" data-color="#000000"
+                        style="background-color: #000000;" title="Black"></button>
+                    <button type="button" class="fixed-color-btn" data-color="#ffffff"
+                        style="background-color: #ffffff;" title="White"></button>
+                    <button type="button" class="fixed-color-btn" data-color="#808080"
+                        style="background-color: #808080;" title="Gray"></button>
+                    <button type="button" class="fixed-color-btn" data-color="#00ff00"
+                        style="background-color: #00ff00;" title="Light Green"></button>
+                    <button type="button" class="fixed-color-btn" data-color="#0000ff"
+                        style="background-color: #0000ff;" title="Blue"></button>
+                    <button type="button" class="fixed-color-btn" data-color="#ff0000"
+                        style="background-color: #ff0000;" title="Red"></button>
                 </label>
                 <label class="checkbox-container">
                     Line Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.5"

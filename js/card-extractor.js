@@ -75,6 +75,15 @@
 
     // Style listeners
     ceLineColor.addEventListener("input", redraw);
+    
+    // Fixed color buttons listeners
+    document.querySelectorAll(".fixed-color-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            ceLineColor.value = btn.dataset.color;
+            redraw();
+        });
+    });
+
     ceLineOpacity.addEventListener("input", (e) => {
         ceLineOpacityVal.textContent = e.target.value;
         redraw();
@@ -688,6 +697,13 @@
             } else if (key === 's') {
                 if (!ceDownloadButton.disabled) ceDownloadButton.click();
                 return;
+            } else if (key === 'c' || key === 'с') {
+                const colors = ['#000000', '#ffffff', '#808080', '#00ff00', '#0000ff', '#ff0000'];
+                let currentIndex = colors.indexOf(ceLineColor.value.toLowerCase());
+                const nextIndex = (currentIndex === -1) ? 0 : (currentIndex + 1) % colors.length;
+                ceLineColor.value = colors[nextIndex];
+                redraw();
+                return;
             } else if (key === 'z') {
                 ceZoomCheckbox.checked = !ceZoomCheckbox.checked;
                 ceZoomCheckbox.dispatchEvent(new Event('change'));
@@ -698,7 +714,7 @@
         if (!isImageLoaded || detectedCards.length === 0) return;
 
         // Tab / Shift+Tab corner navigation (only when ceCanvas is focused)
-        if (e.key === "Tab" && document.activeElement === ceCanvas) {
+        if ((e.key === "Tab" || e.code === "Slash" || e.key === "/" || e.key === ".") && document.activeElement === ceCanvas) {
             e.preventDefault();
 
             if (e.shiftKey) {
@@ -765,24 +781,58 @@
         // Arrow keys and Delete require a selected point
         if (!selectedPoint) return;
 
-        let step = e.shiftKey ? 10 : 1;
+        let step = (e.ctrlKey || e.metaKey) ? 10 : 1;
         let handled = false;
+        let dx = 0;
+        let dy = 0;
 
         if (e.key === "ArrowLeft") {
-            selectedPoint.x = Math.max(0, selectedPoint.x - step);
+            dx = -step;
             handled = true;
         } else if (e.key === "ArrowRight") {
-            selectedPoint.x = Math.min(ceCanvas.width, selectedPoint.x + step);
+            dx = step;
             handled = true;
         } else if (e.key === "ArrowUp") {
-            selectedPoint.y = Math.max(0, selectedPoint.y - step);
+            dy = -step;
             handled = true;
         } else if (e.key === "ArrowDown") {
-            selectedPoint.y = Math.min(ceCanvas.height, selectedPoint.y + step);
+            dy = step;
             handled = true;
         } else if (e.key === "Delete" || e.key === "Backspace") {
             deleteSelectedCard();
             handled = true;
+        }
+
+        if (handled && (dx !== 0 || dy !== 0)) {
+            const oldX = selectedPoint.x;
+            const oldY = selectedPoint.y;
+            
+            selectedPoint.x = Math.max(0, Math.min(ceCanvas.width, selectedPoint.x + dx));
+            selectedPoint.y = Math.max(0, Math.min(ceCanvas.height, selectedPoint.y + dy));
+            
+            // Actual movement amount in case of canvas boundary constraint
+            const actualDx = selectedPoint.x - oldX;
+            const actualDy = selectedPoint.y - oldY;
+
+            if (e.shiftKey && (actualDx !== 0 || actualDy !== 0)) {
+                // Move corresponding adjacent corner to translate the edge
+                // points order: 0: TL, 1: TR, 2: BR, 3: BL
+                const cardIndex = detectedCards.findIndex(card => card.includes(selectedPoint));
+                if (cardIndex !== -1) {
+                    const card = detectedCards[cardIndex];
+                    const pointIndex = card.indexOf(selectedPoint);
+
+                    if (actualDx !== 0) {
+                        const partnerXIndex = 3 - pointIndex; // 0<->3 (Left Edge), 1<->2 (Right Edge)
+                        card[partnerXIndex].x = Math.max(0, Math.min(ceCanvas.width, card[partnerXIndex].x + actualDx));
+                    }
+
+                    if (actualDy !== 0) {
+                        const partnerYIndex = pointIndex ^ 1; // 0<->1 (Top Edge), 2<->3 (Bottom Edge)
+                        card[partnerYIndex].y = Math.max(0, Math.min(ceCanvas.height, card[partnerYIndex].y + actualDy));
+                    }
+                }
+            }
         }
 
         if (handled) {
