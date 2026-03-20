@@ -25,6 +25,11 @@ export function initDom() {
     dom.zoomCtx = dom.zoomCanvas.getContext("2d");
     dom.zoomTitle = document.getElementById("ceZoomTitle");
 
+    dom.widthInput = document.getElementById("ceWidthInput");
+    dom.heightInput = document.getElementById("ceHeightInput");
+    dom.dpiInput = document.getElementById("ceDpiInput");
+    dom.getSizeBtn = document.getElementById("ceGetSizeBtn");
+
     dom.sourceCanvas = document.createElement("canvas");
     dom.sourceCtx = dom.sourceCanvas.getContext("2d");
 }

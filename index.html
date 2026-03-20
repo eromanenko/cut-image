@@ -35,6 +35,7 @@
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('grid')">Grid Slicing</button>
         <button class="tab-btn" onclick="switchTab('cards')">Card Extraction</button>
+        <button class="tab-btn" onclick="switchTab('descreen')">Descreen [BETA]</button>
     </div>
 
     <!-- Tab 1: Grid Slicing (Existing) -->
@@ -59,25 +60,25 @@
             </div>
 
             <!-- Checkbox for skipping edges + minimum size -->
-            <div class="controls" style="margin-top: -10px;">
+            <div class="controls hide-on-stuck" style="margin-top: -10px;">
                 <label class="checkbox-container">
                     <input type="checkbox" id="skipEdgesCheckbox">
                     Keep only inner slices (discard edges)
                 </label>
                 <label class="checkbox-container">
-                    Min size (mm): <input type="number" id="minSizeInput" value="20" min="0" step="1"
-                        style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                    Min size (mm): <input type="number" id="minSizeInput" value="10" min="0" max="100" step="1"
+                        style="width: 50px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
                 <label class="checkbox-container">
                     DPI: <input type="number" id="dpiInput" value="300" min="72" step="1"
-                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
             </div>
 
             <!-- Additional controls for PDF navigation -->
             <div class="controls" id="pdfControls"
                 style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
-                <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
+                <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Previous Page</button>
                 <span id="pageIndicator" style="line-height: 38px; font-weight: bold; width: 120px;">Page 1 / 1</span>
                 <button id="nextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
                 <label class="checkbox-container" id="allPagesCheckContainer" style="margin-left: 20px;">
@@ -96,11 +97,10 @@
     <!-- Tab 2: Card Extraction (New) -->
     <div id="tab-cards" class="tab-content">
         <p class="instructions">
-            <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. We will automatically
-            detect cards. <b>Click and drag</b> the red corners to manually adjust borders. Use <b>Arrow Keys</b> (hold
-            Shift for faster move) for precise tuning.<br>
-            <b>Navigation:</b> Use <b>Tab</b> / <b>Shift+Tab</b> (or <b>/</b> key) to cycle through the corners of a card. Use
-            <b>Enter</b> to jump to the next card, or <b>Shift+Enter</b> to go to the previous card.<br>
+            <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. <b>Click and drag</b> the red corners to manually adjust borders. Use <b>Arrow Keys</b> (hold Shift for faster move) for precise tuning.<br>
+            <b>Auto-Detect:</b> Specify exact <b>Width and Height (mm)</b> below for highly accurate detection, even on rounded corners or faint borders. Use <b>🎯 Get from 1st Card</b> to auto-fill dimensions.<br>
+            <b>Navigation:</b> Use <b>Tab</b> / <b>Shift+Tab</b> (or <b>/</b> key) to cycle through the corners of a card. Use <b>Enter</b> to jump between cards.<br>
+            <b>Zoom Window:</b> Use <b>+</b> and <b>-</b> keys to adjust the magnification level.<br>
             <span id="opencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)...
                 Please wait.</span>
         </p>
@@ -116,7 +116,7 @@
             </div>
 
             <!-- Styling Controls -->
-            <div class="controls" style="margin-top: -10px;">
+            <div class="controls hide-on-stuck" style="margin-top: -10px;">
                 <label class="checkbox-container">
                     Line Color: <input type="color" id="ceLineColor" value="#808080"
                         style="margin-left: 5px; cursor: pointer; height: 25px;" title="Line Color (Press C to cycle)">
@@ -144,6 +144,23 @@
                 </label>
             </div>
 
+            <!-- Dimensions Controls -->
+            <div class="controls hide-on-stuck" style="margin-top: -10px;">
+                <label class="checkbox-container">
+                    Width (mm): <input type="number" id="ceWidthInput" min="0" step="0.1" placeholder="e.g. 63"
+                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
+                <label class="checkbox-container">
+                    Height (mm): <input type="number" id="ceHeightInput" min="0" step="0.1" placeholder="e.g. 88"
+                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
+                <label class="checkbox-container">
+                    DPI: <input type="number" id="ceDpiInput" value="300" min="72" step="1"
+                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
+                <button id="ceGetSizeBtn" title="Get size from the first selected card" style="margin-left: 10px;">🎯 Get from 1st Card</button>
+            </div>
+
             <!-- Zoom Window Container -->
             <div id="ceZoomContainer"
                 style="display: none; position: fixed; top: 20px; left: 20px; z-index: 9999; border: 2px solid var(--primary-color); border-radius: 6px; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.2); pointer-events: none; overflow: hidden;">
@@ -168,9 +185,64 @@
         </div>
     </div>
 
+    <!-- Tab 3: Descreen (New) -->
+    <div id="tab-descreen" class="tab-content">
+        <p class="instructions" style="background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px; padding: 10px; display: inline-block;">
+            <b style="color: #856404;">⚠️ EXPERIMENTAL (Early Development):</b> This tool uses basic OpenCV filters to attempt moiré removal. It heavily blurs images and may reduce text quality. <b>Advanced "AI-based" approaches are usually required for high quality descreening.</b><br><br>
+            <b>Methods:</b> <b>Bilateral Filter</b> is often best for keeping edges sharp. <b>Gaussian Blur + Unsharp Mask</b> is a classic approach.<br>
+            <span id="dsOpencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)... Please wait.</span>
+        </p>
+
+        <div class="sticky-controls">
+            <div class="controls">
+                <input type="file" id="dsFileInput" accept="image/*,.tif,.tiff">
+                <button id="dsProcessBtn" disabled title="Apply the selected filter">Apply Filter</button>
+                <button id="dsDownloadBtn" disabled title="Save the result">Download Image</button>
+                <label class="checkbox-container" title="Hold to see original image">
+                    <input type="checkbox" id="dsCompareCheckbox"> Compare (Original)
+                </label>
+            </div>
+
+            <!-- Filter settings -->
+            <div class="controls hide-on-stuck" style="margin-top: -10px;">
+                <label class="checkbox-container">
+                    Method:
+                    <select id="dsFilterMethod" style="margin-left: 5px; padding: 3px;">
+                        <option value="bilateral">Bilateral Filter</option>
+                        <option value="gaussian">Gaussian Blur + Unsharp</option>
+                        <option value="median">Median Blur</option>
+                    </select>
+                </label>
+                
+                <!-- Bilateral controls -->
+                <span id="dsBilateralControls" style="display:inline-flex; align-items:center; gap:10px;">
+                    <label>Diameter: <input type="number" id="dsBiD" value="9" min="3" max="50" step="2" style="width: 50px;"></label>
+                    <label>SigmaColor: <input type="number" id="dsBiSigmaColor" value="75" min="10" max="250" style="width: 50px;"></label>
+                    <label>SigmaSpace: <input type="number" id="dsBiSigmaSpace" value="75" min="10" max="250" style="width: 50px;"></label>
+                </span>
+
+                <!-- Gaussian unsharp controls -->
+                <span id="dsGaussianControls" style="display:none; align-items:center; gap:10px;">
+                    <label>Blur (k): <input type="number" id="dsGaussK" value="5" min="3" max="31" step="2" style="width: 50px;"></label>
+                    <label>Amount: <input type="number" id="dsUnsharpAmount" value="1.5" min="0" max="5" step="0.1" style="width: 50px;"></label>
+                </span>
+
+                <!-- Median controls -->
+                <span id="dsMedianControls" style="display:none; align-items:center; gap:10px;">
+                    <label>Kernel: <input type="number" id="dsMedianK" value="5" min="3" max="31" step="2" style="width: 50px;"></label>
+                </span>
+            </div>
+        </div>
+
+        <div id="dsCanvasContainer" style="display: inline-block; position: relative; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; border: 1px solid #ddd;">
+            <canvas id="dsCanvas" style="display: block; max-width: 100%; height: auto;"></canvas>
+        </div>
+    </div>
+
     <script src="js/tabs.js"></script>
     <script type="module" src="js/grid/index.js"></script>
     <script type="module" src="js/cards/index.js"></script>
+    <script type="module" src="js/descreen/index.js"></script>
 </body>
 
 </html>

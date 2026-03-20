@@ -19,7 +19,9 @@ export const state = {
     dragStartX: 0,
     dragStartY: 0,
 
-    isCvReady: window.openCvReady === true
+    isCvReady: window.openCvReady === true,
+
+    zoomLevel: 3
 };
 
 export function resetState() {

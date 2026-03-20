@@ -26,18 +26,36 @@ h2 {
     justify-content: center;
     flex-wrap: wrap;
     gap: 10px;
+    transition: margin-bottom 0.3s ease;
 }
 .sticky-controls {
     position: sticky;
     top: 0;
     z-index: 100;
     background-color: #f8f9fa;
-    padding-bottom: 5px;
+    padding-bottom: 15px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s, padding-bottom 0.3s ease;
 }
 .sticky-controls.stuck {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    padding-bottom: 5px;
+}
+.sticky-controls.stuck > .controls:first-child {
+    margin-bottom: 0;
+}
+.hide-on-stuck {
+    max-height: 150px; /* Enough to comfortably fit the row */
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+}
+.sticky-controls.stuck .hide-on-stuck {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    pointer-events: none;
 }
 button, input[type="file"]::file-selector-button {
     background-color: var(--primary-color);

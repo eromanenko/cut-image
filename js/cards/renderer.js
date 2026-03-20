@@ -147,7 +147,7 @@ export function updateZoomWindow() {
 
     dom.zoomContainer.style.display = "block";
 
-    const zoomFactor = 3;
+    const zoomFactor = state.zoomLevel;
     const zoomWidth = dom.zoomCanvas.width;
     const zoomHeight = dom.zoomCanvas.height;
 
@@ -167,11 +167,11 @@ export function updateZoomWindow() {
     }
 
     if (dom.zoomTitle) {
-        if (cardIndex !== -1) {
-            dom.zoomTitle.textContent = `Zoom Preview (${cardIndex + 1}/${state.detectedCards.length})`;
-        } else {
-            dom.zoomTitle.textContent = "Zoom Preview";
-        }
+        let titleText = cardIndex !== -1 
+            ? `Zoom Preview (${cardIndex + 1}/${state.detectedCards.length})` 
+            : "Zoom Preview";
+        titleText += ` [${state.zoomLevel}x]`;
+        dom.zoomTitle.textContent = titleText;
     }
 
     let crosshairX = zoomWidth / 2;

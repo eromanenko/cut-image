@@ -26,6 +26,34 @@ export function bindEvents() {
     dom.fileInput.addEventListener('change', handleFileUpload);
     dom.deleteButton.addEventListener("click", deleteSelectedCard);
 
+    dom.getSizeBtn.addEventListener("click", () => {
+        if (state.detectedCards.length === 0) {
+            alert("No cards available. Please add a manual card or detect cards first.");
+            return;
+        }
+
+        const card = state.detectedCards[0];
+        const dist = (p1, p2) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        
+        const w1 = dist(card[0], card[1]);
+        const w2 = dist(card[2], card[3]);
+        const h1 = dist(card[1], card[2]);
+        const h2 = dist(card[3], card[0]);
+
+        const avgW = (w1 + w2) / 2;
+        const avgH = (h1 + h2) / 2;
+
+        const pxW = Math.min(avgW, avgH);
+        const pxH = Math.max(avgW, avgH);
+
+        const dpi = parseFloat(dom.dpiInput.value) || 300;
+        const mmW = (pxW * 25.4) / dpi;
+        const mmH = (pxH * 25.4) / dpi;
+
+        dom.widthInput.value = mmW.toFixed(1);
+        dom.heightInput.value = mmH.toFixed(1);
+    });
+
     dom.addManualButton.addEventListener('click', () => {
         if (!state.isImageLoaded) return;
         
@@ -195,6 +223,14 @@ export function bindEvents() {
             } else if (key === 'z') {
                 dom.zoomCheckbox.checked = !dom.zoomCheckbox.checked;
                 dom.zoomCheckbox.dispatchEvent(new Event('change'));
+                return;
+            } else if (key === '+' || key === '=') {
+                state.zoomLevel = Math.min(10, Math.round((state.zoomLevel + 0.5) * 10) / 10);
+                redraw();
+                return;
+            } else if (key === '-' || key === '_') {
+                state.zoomLevel = Math.max(1, Math.round((state.zoomLevel - 0.5) * 10) / 10);
+                redraw();
                 return;
             }
         }

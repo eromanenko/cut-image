@@ -2,6 +2,7 @@ import { dom } from './dom.js';
 import { state, resetState } from './state.js';
 import { redraw } from './renderer.js';
 import { updateButtonStates } from './ui.js';
+import { extractTiffDpi, extractImageDpi } from '../grid/dpi.js';
 
 export async function renderPdfPageForPreview(pageNumber) {
     if (!state.pdfDoc) return;
@@ -24,6 +25,9 @@ export async function renderPdfPageForPreview(pageNumber) {
         dom.pageIndicator.textContent = `Page ${pageNumber} / ${state.pdfDoc.numPages}`;
         dom.prevPageBtn.disabled = pageNumber <= 1;
         dom.nextPageBtn.disabled = pageNumber >= state.pdfDoc.numPages;
+
+        const pdfDpi = Math.round(72 * state.PDF_SCALE);
+        if (dom.dpiInput) dom.dpiInput.value = pdfDpi;
 
         state.isImageLoaded = true;
         state.detectedCards = []; // clear previous detections on new page
@@ -78,6 +82,11 @@ export function handleFileUpload(event) {
                     const w = ifds[0].width;
                     const h = ifds[0].height;
 
+                    const tiffDpi = extractTiffDpi(ifds[0]);
+                    if (tiffDpi && dom.dpiInput) {
+                        dom.dpiInput.value = tiffDpi;
+                    }
+
                     dom.sourceCanvas.width = w;
                     dom.sourceCanvas.height = h;
                     const imgData = dom.sourceCtx.createImageData(w, h);
@@ -94,6 +103,11 @@ export function handleFileUpload(event) {
                     alert("Error decoding TIFF file: " + err.message);
                 }
             } else {
+                const detectedDpi = extractImageDpi(new Uint8Array(fileBuffer), file.type);
+                if (detectedDpi && dom.dpiInput) {
+                    dom.dpiInput.value = detectedDpi;
+                }
+
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const image = new Image();

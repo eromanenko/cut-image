@@ -6,6 +6,7 @@ export function updateButtonStates() {
     dom.addManualButton.disabled = !state.isImageLoaded;
     dom.deleteButton.disabled = (state.selectedPoint === null);
     dom.downloadButton.disabled = state.detectedCards.length === 0;
+    dom.getSizeBtn.disabled = state.detectedCards.length === 0;
     dom.downloadButton.textContent = state.detectedCards.length > 0
         ? `Download ${state.detectedCards.length} card${state.detectedCards.length !== 1 ? 's' : ''}`
         : 'Download';
