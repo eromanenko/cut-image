@@ -167,3 +167,30 @@ button.tab-btn:hover, button.tab-btn:hover:not(:disabled) {
     transform: scale(1.15);
     box-shadow: 0 0 5px rgba(0,0,0,0.4);
 }
+
+/* Mode toggle (Freeform / Rectangle segmented control) */
+.mode-toggle {
+    display: inline-flex;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--primary-color);
+}
+.mode-btn {
+    background-color: #fff;
+    color: var(--primary-color);
+    border: none;
+    border-radius: 0;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+.mode-btn:hover:not(:disabled):not(.active) {
+    background-color: #e8f1ff;
+    color: var(--primary-color);
+}
+.mode-btn.active {
+    background-color: var(--primary-color);
+    color: #fff;
+}

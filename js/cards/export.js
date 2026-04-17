@@ -1,58 +1,68 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
 import { updateButtonStates } from './ui.js';
+import { getRectCardCorners } from './rect-mode.js';
 
 export async function exportCards() {
-    if (state.detectedCards.length === 0) return;
+    const isRect     = state.editMode === 'rect';
+    const cardCount  = isRect ? state.rectCards.length : state.detectedCards.length;
 
-    dom.downloadButton.disabled = true;
+    if (cardCount === 0) return;
+
+    dom.downloadButton.disabled    = true;
     dom.downloadButton.textContent = "Processing Archive...";
     const prefix = dom.prefixInput.value;
 
     try {
-        const zip = new JSZip();
-        let srcMat = cv.imread(dom.sourceCanvas);
+        const zip    = new JSZip();
+        let srcMat   = cv.imread(dom.sourceCanvas);
 
-        for (let i = 0; i < state.detectedCards.length; i++) {
-            let card = state.detectedCards[i];
+        for (let i = 0; i < cardCount; i++) {
+            let card4pts; // [TL, TR, BR, BL]
+            let outW, outH;
 
-            let widthA = Math.hypot(card[2].x - card[3].x, card[2].y - card[3].y);
-            let widthB = Math.hypot(card[1].x - card[0].x, card[1].y - card[0].y);
-            let maxWidth = Math.max(widthA, widthB);
-
-            let heightA = Math.hypot(card[1].x - card[2].x, card[1].y - card[2].y);
-            let heightB = Math.hypot(card[0].x - card[3].x, card[0].y - card[3].y);
-            let maxHeight = Math.max(heightA, heightB);
+            if (isRect) {
+                const rc   = state.rectCards[i];
+                card4pts   = getRectCardCorners(rc);
+                outW       = state.rectWidth;
+                outH       = state.rectHeight;
+            } else {
+                card4pts = state.detectedCards[i];
+                // Compute output size from the card's actual edge lengths
+                let widthA  = Math.hypot(card4pts[2].x - card4pts[3].x, card4pts[2].y - card4pts[3].y);
+                let widthB  = Math.hypot(card4pts[1].x - card4pts[0].x, card4pts[1].y - card4pts[0].y);
+                let heightA = Math.hypot(card4pts[1].x - card4pts[2].x, card4pts[1].y - card4pts[2].y);
+                let heightB = Math.hypot(card4pts[0].x - card4pts[3].x, card4pts[0].y - card4pts[3].y);
+                outW = Math.round(Math.max(widthA,  widthB));
+                outH = Math.round(Math.max(heightA, heightB));
+            }
 
             let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                card[0].x, card[0].y,
-                card[1].x, card[1].y,
-                card[2].x, card[2].y,
-                card[3].x, card[3].y
+                card4pts[0].x, card4pts[0].y,
+                card4pts[1].x, card4pts[1].y,
+                card4pts[2].x, card4pts[2].y,
+                card4pts[3].x, card4pts[3].y,
             ]);
 
             let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                0, 0,
-                maxWidth - 1, 0,
-                maxWidth - 1, maxHeight - 1,
-                0, maxHeight - 1
+                0,        0,
+                outW - 1, 0,
+                outW - 1, outH - 1,
+                0,        outH - 1,
             ]);
 
-            let M = cv.getPerspectiveTransform(srcTri, dstTri);
-            let dst = new cv.Mat();
-            let dsize = new cv.Size(maxWidth, maxHeight);
+            let M     = cv.getPerspectiveTransform(srcTri, dstTri);
+            let dst   = new cv.Mat();
+            let dsize = new cv.Size(outW, outH);
 
             cv.warpPerspective(srcMat, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
 
             const tempCanvas = document.createElement('canvas');
             cv.imshow(tempCanvas, dst);
 
-            srcTri.delete();
-            dstTri.delete();
-            M.delete();
-            dst.delete();
+            srcTri.delete(); dstTri.delete(); M.delete(); dst.delete();
 
-            const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+            const blob     = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
             const padIndex = String(i + 1).padStart(2, '0');
             zip.file(`${prefix}${padIndex}.png`, blob);
         }
@@ -60,9 +70,9 @@ export async function exportCards() {
         srcMat.delete();
 
         const content = await zip.generateAsync({ type: "blob" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(content);
-        a.download = state.originalFileName + "_cards.zip";
+        const a       = document.createElement("a");
+        a.href        = URL.createObjectURL(content);
+        a.download    = state.originalFileName + "_cards.zip";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

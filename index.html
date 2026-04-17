@@ -114,17 +114,30 @@
 
     <!-- Tab 2: Card Extraction (New) -->
     <div id="tab-cards" class="tab-content">
-        <p class="instructions">
-            <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. <b>Click and drag</b> the red corners to manually adjust borders. Use <b>Arrow Keys</b> (hold Shift for faster move) for precise tuning.<br>
-            <b>Auto-Detect:</b> Specify exact <b>Width and Height (mm)</b> below for highly accurate detection, even on rounded corners or faint borders. Use <b>🎯 Get from 1st Card</b> to auto-fill dimensions.<br>
-            <b>Navigation:</b> Use <b>Tab</b> / <b>Shift+Tab</b> (or <b>/</b> key) to cycle through the corners of a card. Use <b>Enter</b> to jump between cards.<br>
-            <b>Zoom Window:</b> Use <b>+</b> and <b>-</b> keys to adjust the magnification level.<br>
-            <span id="opencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)...
-                Please wait.</span>
+        <p class="instructions" id="ceInstructions">
+            <!-- Freeform mode description -->
+            <span id="ceInstrFreeform">
+                <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. <b>Click and drag</b> the red corners to adjust borders. You can also <b>drag the whole card</b> by clicking inside it.<br>
+                <b>Auto-Detect:</b> Specify exact <b>Width and Height (mm)</b> below for highly accurate detection. Use <b>🎯 Get from 1st Card</b> to auto-fill dimensions.<br>
+                <b>Navigation:</b> Use <b>/</b> key to cycle through corners. <b>Enter</b> jumps between cards. <b>Arrow Keys</b> (+ Ctrl for ×10 step, + Shift to move opposite corner too).<br>
+                <b>Zoom Window:</b> <b>+</b> / <b>-</b> to adjust magnification. <b>Z</b> toggles zoom.
+            </span>
+            <!-- Rectangle mode description -->
+            <span id="ceInstrRect" style="display:none;">
+                <b>Rectangle Mode:</b> All cards are identical parallelograms defined by global <b>Width</b>, <b>Height</b>, and <b>Skew</b> (px) values above.<br>
+                <b>Add card:</b> Click empty area on canvas — a new card appears at the click position. Drag to reposition. <b>Add Manual</b> button centres a card in the viewport.<br>
+                <b>Move:</b> Drag any card. <b>Arrow Keys</b> for precise 1px steps (Ctrl = 10px steps).<br>
+                <b>Rotate:</b> Press <b>/</b> (0.05&deg; CW) or <b>Shift+/</b> (0.05&deg; CCW). <b>Enter</b> / <b>Shift+Enter</b> to jump between cards.<br>
+                <b>Zoom Window:</b> Shows all 4 corners simultaneously. Align each corner to the <b>yellow frame</b>. <b>+</b> / <b>-</b> to adjust magnification.
+            </span><br>
+            <span id="opencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)... Please wait.</span>
         </p>
 
         <div class="sticky-controls">
             <div class="controls">
+                <div class="mode-toggle" id="ceModeToggle">
+                    <button id="ceFreeformModeBtn" class="mode-btn active" title="Freeform: drag individual corners">✏️ Freeform</button><button id="ceRectModeBtn" class="mode-btn" title="Rectangle: uniform parallelogram cards">⊡ Rectangle</button>
+                </div>
                 <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf" title="Open File (O)">
                 <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
                 <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
@@ -133,8 +146,8 @@
                 <button id="ceDownloadButton" disabled title="Download Cards (S)">Download</button>
             </div>
 
-            <!-- Styling Controls -->
-            <div class="controls hide-on-stuck" style="margin-top: -10px;">
+            <!-- Styling Controls (Freeform only) -->
+            <div class="controls hide-on-stuck" id="ceFreeformStylingRow" style="margin-top: -10px;">
                 <label class="checkbox-container">
                     Line Color: <input type="color" id="ceLineColor" value="#808080"
                         style="margin-left: 5px; cursor: pointer; height: 25px;" title="Line Color (Press C to cycle)">
@@ -162,14 +175,14 @@
                 </label>
             </div>
 
-            <!-- Dimensions Controls -->
-            <div class="controls hide-on-stuck" style="margin-top: -10px;">
+            <!-- Dimensions Controls (Freeform only) -->
+            <div class="controls hide-on-stuck" id="ceFreeformDimensionsRow" style="margin-top: -10px;">
                 <label class="checkbox-container">
-                    Width (mm): <input type="number" id="ceWidthInput" min="0" step="0.1" placeholder="e.g. 63"
+                    Width (mm): <input type="number" id="ceWidthInput" min="0" step="0.1" placeholder="e.g. 61"
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
                 <label class="checkbox-container">
-                    Height (mm): <input type="number" id="ceHeightInput" min="0" step="0.1" placeholder="e.g. 88"
+                    Height (mm): <input type="number" id="ceHeightInput" min="0" step="0.1" placeholder="e.g. 112"
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
                 <label class="checkbox-container">
@@ -177,6 +190,22 @@
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
                 <button id="ceGetSizeBtn" title="Get size from the first selected card" style="margin-left: 10px;">🎯 Get from 1st Card</button>
+            </div>
+
+            <!-- Rect-mode Controls (Rectangle mode only) -->
+            <div class="controls hide-on-stuck" id="ceRectControls" style="display: none; margin-top: -10px;">
+                <label class="checkbox-container">
+                    Width (px): <input type="number" id="ceRectWidthPx" min="1" step="1" placeholder="e.g. 720"
+                        style="width: 80px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
+                <label class="checkbox-container">
+                    Height (px): <input type="number" id="ceRectHeightPx" min="1" step="1" placeholder="e.g. 1323"
+                        style="width: 80px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
+                <label class="checkbox-container" title="Pixels the top-right corner is lower than the top-left corner (parallelogram skew to compensate scanner distortion)">
+                    Skew (px): <input type="number" id="ceRectSkewPx" value="0" step="1"
+                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
             </div>
 
             <!-- Zoom Window Container -->

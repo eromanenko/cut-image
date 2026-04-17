@@ -32,4 +32,22 @@ export function initDom() {
 
     dom.sourceCanvas = document.createElement("canvas");
     dom.sourceCtx = dom.sourceCanvas.getContext("2d");
+
+    // Mode toggle
+    dom.freeformModeBtn = document.getElementById("ceFreeformModeBtn");
+    dom.rectModeBtn = document.getElementById("ceRectModeBtn");
+
+    // Rect-mode controls row
+    dom.rectControls = document.getElementById("ceRectControls");
+    dom.rectWidthPx = document.getElementById("ceRectWidthPx");
+    dom.rectHeightPx = document.getElementById("ceRectHeightPx");
+    dom.rectSkewPx = document.getElementById("ceRectSkewPx");
+
+    // Freeform-only rows (for show/hide on mode switch)
+    dom.freeformStylingRow = document.getElementById("ceFreeformStylingRow");
+    dom.freeformDimensionsRow = document.getElementById("ceFreeformDimensionsRow");
+
+    // Mode-specific instruction spans
+    dom.instrFreeform = document.getElementById("ceInstrFreeform");
+    dom.instrRect     = document.getElementById("ceInstrRect");
 }
