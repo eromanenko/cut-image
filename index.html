@@ -136,7 +136,7 @@
         <div class="sticky-controls">
             <div class="controls">
                 <div class="mode-toggle" id="ceModeToggle">
-                    <button id="ceFreeformModeBtn" class="mode-btn active" title="Freeform: drag individual corners">✏️ Freeform</button><button id="ceRectModeBtn" class="mode-btn" title="Rectangle: uniform parallelogram cards">⊡ Rectangle</button>
+                    <button id="ceFreeformModeBtn" class="mode-btn active" title="Free form">✏️</button><button id="ceRectModeBtn" class="mode-btn" title="Rectangular form">⊡</button>
                 </div>
                 <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf" title="Open File (O)">
                 <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
@@ -185,6 +185,9 @@
                     Height (mm): <input type="number" id="ceHeightInput" min="0" step="0.1" placeholder="e.g. 112"
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
+                <button id="ceFreeformCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="12" y1="18" x2="12" y2="18"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line></svg>
+                </button>
                 <label class="checkbox-container">
                     DPI: <input type="number" id="ceDpiInput" value="300" min="72" step="1"
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
@@ -202,6 +205,9 @@
                     Height (px): <input type="number" id="ceRectHeightPx" min="1" step="1" placeholder="e.g. 1323"
                         style="width: 80px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
+                <button id="ceRectCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="12" y1="18" x2="12" y2="18"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line></svg>
+                </button>
                 <label class="checkbox-container" title="Pixels the top-right corner is lower than the top-left corner (parallelogram skew to compensate scanner distortion)">
                     Skew (px): <input type="number" id="ceRectSkewPx" value="0" step="1"
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
@@ -283,6 +289,48 @@
 
         <div id="dsCanvasContainer" style="display: inline-block; position: relative; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; border: 1px solid #ddd;">
             <canvas id="dsCanvas" style="display: block; max-width: 100%; height: auto;"></canvas>
+        </div>
+    </div>
+
+    <!-- Pixel Calculator Modal -->
+    <div id="ceCalcModal" class="ce-modal" style="display: none;">
+        <div class="ce-modal-content">
+            <div class="ce-modal-header">
+                <h3>Pixel Calculator</h3>
+                <span class="ce-modal-close" id="ceCalcCancelX">&times;</span>
+            </div>
+            <div class="ce-modal-body">
+                <div class="ce-calc-row">
+                    <div class="ce-calc-group">
+                        <label>Width (mm)</label>
+                        <input type="number" id="ceCalcMmW" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="ce-calc-group">
+                        <label>Height (mm)</label>
+                        <input type="number" id="ceCalcMmH" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="ce-calc-row">
+                    <div class="ce-calc-group">
+                        <label>Width (px)</label>
+                        <input type="number" id="ceCalcPxW" step="1" placeholder="0">
+                    </div>
+                    <div class="ce-calc-group">
+                        <label>Height (px)</label>
+                        <input type="number" id="ceCalcPxH" step="1" placeholder="0">
+                    </div>
+                </div>
+                <div class="ce-calc-row">
+                    <div class="ce-calc-group full-width">
+                        <label>DPI</label>
+                        <input type="number" id="ceCalcDpi" step="1" value="300">
+                    </div>
+                </div>
+            </div>
+            <div class="ce-modal-footer">
+                <button id="ceCalcCancelBtn" class="btn-secondary">Cancel</button>
+                <button id="ceCalcApplyBtn" class="btn-primary">Apply</button>
+            </div>
         </div>
     </div>
 

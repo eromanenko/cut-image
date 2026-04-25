@@ -50,4 +50,17 @@ export function initDom() {
     // Mode-specific instruction spans
     dom.instrFreeform = document.getElementById("ceInstrFreeform");
     dom.instrRect     = document.getElementById("ceInstrRect");
+
+    // Calculator
+    dom.calcBtnFreeform = document.getElementById("ceFreeformCalcBtn");
+    dom.calcBtnRect = document.getElementById("ceRectCalcBtn");
+    dom.calcModal = document.getElementById("ceCalcModal");
+    dom.calcMmW = document.getElementById("ceCalcMmW");
+    dom.calcMmH = document.getElementById("ceCalcMmH");
+    dom.calcPxW = document.getElementById("ceCalcPxW");
+    dom.calcPxH = document.getElementById("ceCalcPxH");
+    dom.calcDpi = document.getElementById("ceCalcDpi");
+    dom.calcApplyBtn = document.getElementById("ceCalcApplyBtn");
+    dom.calcCancelBtn = document.getElementById("ceCalcCancelBtn");
+    dom.calcCancelX = document.getElementById("ceCalcCancelX");
 }

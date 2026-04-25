@@ -3,6 +3,7 @@
     --hover-color: #0056b3;
     --disabled-color: #ccc;
 }
+
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     text-align: center;
@@ -11,23 +12,28 @@ body {
     padding: 20px;
     color: #333;
 }
+
 h2 {
     margin-bottom: 10px;
 }
+
 .instructions {
     font-size: 14px;
     color: #555;
     margin-bottom: 20px;
     line-height: 1.5;
 }
+
 .controls {
     margin-bottom: 20px;
     display: flex;
+    align-items: center;
     justify-content: center;
     flex-wrap: wrap;
     gap: 10px;
     transition: margin-bottom 0.3s ease;
 }
+
 .sticky-controls {
     position: sticky;
     top: 0;
@@ -37,19 +43,24 @@ h2 {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
     transition: box-shadow 0.2s, padding-bottom 0.3s ease;
 }
+
 .sticky-controls.stuck {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     padding-bottom: 5px;
 }
-.sticky-controls.stuck > .controls:first-child {
+
+.sticky-controls.stuck>.controls:first-child {
     margin-bottom: 0;
 }
+
 .hide-on-stuck {
-    max-height: 150px; /* Enough to comfortably fit the row */
+    max-height: 150px;
+    /* Enough to comfortably fit the row */
     opacity: 1;
     overflow: hidden;
     transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
 }
+
 .sticky-controls.stuck .hide-on-stuck {
     max-height: 0;
     opacity: 0;
@@ -57,7 +68,9 @@ h2 {
     margin-bottom: 0 !important;
     pointer-events: none;
 }
-button, input[type="file"]::file-selector-button {
+
+button,
+input[type="file"]::file-selector-button {
     background-color: var(--primary-color);
     color: white;
     border: none;
@@ -67,24 +80,30 @@ button, input[type="file"]::file-selector-button {
     font-size: 14px;
     transition: background-color 0.2s;
 }
-button:hover:not(:disabled), input[type="file"]::file-selector-button:hover {
+
+button:hover:not(:disabled),
+input[type="file"]::file-selector-button:hover {
     background-color: var(--hover-color);
 }
+
 button:disabled {
     background-color: var(--disabled-color);
     cursor: not-allowed;
 }
+
 #canvasContainer {
     position: relative;
     display: inline-block;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     background-color: white;
     border-radius: 4px;
     overflow: hidden;
     margin-top: 10px;
     border: 1px solid #ddd;
-    max-width: 100%; /* Prevent container expanding beyond window */
+    max-width: 100%;
+    /* Prevent container expanding beyond window */
 }
+
 canvas {
     display: block;
     cursor: crosshair;
@@ -93,17 +112,21 @@ canvas {
     /* Prevent user text selection while dragging */
     user-select: none;
     touch-action: none;
-    max-width: 100%; /* Scale canvas visually to fit screen */
+    max-width: 100%;
+    /* Scale canvas visually to fit screen */
     height: auto;
 }
+
 .pdf-nav-btn {
     background-color: #e9ecef;
     color: #333;
     border: 1px solid #ced4da;
 }
+
 .pdf-nav-btn:hover:not(:disabled) {
     background-color: #dde2e6;
 }
+
 .checkbox-container {
     cursor: pointer;
     font-size: 14px;
@@ -124,6 +147,7 @@ canvas {
     margin-bottom: 20px;
     border-bottom: 1px solid #ddd;
 }
+
 .tab-btn {
     background-color: transparent;
     color: #555;
@@ -136,17 +160,22 @@ canvas {
     transition: all 0.2s;
     border-radius: 0;
 }
-button.tab-btn:hover, button.tab-btn:hover:not(:disabled) {
+
+button.tab-btn:hover,
+button.tab-btn:hover:not(:disabled) {
     background-color: #e9ecef;
     color: #333;
 }
+
 .tab-btn.active {
     color: var(--primary-color);
     border-bottom-color: var(--primary-color);
 }
+
 .tab-content {
     display: none;
 }
+
 .tab-content.active {
     display: block;
 }
@@ -160,12 +189,13 @@ button.tab-btn:hover, button.tab-btn:hover:not(:disabled) {
     padding: 0;
     margin-left: 4px;
     cursor: pointer;
-    box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1);
     transition: transform 0.1s, box-shadow 0.1s;
 }
+
 .fixed-color-btn:hover:not(:disabled) {
     transform: scale(1.15);
-    box-shadow: 0 0 5px rgba(0,0,0,0.4);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
 }
 
 /* Mode toggle (Freeform / Rectangle segmented control) */
@@ -175,22 +205,168 @@ button.tab-btn:hover, button.tab-btn:hover:not(:disabled) {
     overflow: hidden;
     border: 1px solid var(--primary-color);
 }
+
 .mode-btn {
     background-color: #fff;
     color: var(--primary-color);
     border: none;
     border-radius: 0;
-    padding: 8px 14px;
-    font-size: 13px;
+    padding: 8px 12px;
+    font-size: 18px;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 38px;
 }
+
 .mode-btn:hover:not(:disabled):not(.active) {
     background-color: #e8f1ff;
     color: var(--primary-color);
 }
+
 .mode-btn.active {
     background-color: var(--primary-color);
     color: #fff;
+}
+
+/* Modal Styling */
+.ce-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.ce-modal-content {
+    background-color: white;
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 400px;
+    overflow: hidden;
+    animation: ce-modal-fadein 0.2s ease-out;
+}
+
+@keyframes ce-modal-fadein {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ce-modal-header {
+    background-color: #f8f9fa;
+    padding: 12px 16px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ce-modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.ce-modal-close {
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    color: #aaa;
+}
+
+.ce-modal-close:hover {
+    color: #333;
+}
+
+.ce-modal-body {
+    padding: 16px;
+}
+
+.ce-calc-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.ce-calc-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.ce-calc-group.full-width {
+    flex: none;
+    width: 100%;
+}
+
+.ce-calc-group label {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #666;
+}
+
+.ce-calc-group input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ce-modal-footer {
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.ce-modal-footer button {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+/* Calculator buttons next to inputs */
+.ce-calc-btn {
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+}
+
+.ce-calc-btn svg {
+    width: 24px;
+    height: 24px;
 }

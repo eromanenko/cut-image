@@ -13,6 +13,7 @@ import {
     rotateRectCard,
     pointInRectCard,
 } from './rect-mode.js';
+import { initCalculator } from './calculator.js';
 
 // ---------------------------------------------------------------------------
 // Freeform: delete selected card
@@ -155,6 +156,7 @@ function syncRectDimensions() {
 // ---------------------------------------------------------------------------
 
 export function bindEvents() {
+    initCalculator();
     // ── Buttons ─────────────────────────────────────────────────────────────
     dom.processButton.addEventListener('click', handleAutoDetect);
     dom.downloadButton.addEventListener('click', exportCards);
