@@ -60,4 +60,5 @@ export function initDom() {
 
     dom.resultCanvas = document.createElement("canvas");
     dom.resultCtx = dom.resultCanvas.getContext("2d");
+    dom.fileNameDisplay = document.getElementById("dsFileName");
 }

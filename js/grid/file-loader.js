@@ -47,6 +47,7 @@ export async function handleFileUpload(event) {
     
     state.originalFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     dom.prefixInput.value = state.originalFileName + "-";
+    if (dom.fileNameDisplay) dom.fileNameDisplay.textContent = file.name;
 
     const fileBuffer = await file.arrayBuffer();
     

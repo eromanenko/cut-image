@@ -46,6 +46,7 @@ export function handleFileUpload(event) {
     resetState();
     state.originalFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     dom.prefixInput.value = state.originalFileName + "-";
+    if (dom.fileNameDisplay) dom.fileNameDisplay.textContent = file.name;
 
     if (file.type === "application/pdf") {
         state.isPdf = true;

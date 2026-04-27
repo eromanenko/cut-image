@@ -18,6 +18,7 @@ export function initDom() {
     dom.pageIndicator = document.getElementById("pageIndicator");
     dom.allPagesCheckbox = document.getElementById("allPagesCheckbox");
     dom.allPagesCheckContainer = document.getElementById("allPagesCheckContainer");
+    dom.fileNameDisplay = document.getElementById("gridFileName");
 
     dom.sourceCanvas = document.createElement("canvas");
     dom.sourceCtx = dom.sourceCanvas.getContext("2d");

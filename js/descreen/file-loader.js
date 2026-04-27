@@ -9,6 +9,7 @@ export async function handleFileUpload(event) {
     if (!file) return;
 
     state.originalFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+    if (dom.fileNameDisplay) dom.fileNameDisplay.textContent = file.name;
 
     const fileBuffer = await file.arrayBuffer();
     

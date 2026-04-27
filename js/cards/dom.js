@@ -65,4 +65,5 @@ export function initDom() {
     dom.calcApplyBtn = document.getElementById("ceCalcApplyBtn");
     dom.calcCancelBtn = document.getElementById("ceCalcCancelBtn");
     dom.calcCancelX = document.getElementById("ceCalcCancelX");
+    dom.fileNameDisplay = document.getElementById("ceFileName");
 }

@@ -61,19 +61,29 @@
 </head>
 
 <body>
-    <h2>Image & PDF Slicer</h2>
+    <header class="main-header">
+        <div class="app-title-group">
+            <h1 class="app-title">Image & PDF Slicer</h1>
+            <span class="app-version">v2.0.3</span>
+        </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('grid')">Grid Slicing</button>
-        <button class="tab-btn" onclick="switchTab('cards')">Card Extraction</button>
-        <button class="tab-btn" onclick="switchTab('descreen')">Descreen [BETA]</button>
-    </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('grid')">Grid Slicing</button>
+            <button class="tab-btn" onclick="switchTab('cards')">Card Extraction</button>
+            <button class="tab-btn" onclick="switchTab('descreen')">Descreen [BETA]</button>
+        </div>
+    </header>
 
     <!-- Tab 1: Grid Slicing -->
     <div id="tab-grid" class="tab-content active">
         <div class="sticky-controls">
             <div class="controls">
-                <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf">
+                <label for="fileInput" class="file-btn" title="Open File (O)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </label>
+                <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf" class="hidden-file-input">
                 <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
                 <button id="autoDetectButton" disabled>Auto-Detect Cut Marks</button>
                 <button id="downloadButton" disabled>Download Archive</button>
@@ -107,11 +117,11 @@
                 </label>
                 <label class="checkbox-container">
                     Min size (mm): <input type="number" id="minSizeInput" value="10" min="0" max="100" step="1"
-                        style="width: 50px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 50px; margin-left: 5px;">
                 </label>
                 <label class="checkbox-container">
                     DPI: <input type="number" id="dpiInput" value="300" min="72" step="1"
-                        style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 60px; margin-left: 5px;">
                 </label>
             </div>
 
@@ -119,7 +129,7 @@
             <div class="controls" id="pdfControls"
                 style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
                 <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Previous Page</button>
-                <span id="pageIndicator" style="line-height: 38px; font-weight: bold; width: 120px;">Page 1 / 1</span>
+                <span id="pageIndicator" style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
                 <button id="nextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
                 <label class="checkbox-container" id="allPagesCheckContainer" style="margin-left: 20px;">
                     <input type="checkbox" id="allPagesCheckbox" checked>
@@ -128,7 +138,8 @@
             </div>
         </div>
 
-        <div id="canvasContainer" style="display: none;">
+        <div id="gridCanvasContainer" class="canvas-container" style="display: none;">
+            <div class="filename-display" id="gridFileName"></div>
             <!-- Added tabindex="0" to allow the canvas to receive keyboard focus -->
             <canvas id="canvas" tabindex="0"></canvas>
         </div>
@@ -139,10 +150,24 @@
         <div class="sticky-controls">
             <div class="controls">
                 <div class="mode-toggle" id="ceModeToggle">
-                    <button id="ceFreeformModeBtn" class="mode-btn active" title="Free form">✏️</button><button
-                        id="ceRectModeBtn" class="mode-btn" title="Rectangular form">⊡</button>
+                    <button id="ceFreeformModeBtn" class="mode-btn active" title="Free form">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button id="ceRectModeBtn" class="mode-btn" title="Rectangular form">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        </svg>
+                    </button>
                 </div>
-                <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf" title="Open File (O)">
+                <label for="ceFileInput" class="file-btn" title="Open File (O)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </label>
+                <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf" class="hidden-file-input">
                 <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
                 <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
                 <button id="ceAddManualButton" disabled title="Add Manual Card (N)">Add Manual</button>
@@ -186,7 +211,7 @@
             <div class="controls hide-on-stuck" id="ceFreeformStylingRow" style="margin-top: -10px;">
                 <label class="checkbox-container">
                     Line Color: <input type="color" id="ceLineColor" value="#808080"
-                        style="margin-left: 5px; cursor: pointer; height: 25px;" title="Line Color (Press C to cycle)">
+                        style="margin-left: 5px; cursor: pointer; height: calc(var(--control-height) - 10px);" title="Line Color (Press C to cycle)">
                     <button type="button" class="fixed-color-btn" data-color="#000000"
                         style="background-color: #000000;" title="Black"></button>
                     <button type="button" class="fixed-color-btn" data-color="#ffffff"
@@ -215,11 +240,11 @@
             <div class="controls hide-on-stuck" id="ceFreeformDimensionsRow" style="margin-top: -10px;">
                 <label class="checkbox-container">
                     Width (mm): <input type="number" id="ceWidthInput" min="0" step="0.1" placeholder="e.g. 61"
-                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 70px; margin-left: 5px;">
                 </label>
                 <label class="checkbox-container">
                     Height (mm): <input type="number" id="ceHeightInput" min="0" step="0.1" placeholder="e.g. 112"
-                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 70px; margin-left: 5px;">
                 </label>
                 <button id="ceFreeformCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
@@ -236,7 +261,7 @@
                 </button>
                 <label class="checkbox-container">
                     DPI: <input type="number" id="ceDpiInput" value="300" min="72" step="1"
-                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 70px; margin-left: 5px;">
                 </label>
                 <button id="ceGetSizeBtn" title="Get size from the first selected card" style="margin-left: 10px;">🎯
                     Get from 1st Card</button>
@@ -246,11 +271,11 @@
             <div class="controls hide-on-stuck" id="ceRectControls" style="display: none; margin-top: -10px;">
                 <label class="checkbox-container">
                     Width (px): <input type="number" id="ceRectWidthPx" min="1" step="1" placeholder="e.g. 720"
-                        style="width: 80px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 80px; margin-left: 5px;">
                 </label>
                 <label class="checkbox-container">
                     Height (px): <input type="number" id="ceRectHeightPx" min="1" step="1" placeholder="e.g. 1323"
-                        style="width: 80px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 80px; margin-left: 5px;">
                 </label>
                 <button id="ceRectCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
@@ -268,7 +293,7 @@
                 <label class="checkbox-container"
                     title="Pixels the top-right corner is lower than the top-left corner (parallelogram skew to compensate scanner distortion)">
                     Skew (px): <input type="number" id="ceRectSkewPx" value="0" step="1"
-                        style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 70px; margin-left: 5px;">
                 </label>
             </div>
 
@@ -283,13 +308,14 @@
             <div class="controls" id="cePdfControls"
                 style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
                 <button id="cePrevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
-                <span id="cePageIndicator" style="line-height: 38px; font-weight: bold; width: 120px;">Page 1 / 1</span>
+                <span id="cePageIndicator" style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
                 <button id="ceNextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
                 <!-- Checkbox disabled for auto extractor for now, auto-extract works per page initially -->
             </div>
         </div>
 
-        <div id="canvasContainer" style="display: none;">
+        <div id="ceCanvasContainer" class="canvas-container" style="display: none;">
+            <div class="filename-display" id="ceFileName"></div>
             <canvas id="ceCanvas" tabindex="0"></canvas>
         </div>
     </div>
@@ -298,10 +324,15 @@
     <div id="tab-descreen" class="tab-content">
         <div class="sticky-controls">
             <div class="controls">
-                <input type="file" id="dsFileInput" accept="image/*,.tif,.tiff">
+                <label for="dsFileInput" class="file-btn" title="Open File (O)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </label>
+                <input type="file" id="dsFileInput" accept="image/*,.tif,.tiff" class="hidden-file-input">
                 <label class="checkbox-container">
                     DPI: <input type="number" id="dsDpiInput" value="300" min="72" step="1"
-                        style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                        style="width: 60px; margin-left: 5px;">
                 </label>
                 <button id="dsTuneBtn" disabled title="Tune parameters on a small preview">Tune Parameters</button>
                 <button id="dsUndoBtn" disabled title="Undo last filter">Undo</button>
@@ -364,8 +395,9 @@
             </div>
         </div>
 
-        <div id="dsCanvasContainer"
-            style="display: none; position: relative; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; border: 1px solid #ddd;">
+        <div id="dsCanvasContainer" class="canvas-container"
+            style="display: none;">
+            <div class="filename-display" id="dsFileName"></div>
             <canvas id="dsCanvas" style="display: block; max-width: 100%; height: auto;"></canvas>
         </div>
     </div>
@@ -379,7 +411,7 @@
             </div>
             <div class="ce-modal-body">
                 <div class="ce-calc-row">
-                    <div class="ce-calc-group full-width">
+                    <div class="ce-calc-group" style="flex: 2;">
                         <label>Preset Sizes</label>
                         <select id="ceCalcPreset">
                             <option value="">Select Card Size</option>
@@ -390,6 +422,10 @@
                             <option value="61,112">Unlock 61x112 mm</option>
                             <option value="70,120">Tarot 70x120 mm</option>
                         </select>
+                    </div>
+                    <div class="ce-calc-group">
+                        <label>DPI</label>
+                        <input type="number" id="ceCalcDpi" step="1" value="300">
                     </div>
                 </div>
                 <div class="ce-calc-row">
@@ -410,12 +446,6 @@
                     <div class="ce-calc-group">
                         <label>Height (px)</label>
                         <input type="number" id="ceCalcPxH" step="1" placeholder="0">
-                    </div>
-                </div>
-                <div class="ce-calc-row">
-                    <div class="ce-calc-group full-width">
-                        <label>DPI</label>
-                        <input type="number" id="ceCalcDpi" step="1" value="300">
                     </div>
                 </div>
             </div>
