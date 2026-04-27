@@ -31,6 +31,7 @@ export async function renderPdfPageForPreview(pageNumber) {
         dom.dpiInput.value = pdfDpi;
         
         state.isImageLoaded = true;
+        dom.canvas.parentElement.style.display = 'inline-block';
         dom.autoDetectButton.disabled = false;
         redraw();
     } catch (err) {
@@ -107,6 +108,7 @@ export async function handleFileUpload(event) {
                 dom.canvas.width = w;
                 dom.canvas.height = h;
                 state.isImageLoaded = true;
+                dom.canvas.parentElement.style.display = 'inline-block';
                 dom.autoDetectButton.disabled = false;
                 redraw();
             } catch (err) {
@@ -130,6 +132,7 @@ export async function handleFileUpload(event) {
                     dom.canvas.width = image.width;
                     dom.canvas.height = image.height;
                     state.isImageLoaded = true;
+                    dom.canvas.parentElement.style.display = 'inline-block';
                     dom.autoDetectButton.disabled = false;
                     redraw();
                 };

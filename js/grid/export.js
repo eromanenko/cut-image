@@ -1,6 +1,7 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
 import { updateDownloadButtonText } from './ui.js';
+import { injectPngDpi } from './png-modifier.js';
 
 export function calculateCutRegions() {
     state.cutRegions = [];
@@ -70,6 +71,7 @@ export async function generateAndDownloadZip() {
     const tempCanvas = document.createElement("canvas");
     const tempCtx = tempCanvas.getContext("2d");
     const prefix = dom.prefixInput.value;
+    const dpi = parseFloat(dom.dpiInput.value) || 300;
 
     if (state.isPdf && state.pdfDoc) {
         const startPage = dom.allPagesCheckbox.checked ? 1 : state.currentPreviewPage;
@@ -102,7 +104,9 @@ export async function generateAndDownloadZip() {
                         0, 0, rW, rH
                     );
                     
-                    const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+                    let blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+                    blob = await injectPngDpi(blob, dpi);
+                    
                     const padPage = String(pageNum).padStart(2, '0');
                     const padPiece = String(region.index).padStart(2, '0');
                     zip.file(`${prefix}${padPage}_${padPiece}.png`, blob);
@@ -121,7 +125,8 @@ export async function generateAndDownloadZip() {
                 0, 0, region.w, region.h
             );
             
-            const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+            let blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+            blob = await injectPngDpi(blob, dpi);
             zip.file(`${prefix}${String(region.index).padStart(2, '0')}.png`, blob);
         }
     }

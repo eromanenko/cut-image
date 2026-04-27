@@ -2,6 +2,7 @@ import { dom } from './dom.js';
 import { state } from './state.js';
 import { updateButtonStates } from './ui.js';
 import { getRectCardCorners } from './rect-mode.js';
+import { injectPngDpi } from '../grid/png-modifier.js';
 
 export async function exportCards() {
     const isRect     = state.editMode === 'rect';
@@ -12,6 +13,7 @@ export async function exportCards() {
     dom.downloadButton.disabled    = true;
     dom.downloadButton.textContent = "Processing Archive...";
     const prefix = dom.prefixInput.value;
+    const dpi = parseFloat(dom.dpiInput.value) || 300;
 
     try {
         const zip    = new JSZip();
@@ -62,7 +64,9 @@ export async function exportCards() {
 
             srcTri.delete(); dstTri.delete(); M.delete(); dst.delete();
 
-            const blob     = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+            let blob     = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+            blob = await injectPngDpi(blob, dpi);
+            
             const padIndex = String(i + 1).padStart(2, '0');
             zip.file(`${prefix}${padIndex}.png`, blob);
         }

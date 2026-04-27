@@ -79,5 +79,6 @@ function setupCanvasSizes(width, height) {
     state.historyIndex = 0;
 
     state.isImageLoaded = true;
+    dom.canvas.parentElement.style.display = 'inline-block';
     updateButtonStates();
 }

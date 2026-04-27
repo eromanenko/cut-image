@@ -2,6 +2,7 @@ import { dom } from './dom.js';
 import { state } from './state.js';
 import { handleFileUpload } from './file-loader.js';
 import { applyFilter } from './filter.js';
+import { injectPngDpi } from '../grid/png-modifier.js';
 
 export function bindEvents() {
     dom.fileInput.addEventListener('change', handleFileUpload);
@@ -65,18 +66,20 @@ export function bindEvents() {
         }
     });
 
-    dom.downloadBtn.addEventListener('click', () => {
+    dom.downloadBtn.addEventListener('click', async () => {
         if (!state.isImageLoaded) return;
         
-        dom.resultCanvas.toBlob(blob => {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = state.originalFileName + '_descreened.png';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-        }, 'image/png');
+        const dpi = parseFloat(dom.dpiInput.value) || 300;
+        let blob = await new Promise(resolve => dom.resultCanvas.toBlob(resolve, 'image/png'));
+        blob = await injectPngDpi(blob, dpi);
+        
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = state.originalFileName + '_descreened.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
     });
 
     const cvCheck = setInterval(() => {

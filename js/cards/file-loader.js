@@ -30,6 +30,7 @@ export async function renderPdfPageForPreview(pageNumber) {
         if (dom.dpiInput) dom.dpiInput.value = pdfDpi;
 
         state.isImageLoaded = true;
+        dom.canvas.parentElement.style.display = 'inline-block';
         state.detectedCards = []; // clear previous detections on new page
         redraw();
         updateButtonStates();
@@ -96,6 +97,7 @@ export function handleFileUpload(event) {
                     dom.canvas.width = w;
                     dom.canvas.height = h;
                     state.isImageLoaded = true;
+                    dom.canvas.parentElement.style.display = 'inline-block';
                     redraw();
                     updateButtonStates();
                 } catch (err) {
@@ -119,6 +121,7 @@ export function handleFileUpload(event) {
                         dom.canvas.width = image.width;
                         dom.canvas.height = image.height;
                         state.isImageLoaded = true;
+                        dom.canvas.parentElement.style.display = 'inline-block';
                         redraw();
                         updateButtonStates();
                     };

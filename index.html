@@ -38,12 +38,20 @@
             window.openCvReady = true;
             const statusLabel = document.getElementById('opencvStatus');
             if (statusLabel) statusLabel.style.display = 'none';
+            const dsStatusLabel = document.getElementById('dsOpencvStatus');
+            if (dsStatusLabel) dsStatusLabel.style.display = 'none';
             // Trigger custom event so card-extractor.js knows it's ready
             document.dispatchEvent(new Event('opencv-ready'));
         };
+        
+        window.onOpenCvError = function () {
+            const statusLabel = document.getElementById('opencvStatus');
+            if (statusLabel) statusLabel.textContent = 'Failed to load OpenCV. Please check your internet connection.';
+            const dsStatusLabel = document.getElementById('dsOpencvStatus');
+            if (dsStatusLabel) dsStatusLabel.textContent = 'Failed to load OpenCV. Please check your internet connection.';
+        };
     </script>
-    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();"
-        type="text/javascript"></script>
+    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" onerror="onOpenCvError();" type="text/javascript"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -106,7 +114,7 @@
             </div>
         </div>
 
-        <div id="canvasContainer">
+        <div id="canvasContainer" style="display: none;">
             <!-- Added tabindex="0" to allow the canvas to receive keyboard focus -->
             <canvas id="canvas" tabindex="0"></canvas>
         </div>
@@ -233,7 +241,7 @@
             </div>
         </div>
 
-        <div id="canvasContainer">
+        <div id="canvasContainer" style="display: none;">
             <canvas id="ceCanvas" tabindex="0"></canvas>
         </div>
     </div>
@@ -292,7 +300,7 @@
             </div>
         </div>
 
-        <div id="dsCanvasContainer" style="display: inline-block; position: relative; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; border: 1px solid #ddd;">
+        <div id="dsCanvasContainer" style="display: none; position: relative; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; border: 1px solid #ddd;">
             <canvas id="dsCanvas" style="display: block; max-width: 100%; height: auto;"></canvas>
         </div>
     </div>
