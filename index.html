@@ -249,6 +249,11 @@
         <div class="sticky-controls">
             <div class="controls">
                 <input type="file" id="dsFileInput" accept="image/*,.tif,.tiff">
+                <label class="checkbox-container">
+                    DPI: <input type="number" id="dsDpiInput" value="300" min="72" step="1" style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                </label>
+                <button id="dsTuneBtn" disabled title="Tune parameters on a small preview">Tune Parameters</button>
+                <button id="dsUndoBtn" disabled title="Undo last filter">Undo</button>
                 <button id="dsProcessBtn" disabled title="Apply the selected filter">Apply Filter</button>
                 <button id="dsDownloadBtn" disabled title="Save the result">Download Image</button>
                 <label class="checkbox-container" title="Hold to see original image">
@@ -330,6 +335,50 @@
             <div class="ce-modal-footer">
                 <button id="ceCalcCancelBtn" class="btn-secondary">Cancel</button>
                 <button id="ceCalcApplyBtn" class="btn-primary">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Descreen Tune Modal -->
+    <div id="dsTuneModal" class="ce-modal" style="display: none;">
+        <div class="ce-modal-content" style="max-width: 600px; width: 90%;">
+            <div class="ce-modal-header">
+                <h3>Tune Filter Parameters</h3>
+                <span class="ce-modal-close" id="dsTuneCancelX">&times;</span>
+            </div>
+            <div class="ce-modal-body" style="text-align: center;">
+                <p style="font-size: 13px; margin-bottom: 10px; color: #555;">Drag image to pan. Preview updates automatically.</p>
+                <div style="margin-bottom: 15px; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <label class="checkbox-container">
+                        Method:
+                        <select id="dsTuneMethod" style="margin-left: 5px; padding: 3px;">
+                            <option value="bilateral">Bilateral Filter</option>
+                            <option value="gaussian">Gaussian Blur + Unsharp</option>
+                            <option value="median">Median Blur</option>
+                        </select>
+                    </label>
+                    <div style="margin-top: 10px;">
+                        <span id="dsTuneBiControls" style="display:inline-flex; align-items:center; gap:10px;">
+                            <label>Diameter: <input type="number" id="dsTuneBiD" min="3" max="50" step="2" style="width: 50px;"></label>
+                            <label>SigmaColor: <input type="number" id="dsTuneBiColor" min="10" max="250" style="width: 50px;"></label>
+                            <label>SigmaSpace: <input type="number" id="dsTuneBiSpace" min="10" max="250" style="width: 50px;"></label>
+                        </span>
+                        <span id="dsTuneGaussControls" style="display:none; align-items:center; gap:10px;">
+                            <label>Blur (k): <input type="number" id="dsTuneGaussK" min="3" max="31" step="2" style="width: 50px;"></label>
+                            <label>Amount: <input type="number" id="dsTuneUnsharpAmt" min="0" max="5" step="0.1" style="width: 50px;"></label>
+                        </span>
+                        <span id="dsTuneMedianControls" style="display:none; align-items:center; gap:10px;">
+                            <label>Kernel: <input type="number" id="dsTuneMedianK" min="3" max="31" step="2" style="width: 50px;"></label>
+                        </span>
+                    </div>
+                </div>
+                <div id="dsTuneCanvasContainer" style="display: inline-block; position: relative; border: 2px solid #ddd; border-radius: 4px; cursor: grab; overflow: hidden; max-width: 100%; max-height: 400px;">
+                    <canvas id="dsTuneCanvas" style="display: block;"></canvas>
+                </div>
+            </div>
+            <div class="ce-modal-footer">
+                <button id="dsTuneCancelBtn" class="btn-secondary">Cancel</button>
+                <button id="dsTuneApplyBtn" class="btn-primary">Apply</button>
             </div>
         </div>
     </div>

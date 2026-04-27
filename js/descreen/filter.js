@@ -11,7 +11,7 @@ export function applyFilter() {
 
     setTimeout(() => {
         try {
-            let src = cv.imread(dom.sourceCanvas);
+            let src = cv.imread(dom.resultCanvas);
             let dst = new cv.Mat();
             
             let rgb = new cv.Mat();
@@ -50,6 +50,10 @@ export function applyFilter() {
                 dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
                 dom.ctx.drawImage(dom.resultCanvas, 0, 0);
             }
+
+            state.history.length = state.historyIndex + 1;
+            state.history.push(dom.resultCtx.getImageData(0, 0, dom.resultCanvas.width, dom.resultCanvas.height));
+            state.historyIndex++;
 
             src.delete(); dst.delete(); rgb.delete(); rgba.delete();
             

@@ -2,6 +2,7 @@ export const dom = {};
 
 export function initDom() {
     dom.fileInput = document.getElementById("dsFileInput");
+    dom.undoBtn = document.getElementById("dsUndoBtn");
     dom.processBtn = document.getElementById("dsProcessBtn");
     dom.downloadBtn = document.getElementById("dsDownloadBtn");
     dom.compareCheckbox = document.getElementById("dsCompareCheckbox");
@@ -19,6 +20,36 @@ export function initDom() {
     dom.unsharpAmount = document.getElementById("dsUnsharpAmount");
 
     dom.medianK = document.getElementById("dsMedianK");
+    
+    dom.dpiInput = document.getElementById("dsDpiInput");
+    dom.tuneBtn = document.getElementById("dsTuneBtn");
+
+    dom.tuneModal = document.getElementById("dsTuneModal");
+    dom.tuneCancelX = document.getElementById("dsTuneCancelX");
+    dom.tuneCancelBtn = document.getElementById("dsTuneCancelBtn");
+    dom.tuneApplyBtn = document.getElementById("dsTuneApplyBtn");
+    
+    dom.tuneMethod = document.getElementById("dsTuneMethod");
+    dom.tuneBiControls = document.getElementById("dsTuneBiControls");
+    dom.tuneGaussControls = document.getElementById("dsTuneGaussControls");
+    dom.tuneMedianControls = document.getElementById("dsTuneMedianControls");
+
+    dom.tuneBiD = document.getElementById("dsTuneBiD");
+    dom.tuneBiColor = document.getElementById("dsTuneBiColor");
+    dom.tuneBiSpace = document.getElementById("dsTuneBiSpace");
+
+    dom.tuneGaussK = document.getElementById("dsTuneGaussK");
+    dom.tuneUnsharpAmt = document.getElementById("dsTuneUnsharpAmt");
+
+    dom.tuneMedianK = document.getElementById("dsTuneMedianK");
+
+    dom.tuneCanvasContainer = document.getElementById("dsTuneCanvasContainer");
+    dom.tuneCanvas = document.getElementById("dsTuneCanvas");
+    if (dom.tuneCanvas) {
+        dom.tuneCtx = dom.tuneCanvas.getContext("2d");
+        dom.tuneSourceCanvas = document.createElement("canvas");
+        dom.tuneSourceCtx = dom.tuneSourceCanvas.getContext("2d");
+    }
 
     dom.opencvStatus = document.getElementById("dsOpencvStatus");
     dom.canvas = document.getElementById("dsCanvas");

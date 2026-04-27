@@ -6,7 +6,24 @@ import { applyFilter } from './filter.js';
 export function bindEvents() {
     dom.fileInput.addEventListener('change', handleFileUpload);
     
+    import('./tune.js').then(module => {
+        module.initTuneModal();
+    });
+    
     dom.processBtn.addEventListener('click', applyFilter);
+    
+    dom.undoBtn.addEventListener('click', () => {
+        if (state.historyIndex > 0) {
+            state.historyIndex--;
+            const imgData = state.history[state.historyIndex];
+            dom.resultCtx.putImageData(imgData, 0, 0);
+            if (!dom.compareCheckbox.checked) {
+                dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+                dom.ctx.drawImage(dom.resultCanvas, 0, 0);
+            }
+            import('./ui.js').then(m => m.updateButtonStates());
+        }
+    });
     
     dom.filterMethod.addEventListener('change', (e) => {
         dom.bilateralControls.style.display = 'none';
