@@ -2,8 +2,9 @@ import { dom } from './dom.js';
 import { state } from './state.js';
 import { orderPoints } from './utils.js';
 import { redraw } from './renderer.js';
-import { updateButtonStates } from './ui.js';
+import { updateButtonStates, scrollToCorner } from './ui.js';
 import { fitRectCardToDetected } from './rect-mode.js';
+import { sortDetectedCards } from './utils.js';
 
 export function detectCards() {
     state.detectedCards.length = 0;
@@ -107,6 +108,9 @@ export function detectCards() {
     src.delete(); gray.delete(); blurred.delete(); edges.delete(); M.delete();
     contours.delete(); hierarchy.delete();
 
+    // Sort detected cards (top-to-bottom, left-to-right)
+    sortDetectedCards();
+
     // ── Rect mode: convert detected quads to rect-mode cards ─────────────
     if (state.editMode === 'rect') {
         if (state.rectWidth <= 0 || state.rectHeight <= 0) {
@@ -116,6 +120,15 @@ export function detectCards() {
             state.rectCards = state.detectedCards.map(corners => fitRectCardToDetected(corners));
             state.detectedCards.length = 0;
             state.selectedRectCardIndex = state.rectCards.length > 0 ? 0 : -1;
+        }
+    } else {
+        // Freeform mode: select the first corner of the first card
+        if (state.detectedCards.length > 0) {
+            state.selectedPoint = state.detectedCards[0][0];
+            // Also scroll to it so the user sees the selection
+            scrollToCorner(state.selectedPoint, 0);
+        } else {
+            state.selectedPoint = null;
         }
     }
 
@@ -135,7 +148,7 @@ export function handleAutoDetect() {
 
     const totalCards = state.detectedCards.length + state.rectCards.length;
     if (totalCards > 0) {
-        if (!confirm(`You have ${totalCards} card${totalCards !== 1 ? 's' : ''} selected. Auto-detect will reset them. Continue?`)) {
+        if (!confirm(`You have ${totalCards} card${totalCards !== 1 ? 's' : ''}. Auto-detect will unselect all of them. Continue?`)) {
             return;
         }
     }

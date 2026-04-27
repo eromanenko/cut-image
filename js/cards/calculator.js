@@ -18,6 +18,17 @@ export function initCalculator() {
     dom.calcPxW.addEventListener('input', () => updateFromPx('W'));
     dom.calcPxH.addEventListener('input', () => updateFromPx('H'));
     dom.calcDpi.addEventListener('input', () => updateFromMm('both'));
+    
+    if (dom.calcPreset) {
+        dom.calcPreset.addEventListener('change', () => {
+            const val = dom.calcPreset.value;
+            if (!val) return;
+            const [w, h] = val.split(',').map(Number);
+            dom.calcMmW.value = w;
+            dom.calcMmH.value = h;
+            updateFromMm('both');
+        });
+    }
 
     // Close modal on background click
     dom.calcModal.addEventListener('click', (e) => {
@@ -28,6 +39,7 @@ export function initCalculator() {
 function openCalculator(mode) {
     const dpi = parseFloat(dom.dpiInput.value) || 300;
     dom.calcDpi.value = dpi;
+    if (dom.calcPreset) dom.calcPreset.value = '';
 
     if (mode === 'freeform') {
         const mmW = parseFloat(dom.widthInput.value);

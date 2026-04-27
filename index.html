@@ -4,13 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Free online tool to slice images and PDFs into grids, extract cards from scanned sheets, and remove moiré patterns. No signup required.">
+    <meta name="description"
+        content="Free online tool to slice images and PDFs into grids, extract cards from scanned sheets, and remove moiré patterns. No signup required.">
 
     <!-- Open Graph (Facebook, Telegram, LinkedIn, etc.) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://cut-image.netlify.app/">
     <meta property="og:title" content="Image & PDF Slicer — Cut, Extract & Descreen">
-    <meta property="og:description" content="Free online tool to slice images and PDFs into grids, extract cards from scanned sheets, and remove moiré patterns. No signup required.">
+    <meta property="og:description"
+        content="Free online tool to slice images and PDFs into grids, extract cards from scanned sheets, and remove moiré patterns. No signup required.">
     <meta property="og:image" content="https://cut-image.netlify.app/og-preview.png">
     <meta property="og:image:width" content="1024">
     <meta property="og:image:height" content="1024">
@@ -19,7 +21,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://cut-image.netlify.app/">
     <meta name="twitter:title" content="Image & PDF Slicer — Cut, Extract & Descreen">
-    <meta name="twitter:description" content="Free online tool to slice images and PDFs into grids, extract cards from scanned sheets, and remove moiré patterns.">
+    <meta name="twitter:description"
+        content="Free online tool to slice images and PDFs into grids, extract cards from scanned sheets, and remove moiré patterns.">
     <meta name="twitter:image" content="https://cut-image.netlify.app/og-preview.png">
 
     <title>Image & PDF Slicer</title>
@@ -43,7 +46,7 @@
             // Trigger custom event so card-extractor.js knows it's ready
             document.dispatchEvent(new Event('opencv-ready'));
         };
-        
+
         window.onOpenCvError = function () {
             const statusLabel = document.getElementById('opencvStatus');
             if (statusLabel) statusLabel.textContent = 'Failed to load OpenCV. Please check your internet connection.';
@@ -51,7 +54,8 @@
             if (dsStatusLabel) dsStatusLabel.textContent = 'Failed to load OpenCV. Please check your internet connection.';
         };
     </script>
-    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" onerror="onOpenCvError();" type="text/javascript"></script>
+    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" onerror="onOpenCvError();"
+        type="text/javascript"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -64,18 +68,8 @@
         <button class="tab-btn" onclick="switchTab('descreen')">Descreen [BETA]</button>
     </div>
 
-    <!-- Tab 1: Grid Slicing (Existing) -->
+    <!-- Tab 1: Grid Slicing -->
     <div id="tab-grid" class="tab-content active">
-        <p class="instructions">
-            <b>Instruction:</b> Upload an image or a <b>PDF document</b>. Click to add a <b>horizontal</b> line. Hold
-            <b>Shift + Click</b> for a <b>vertical</b> line. Or use <b>Auto-Detect Cut Marks</b> to find separator lines
-            automatically.<br>
-            <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move it
-            precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with <b>Delete</b>.<br>
-            <b>Filtering:</b> Set <b>Min size</b> to exclude small fragments from the archive. Set <b>DPI</b> to match
-            your image resolution for accurate mm conversion.
-        </p>
-
         <div class="sticky-controls">
             <div class="controls">
                 <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf">
@@ -83,6 +77,25 @@
                 <button id="autoDetectButton" disabled>Auto-Detect Cut Marks</button>
                 <button id="downloadButton" disabled>Download Archive</button>
                 <button id="resetButton" disabled>Reset Lines</button>
+
+                <!-- Info Tooltip -->
+                <div class="info-tooltip">
+                    <div class="info-icon">i</div>
+                    <div class="tooltip-content">
+                        <b>Instruction:</b> Upload an image or a <b>PDF document</b>. Click to add a <b>horizontal</b>
+                        line. Hold
+                        <b>Shift + Click</b> for a <b>vertical</b> line. Or use <b>Auto-Detect Cut Marks</b> to find
+                        separator lines
+                        automatically.<br><br>
+                        <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move
+                        it
+                        precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with
+                        <b>Delete</b>.<br><br>
+                        <b>Filtering:</b> Set <b>Min size</b> to exclude small fragments from the archive. Set
+                        <b>DPI</b> to match
+                        your image resolution for accurate mm conversion.
+                    </div>
+                </div>
             </div>
 
             <!-- Checkbox for skipping edges + minimum size -->
@@ -120,31 +133,13 @@
         </div>
     </div>
 
-    <!-- Tab 2: Card Extraction (New) -->
+    <!-- Tab 2: Card Extraction -->
     <div id="tab-cards" class="tab-content">
-        <p class="instructions" id="ceInstructions">
-            <!-- Freeform mode description -->
-            <span id="ceInstrFreeform">
-                <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. <b>Click and drag</b> the red corners to adjust borders. You can also <b>drag the whole card</b> by clicking inside it.<br>
-                <b>Auto-Detect:</b> Specify exact <b>Width and Height (mm)</b> below for highly accurate detection. Use <b>🎯 Get from 1st Card</b> to auto-fill dimensions.<br>
-                <b>Navigation:</b> Use <b>/</b> key to cycle through corners. <b>Enter</b> jumps between cards. <b>Arrow Keys</b> (+ Ctrl for ×10 step, + Shift to move opposite corner too).<br>
-                <b>Zoom Window:</b> <b>+</b> / <b>-</b> to adjust magnification. <b>Z</b> toggles zoom.
-            </span>
-            <!-- Rectangle mode description -->
-            <span id="ceInstrRect" style="display:none;">
-                <b>Rectangle Mode:</b> All cards are identical parallelograms defined by global <b>Width</b>, <b>Height</b>, and <b>Skew</b> (px) values above.<br>
-                <b>Add card:</b> Click empty area on canvas — a new card appears at the click position. Drag to reposition. <b>Add Manual</b> button centres a card in the viewport.<br>
-                <b>Move:</b> Drag any card. <b>Arrow Keys</b> for precise 1px steps (Ctrl = 10px steps).<br>
-                <b>Rotate:</b> Press <b>/</b> (0.05&deg; CW) or <b>Shift+/</b> (0.05&deg; CCW). <b>Enter</b> / <b>Shift+Enter</b> to jump between cards.<br>
-                <b>Zoom Window:</b> Shows all 4 corners simultaneously. Align each corner to the <b>yellow frame</b>. <b>+</b> / <b>-</b> to adjust magnification.
-            </span><br>
-            <span id="opencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)... Please wait.</span>
-        </p>
-
         <div class="sticky-controls">
             <div class="controls">
                 <div class="mode-toggle" id="ceModeToggle">
-                    <button id="ceFreeformModeBtn" class="mode-btn active" title="Free form">✏️</button><button id="ceRectModeBtn" class="mode-btn" title="Rectangular form">⊡</button>
+                    <button id="ceFreeformModeBtn" class="mode-btn active" title="Free form">✏️</button><button
+                        id="ceRectModeBtn" class="mode-btn" title="Rectangular form">⊡</button>
                 </div>
                 <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf" title="Open File (O)">
                 <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
@@ -152,7 +147,39 @@
                 <button id="ceAddManualButton" disabled title="Add Manual Card (N)">Add Manual</button>
                 <button id="ceDeleteButton" disabled title="Delete Card (D)">Delete</button>
                 <button id="ceDownloadButton" disabled title="Download Cards (S)">Download</button>
+
+                <!-- Info Tooltip -->
+                <div class="info-tooltip">
+                    <div class="info-icon">i</div>
+                    <div class="tooltip-content" id="ceInstructions">
+                        <span id="ceInstrFreeform">
+                            <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. <b>Click
+                                and drag</b> the red corners to adjust borders. You can also <b>drag the whole card</b>
+                            by clicking inside it.<br><br>
+                            <b>Auto-Detect:</b> Specify exact <b>Width and Height (mm)</b> below for highly accurate
+                            detection. Use <b>🎯 Get from 1st Card</b> to auto-fill dimensions.<br><br>
+                            <b>Navigation:</b> Use <b>/</b> key to cycle through corners. <b>Enter</b> jumps between
+                            cards. <b>Arrow Keys</b> (+ Ctrl for ×10 step, + Shift to move opposite corner too).<br><br>
+                            <b>Zoom Window:</b> <b>+</b> / <b>-</b> to adjust magnification. <b>Z</b> toggles zoom.
+                        </span>
+                        <span id="ceInstrRect" style="display:none;">
+                            <b>Rectangle Mode:</b> All cards are identical parallelograms defined by global
+                            <b>Width</b>, <b>Height</b>, and <b>Skew</b> (px) values above.<br><br>
+                            <b>Add card:</b> Click empty area on canvas — a new card appears at the click position. Drag
+                            to reposition. <b>Add Manual</b> button centres a card in the viewport.<br><br>
+                            <b>Move:</b> Drag any card. <b>Arrow Keys</b> for precise 1px steps (Ctrl = 10px
+                            steps).<br><br>
+                            <b>Rotate:</b> Press <b>/</b> (0.05&deg; CW) or <b>Shift+/</b> (0.05&deg; CCW). <b>Enter</b>
+                            / <b>Shift+Enter</b> to jump between cards.<br><br>
+                            <b>Zoom Window:</b> Shows all 4 corners simultaneously. Align each corner to the <b>yellow
+                                frame</b>. <b>+</b> / <b>-</b> to adjust magnification.
+                        </span>
+                    </div>
+                </div>
             </div>
+            <div id="opencvStatus"
+                style="color:red; font-weight:bold; font-size: 13px; text-align: center; margin-bottom: 10px;">Loading
+                Computer Vision libraries (OpenCV)... Please wait.</div>
 
             <!-- Styling Controls (Freeform only) -->
             <div class="controls hide-on-stuck" id="ceFreeformStylingRow" style="margin-top: -10px;">
@@ -194,13 +221,24 @@
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
                 <button id="ceFreeformCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="12" y1="18" x2="12" y2="18"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line></svg>
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                        <line x1="16" y1="14" x2="16" y2="14"></line>
+                        <line x1="16" y1="18" x2="16" y2="18"></line>
+                        <line x1="12" y1="14" x2="12" y2="14"></line>
+                        <line x1="12" y1="18" x2="12" y2="18"></line>
+                        <line x1="8" y1="14" x2="8" y2="14"></line>
+                        <line x1="8" y1="18" x2="8" y2="18"></line>
+                    </svg>
                 </button>
                 <label class="checkbox-container">
                     DPI: <input type="number" id="ceDpiInput" value="300" min="72" step="1"
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
-                <button id="ceGetSizeBtn" title="Get size from the first selected card" style="margin-left: 10px;">🎯 Get from 1st Card</button>
+                <button id="ceGetSizeBtn" title="Get size from the first selected card" style="margin-left: 10px;">🎯
+                    Get from 1st Card</button>
             </div>
 
             <!-- Rect-mode Controls (Rectangle mode only) -->
@@ -214,21 +252,30 @@
                         style="width: 80px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
                 <button id="ceRectCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="12" y1="18" x2="12" y2="18"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line></svg>
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                        <line x1="16" y1="14" x2="16" y2="14"></line>
+                        <line x1="16" y1="18" x2="16" y2="18"></line>
+                        <line x1="12" y1="14" x2="12" y2="14"></line>
+                        <line x1="12" y1="18" x2="12" y2="18"></line>
+                        <line x1="8" y1="14" x2="8" y2="14"></line>
+                        <line x1="8" y1="18" x2="8" y2="18"></line>
+                    </svg>
                 </button>
-                <label class="checkbox-container" title="Pixels the top-right corner is lower than the top-left corner (parallelogram skew to compensate scanner distortion)">
+                <label class="checkbox-container"
+                    title="Pixels the top-right corner is lower than the top-left corner (parallelogram skew to compensate scanner distortion)">
                     Skew (px): <input type="number" id="ceRectSkewPx" value="0" step="1"
                         style="width: 70px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
             </div>
 
             <!-- Zoom Window Container -->
-            <div id="ceZoomContainer"
-                style="display: none; position: fixed; top: 20px; left: 20px; z-index: 9999; border: 2px solid var(--primary-color); border-radius: 6px; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.2); pointer-events: none; overflow: hidden;">
-                <div id="ceZoomTitle"
-                    style="background: var(--primary-color); color: white; font-size: 12px; font-weight: bold; padding: 4px; text-align: center;">
-                    Zoom Preview</div>
+            <div id="ceZoomContainer" class="zoom-window" style="display: none;">
+                <div id="ceZoomTitle" class="zoom-window-header">Zoom Preview</div>
                 <canvas id="ceZoomCanvas" width="300" height="300" style="display: block;"></canvas>
+                <div id="ceZoomResizer" class="zoom-window-resizer"></div>
             </div>
 
             <!-- Additional controls for PDF navigation -->
@@ -246,19 +293,14 @@
         </div>
     </div>
 
-    <!-- Tab 3: Descreen (New) -->
+    <!-- Tab 3: Descreen -->
     <div id="tab-descreen" class="tab-content">
-        <p class="instructions" style="background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px; padding: 10px; display: inline-block;">
-            <b style="color: #856404;">⚠️ EXPERIMENTAL (Early Development):</b> This tool uses basic OpenCV filters to attempt moiré removal. It heavily blurs images and may reduce text quality. <b>Advanced "AI-based" approaches are usually required for high quality descreening.</b><br><br>
-            <b>Methods:</b> <b>Bilateral Filter</b> is often best for keeping edges sharp. <b>Gaussian Blur + Unsharp Mask</b> is a classic approach.<br>
-            <span id="dsOpencvStatus" style="color:red; font-weight:bold;">Loading Computer Vision libraries (OpenCV)... Please wait.</span>
-        </p>
-
         <div class="sticky-controls">
             <div class="controls">
                 <input type="file" id="dsFileInput" accept="image/*,.tif,.tiff">
                 <label class="checkbox-container">
-                    DPI: <input type="number" id="dsDpiInput" value="300" min="72" step="1" style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
+                    DPI: <input type="number" id="dsDpiInput" value="300" min="72" step="1"
+                        style="width: 60px; margin-left: 5px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;">
                 </label>
                 <button id="dsTuneBtn" disabled title="Tune parameters on a small preview">Tune Parameters</button>
                 <button id="dsUndoBtn" disabled title="Undo last filter">Undo</button>
@@ -267,7 +309,22 @@
                 <label class="checkbox-container" title="Hold to see original image">
                     <input type="checkbox" id="dsCompareCheckbox"> Compare (Original)
                 </label>
+
+                <!-- Info Tooltip -->
+                <div class="info-tooltip">
+                    <div class="info-icon">i</div>
+                    <div class="tooltip-content">
+                        <b style="color: #856404;">⚠️ EXPERIMENTAL (Early Development):</b> This tool uses basic OpenCV
+                        filters to attempt moiré removal. It heavily blurs images and may reduce text quality.
+                        <b>Advanced "AI-based" approaches are usually required for high quality descreening.</b><br><br>
+                        <b>Methods:</b> <b>Bilateral Filter</b> is often best for keeping edges sharp. <b>Gaussian Blur
+                            + Unsharp Mask</b> is a classic approach.
+                    </div>
+                </div>
             </div>
+            <div id="dsOpencvStatus"
+                style="color:red; font-weight:bold; font-size: 13px; text-align: center; margin-bottom: 10px;">Loading
+                Computer Vision libraries (OpenCV)... Please wait.</div>
 
             <!-- Filter settings -->
             <div class="controls hide-on-stuck" style="margin-top: -10px;">
@@ -279,28 +336,35 @@
                         <option value="median">Median Blur</option>
                     </select>
                 </label>
-                
+
                 <!-- Bilateral controls -->
                 <span id="dsBilateralControls" style="display:inline-flex; align-items:center; gap:10px;">
-                    <label>Diameter: <input type="number" id="dsBiD" value="9" min="3" max="50" step="2" style="width: 50px;"></label>
-                    <label>SigmaColor: <input type="number" id="dsBiSigmaColor" value="75" min="10" max="250" style="width: 50px;"></label>
-                    <label>SigmaSpace: <input type="number" id="dsBiSigmaSpace" value="75" min="10" max="250" style="width: 50px;"></label>
+                    <label>Diameter: <input type="number" id="dsBiD" value="9" min="3" max="50" step="2"
+                            style="width: 50px;"></label>
+                    <label>SigmaColor: <input type="number" id="dsBiSigmaColor" value="75" min="10" max="250"
+                            style="width: 50px;"></label>
+                    <label>SigmaSpace: <input type="number" id="dsBiSigmaSpace" value="75" min="10" max="250"
+                            style="width: 50px;"></label>
                 </span>
 
                 <!-- Gaussian unsharp controls -->
                 <span id="dsGaussianControls" style="display:none; align-items:center; gap:10px;">
-                    <label>Blur (k): <input type="number" id="dsGaussK" value="5" min="3" max="31" step="2" style="width: 50px;"></label>
-                    <label>Amount: <input type="number" id="dsUnsharpAmount" value="1.5" min="0" max="5" step="0.1" style="width: 50px;"></label>
+                    <label>Blur (k): <input type="number" id="dsGaussK" value="5" min="3" max="31" step="2"
+                            style="width: 50px;"></label>
+                    <label>Amount: <input type="number" id="dsUnsharpAmount" value="1.5" min="0" max="5" step="0.1"
+                            style="width: 50px;"></label>
                 </span>
 
                 <!-- Median controls -->
                 <span id="dsMedianControls" style="display:none; align-items:center; gap:10px;">
-                    <label>Kernel: <input type="number" id="dsMedianK" value="5" min="3" max="31" step="2" style="width: 50px;"></label>
+                    <label>Kernel: <input type="number" id="dsMedianK" value="5" min="3" max="31" step="2"
+                            style="width: 50px;"></label>
                 </span>
             </div>
         </div>
 
-        <div id="dsCanvasContainer" style="display: none; position: relative; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; border: 1px solid #ddd;">
+        <div id="dsCanvasContainer"
+            style="display: none; position: relative; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; border: 1px solid #ddd;">
             <canvas id="dsCanvas" style="display: block; max-width: 100%; height: auto;"></canvas>
         </div>
     </div>
@@ -313,6 +377,22 @@
                 <span class="ce-modal-close" id="ceCalcCancelX">&times;</span>
             </div>
             <div class="ce-modal-body">
+                <div class="ce-calc-row">
+                    <div class="ce-calc-group full-width">
+                        <label>Preset Sizes</label>
+                        <select id="ceCalcPreset">
+                            <option value="">-- Select Preset --</option>
+                            <option value="63.5,88.9">Standard 63.5x88.9 mm</option>
+                            <option value="59,92">Euro 59x92 mm</option>
+                            <option value="63,41">Mini USA 63x41 mm</option>
+                            <option value="68,45">Mini Euro 68x45 mm</option>
+                            <option value="120,70">Tarot 120x70 mm</option>
+                            <option value="56,87">Standard USA 56x87 mm</option>
+                            <option value="61.5,95">Spanish Card 61.5x95 mm</option>
+                            <option value="61,112">Unlock 61x112 mm</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="ce-calc-row">
                     <div class="ce-calc-group">
                         <label>Width (mm)</label>
@@ -355,8 +435,10 @@
                 <span class="ce-modal-close" id="dsTuneCancelX">&times;</span>
             </div>
             <div class="ce-modal-body" style="text-align: center;">
-                <p style="font-size: 13px; margin-bottom: 10px; color: #555;">Drag image to pan. Preview updates automatically.</p>
-                <div style="margin-bottom: 15px; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                <p style="font-size: 13px; margin-bottom: 10px; color: #555;">Drag image to pan. Preview updates
+                    automatically.</p>
+                <div
+                    style="margin-bottom: 15px; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
                     <label class="checkbox-container">
                         Method:
                         <select id="dsTuneMethod" style="margin-left: 5px; padding: 3px;">
@@ -367,20 +449,27 @@
                     </label>
                     <div style="margin-top: 10px;">
                         <span id="dsTuneBiControls" style="display:inline-flex; align-items:center; gap:10px;">
-                            <label>Diameter: <input type="number" id="dsTuneBiD" min="3" max="50" step="2" style="width: 50px;"></label>
-                            <label>SigmaColor: <input type="number" id="dsTuneBiColor" min="10" max="250" style="width: 50px;"></label>
-                            <label>SigmaSpace: <input type="number" id="dsTuneBiSpace" min="10" max="250" style="width: 50px;"></label>
+                            <label>Diameter: <input type="number" id="dsTuneBiD" min="3" max="50" step="2"
+                                    style="width: 50px;"></label>
+                            <label>SigmaColor: <input type="number" id="dsTuneBiColor" min="10" max="250"
+                                    style="width: 50px;"></label>
+                            <label>SigmaSpace: <input type="number" id="dsTuneBiSpace" min="10" max="250"
+                                    style="width: 50px;"></label>
                         </span>
                         <span id="dsTuneGaussControls" style="display:none; align-items:center; gap:10px;">
-                            <label>Blur (k): <input type="number" id="dsTuneGaussK" min="3" max="31" step="2" style="width: 50px;"></label>
-                            <label>Amount: <input type="number" id="dsTuneUnsharpAmt" min="0" max="5" step="0.1" style="width: 50px;"></label>
+                            <label>Blur (k): <input type="number" id="dsTuneGaussK" min="3" max="31" step="2"
+                                    style="width: 50px;"></label>
+                            <label>Amount: <input type="number" id="dsTuneUnsharpAmt" min="0" max="5" step="0.1"
+                                    style="width: 50px;"></label>
                         </span>
                         <span id="dsTuneMedianControls" style="display:none; align-items:center; gap:10px;">
-                            <label>Kernel: <input type="number" id="dsTuneMedianK" min="3" max="31" step="2" style="width: 50px;"></label>
+                            <label>Kernel: <input type="number" id="dsTuneMedianK" min="3" max="31" step="2"
+                                    style="width: 50px;"></label>
                         </span>
                     </div>
                 </div>
-                <div id="dsTuneCanvasContainer" style="display: inline-block; position: relative; border: 2px solid #ddd; border-radius: 4px; cursor: grab; overflow: hidden; max-width: 100%; max-height: 400px;">
+                <div id="dsTuneCanvasContainer"
+                    style="display: inline-block; position: relative; border: 2px solid #ddd; border-radius: 4px; cursor: grab; overflow: hidden; max-width: 100%; max-height: 400px;">
                     <canvas id="dsTuneCanvas" style="display: block;"></canvas>
                 </div>
             </div>

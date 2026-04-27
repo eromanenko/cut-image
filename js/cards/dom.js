@@ -24,6 +24,7 @@ export function initDom() {
     dom.zoomCanvas = document.getElementById("ceZoomCanvas");
     dom.zoomCtx = dom.zoomCanvas.getContext("2d");
     dom.zoomTitle = document.getElementById("ceZoomTitle");
+    dom.zoomResizer = document.getElementById("ceZoomResizer");
 
     dom.widthInput = document.getElementById("ceWidthInput");
     dom.heightInput = document.getElementById("ceHeightInput");
@@ -60,6 +61,7 @@ export function initDom() {
     dom.calcPxW = document.getElementById("ceCalcPxW");
     dom.calcPxH = document.getElementById("ceCalcPxH");
     dom.calcDpi = document.getElementById("ceCalcDpi");
+    dom.calcPreset = document.getElementById("ceCalcPreset");
     dom.calcApplyBtn = document.getElementById("ceCalcApplyBtn");
     dom.calcCancelBtn = document.getElementById("ceCalcCancelBtn");
     dom.calcCancelX = document.getElementById("ceCalcCancelX");

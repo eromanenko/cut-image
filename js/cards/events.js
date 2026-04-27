@@ -21,7 +21,7 @@ import { initCalculator } from './calculator.js';
 
 export function deleteSelectedCard() {
     if (!state.selectedPoint) return;
-    if (!confirm("Are you sure you want to delete this card?")) return;
+    if (!confirm("Are you sure you want to unselect this card?")) return;
     const index = state.detectedCards.findIndex(card => card.includes(state.selectedPoint));
     if (index !== -1) {
         state.detectedCards.splice(index, 1);
@@ -37,7 +37,7 @@ export function deleteSelectedCard() {
 
 function deleteSelectedRectCard() {
     if (state.selectedRectCardIndex === -1) return;
-    if (!confirm("Are you sure you want to delete this card?")) return;
+    if (!confirm("Are you sure you want to unselect this card?")) return;
     state.rectCards.splice(state.selectedRectCardIndex, 1);
     state.selectedRectCardIndex = state.rectCards.length > 0
         ? Math.min(state.selectedRectCardIndex, state.rectCards.length - 1)
@@ -58,7 +58,7 @@ function switchMode(newMode) {
     if (state.editMode === newMode) return;
 
     if (hasCards()) {
-        const msg = `You have ${state.detectedCards.length + state.rectCards.length} card(s). Switching modes will clear them. Continue?`;
+        const msg = `You have ${state.detectedCards.length + state.rectCards.length} card(s). Switching modes will unselect all of them. Continue?`;
         if (!confirm(msg)) return;
     }
 
@@ -136,6 +136,38 @@ function startAutoScroll() {
 
 function stopAutoScroll() {
     if (autoScrollRaf) { cancelAnimationFrame(autoScrollRaf); autoScrollRaf = null; }
+}
+
+// ---------------------------------------------------------------------------
+// Zoom window drag
+// ---------------------------------------------------------------------------
+
+let isDraggingZoom = false;
+let zoomDragOffsetX = 0;
+let zoomDragOffsetY = 0;
+
+function handleZoomTitleMouseDown(e) {
+    isDraggingZoom = true;
+    const rect = dom.zoomContainer.getBoundingClientRect();
+    zoomDragOffsetX = e.clientX - rect.left;
+    zoomDragOffsetY = e.clientY - rect.top;
+    e.preventDefault();
+}
+
+let isResizingZoom = false;
+let zoomBaseWidth = 0;
+let zoomBaseHeight = 0;
+let zoomResizeStartX = 0;
+let zoomResizeStartY = 0;
+
+function handleZoomResizerMouseDown(e) {
+    isResizingZoom = true;
+    zoomBaseWidth = dom.zoomCanvas.width;
+    zoomBaseHeight = dom.zoomCanvas.height;
+    zoomResizeStartX = e.clientX;
+    zoomResizeStartY = e.clientY;
+    e.preventDefault();
+    e.stopPropagation();
 }
 
 // ---------------------------------------------------------------------------
@@ -261,6 +293,9 @@ export function bindEvents() {
 
     dom.zoomCheckbox.addEventListener("change", updateZoomWindow);
 
+    dom.zoomTitle.addEventListener("mousedown", handleZoomTitleMouseDown);
+    dom.zoomResizer.addEventListener("mousedown", handleZoomResizerMouseDown);
+
     // ── PDF Pagination ───────────────────────────────────────────────────────
     dom.prevPageBtn.addEventListener("click", () => {
         if (state.currentPreviewPage > 1) {
@@ -304,7 +339,27 @@ export function bindEvents() {
         }
     });
 
+    window.addEventListener("mousemove", (e) => {
+        if (isDraggingZoom) {
+            const x = e.clientX - zoomDragOffsetX;
+            const y = e.clientY - zoomDragOffsetY;
+            dom.zoomContainer.style.left = `${x}px`;
+            dom.zoomContainer.style.top = `${y}px`;
+        }
+        if (isResizingZoom) {
+            const dw = e.clientX - zoomResizeStartX;
+            const dh = e.clientY - zoomResizeStartY;
+            const newW = Math.max(150, zoomBaseWidth + dw);
+            const newH = Math.max(150, zoomBaseHeight + dh);
+            dom.zoomCanvas.width = newW;
+            dom.zoomCanvas.height = newH;
+            updateZoomWindow();
+        }
+    });
+
     window.addEventListener("mouseup", () => {
+        isDraggingZoom = false;
+        isResizingZoom = false;
         if (state.isDraggingPoint) {
             state.isDraggingPoint = false;
             state.draggedPoint    = null;
