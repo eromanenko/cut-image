@@ -79,14 +79,15 @@
         <div class="sticky-controls">
             <div class="controls">
                 <label for="fileInput" class="file-btn" title="Open File (O)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                     </svg>
                 </label>
                 <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf" class="hidden-file-input">
                 <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
-                <button id="autoDetectButton" disabled>Auto-Detect Cut Marks</button>
-                <button id="downloadButton" disabled>Download Archive</button>
+                <button id="autoDetectButton" disabled>Auto-Detect</button>
+                <button id="downloadButton" disabled>Download</button>
                 <button id="resetButton" disabled>Reset Lines</button>
 
                 <!-- Info Tooltip -->
@@ -94,17 +95,20 @@
                     <div class="info-icon">i</div>
                     <div class="tooltip-content">
                         <b>Instruction:</b> Upload an image or a <b>PDF document</b>. Click to add a <b>horizontal</b>
-                        line. Hold
-                        <b>Shift + Click</b> for a <b>vertical</b> line. Or use <b>Auto-Detect Cut Marks</b> to find
-                        separator lines
-                        automatically.<br><br>
+                        line. Hold <b>Shift + Click</b> for a <b>vertical</b> line. Or use <b>Auto-Detect Cut Marks</b>
+                        to find separator lines automatically.<br><br>
                         <b>Editing:</b> Hover over a line and hold <b>Shift</b> to <b>drag</b> it. Select a line to move
-                        it
-                        precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with
+                        it precisely with <b>Arrow Keys</b> (hold Shift for faster move) or remove it with
                         <b>Delete</b>.<br><br>
                         <b>Filtering:</b> Set <b>Min size</b> to exclude small fragments from the archive. Set
-                        <b>DPI</b> to match
-                        your image resolution for accurate mm conversion.
+                        <b>DPI</b> to match your image resolution for accurate mm conversion.<br><br>
+                        <b>PDF Pairing:</b> When a multi-page PDF is loaded with <b>All pages</b> checked, you can
+                        choose a pairing mode for double-sided cards. <b>Horizontal mirror</b> — the back page is
+                        flipped left-to-right (odd pages are fronts, columns are reversed on even pages).
+                        <b>Vertical mirror</b> — the back page is flipped top-to-bottom (rows are reversed on even
+                        pages). Files are named <b>prefix1a / prefix1b</b> (front/back of the same card),
+                        numbered continuously across page pairs. If the PDF has an odd number of pages, the last
+                        page is ignored.
                     </div>
                 </div>
             </div>
@@ -129,12 +133,20 @@
             <div class="controls" id="pdfControls"
                 style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
                 <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Previous Page</button>
-                <span id="pageIndicator" style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
+                <span id="pageIndicator"
+                    style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
                 <button id="nextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
                 <label class="checkbox-container" id="allPagesCheckContainer" style="margin-left: 20px;">
                     <input type="checkbox" id="allPagesCheckbox" checked>
                     All pages
                 </label>
+                <span id="pairingModeContainer" style="display: none; align-items: center; gap: 6px; margin-left: 16px;">
+                    <select id="pairingModeSelect" style="padding: 3px 6px;">
+                        <option value="none">Not pairing</option>
+                        <option value="horizontal">Horizontal mirror</option>
+                        <option value="vertical">Vertical mirror</option>
+                    </select>
+                </span>
             </div>
         </div>
 
@@ -151,23 +163,27 @@
             <div class="controls">
                 <div class="mode-toggle" id="ceModeToggle">
                     <button id="ceFreeformModeBtn" class="mode-btn active" title="Free form">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
                     </button>
                     <button id="ceRectModeBtn" class="mode-btn" title="Rectangular form">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         </svg>
                     </button>
                 </div>
                 <label for="ceFileInput" class="file-btn" title="Open File (O)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                     </svg>
                 </label>
-                <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf" class="hidden-file-input">
+                <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf"
+                    class="hidden-file-input">
                 <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
                 <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
                 <button id="ceAddManualButton" disabled title="Add Manual Card (N)">Add Manual</button>
@@ -211,7 +227,8 @@
             <div class="controls hide-on-stuck" id="ceFreeformStylingRow" style="margin-top: -10px;">
                 <label class="checkbox-container">
                     Line Color: <input type="color" id="ceLineColor" value="#808080"
-                        style="margin-left: 5px; cursor: pointer; height: calc(var(--control-height) - 10px);" title="Line Color (Press C to cycle)">
+                        style="margin-left: 5px; cursor: pointer; height: calc(var(--control-height) - 10px);"
+                        title="Line Color (Press C to cycle)">
                     <button type="button" class="fixed-color-btn" data-color="#000000"
                         style="background-color: #000000;" title="Black"></button>
                     <button type="button" class="fixed-color-btn" data-color="#ffffff"
@@ -308,7 +325,8 @@
             <div class="controls" id="cePdfControls"
                 style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
                 <button id="cePrevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
-                <span id="cePageIndicator" style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
+                <span id="cePageIndicator"
+                    style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
                 <button id="ceNextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
                 <!-- Checkbox disabled for auto extractor for now, auto-extract works per page initially -->
             </div>
@@ -325,7 +343,8 @@
         <div class="sticky-controls">
             <div class="controls">
                 <label for="dsFileInput" class="file-btn" title="Open File (O)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                     </svg>
                 </label>
@@ -395,8 +414,7 @@
             </div>
         </div>
 
-        <div id="dsCanvasContainer" class="canvas-container"
-            style="display: none;">
+        <div id="dsCanvasContainer" class="canvas-container" style="display: none;">
             <div class="filename-display" id="dsFileName"></div>
             <canvas id="dsCanvas" style="display: block; max-width: 100%; height: auto;"></canvas>
         </div>

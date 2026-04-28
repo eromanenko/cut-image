@@ -4,6 +4,9 @@ export const state = {
     isImageLoaded: false,
     originalFileName: "archive",
 
+    gridCols: 0,
+    gridRows: 0,
+
     isPdf: false,
     pdfDoc: null,
     currentPreviewPage: 1,

@@ -11,6 +11,11 @@ export function bindEvents() {
     dom.skipEdgesCheckbox.addEventListener('change', updateDownloadButtonText);
     dom.minSizeInput.addEventListener('input', updateDownloadButtonText);
     dom.dpiInput.addEventListener('input', updateDownloadButtonText);
+    dom.allPagesCheckbox.addEventListener('change', () => {
+        const checked = dom.allPagesCheckbox.checked;
+        dom.pairingModeContainer.style.display = checked ? 'inline-flex' : 'none';
+        if (!checked) dom.pairingModeSelect.value = 'none';
+    });
     dom.dpiInput.addEventListener('change', () => {
         if (state.isPdf && state.pdfDoc) {
             const requestedDpi = parseInt(dom.dpiInput.value) || 300;

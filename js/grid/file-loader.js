@@ -66,9 +66,12 @@ export async function handleFileUpload(event) {
             if (state.pdfDoc.numPages <= 1) {
                 dom.allPagesCheckContainer.style.display = "none";
                 dom.allPagesCheckbox.checked = false;
+                dom.pairingModeContainer.style.display = "none";
+                dom.pairingModeSelect.value = "none";
             } else {
                 dom.allPagesCheckContainer.style.display = "inline-flex";
                 dom.allPagesCheckbox.checked = true;
+                dom.pairingModeContainer.style.display = "inline-flex";
             }
 
             await renderPdfPageForPreview(state.currentPreviewPage);

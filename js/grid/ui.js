@@ -5,13 +5,13 @@ import { redraw } from './renderer.js';
 
 export function updateDownloadButtonText() {
     if (state.lines.length === 0) {
-        dom.downloadButton.textContent = 'Download Archive';
+        dom.downloadButton.textContent = 'Download';
         return;
     }
     calculateCutRegions();
     dom.downloadButton.textContent = state.cutRegions.length > 0
-        ? `Download ${state.cutRegions.length} slice${state.cutRegions.length !== 1 ? 's' : ''}`
-        : 'Download Archive';
+        ? `Download ${state.cutRegions.length}`
+        : 'Download';
 }
 
 export function resetState() {

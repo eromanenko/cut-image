@@ -18,6 +18,8 @@ export function initDom() {
     dom.pageIndicator = document.getElementById("pageIndicator");
     dom.allPagesCheckbox = document.getElementById("allPagesCheckbox");
     dom.allPagesCheckContainer = document.getElementById("allPagesCheckContainer");
+    dom.pairingModeSelect = document.getElementById("pairingModeSelect");
+    dom.pairingModeContainer = document.getElementById("pairingModeContainer");
     dom.fileNameDisplay = document.getElementById("gridFileName");
 
     dom.sourceCanvas = document.createElement("canvas");
