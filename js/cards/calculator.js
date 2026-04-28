@@ -1,6 +1,5 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
-import { redraw } from './renderer.js';
 
 export function initCalculator() {
     if (!dom.calcBtnFreeform || !dom.calcBtnRect) return;
@@ -18,7 +17,7 @@ export function initCalculator() {
     dom.calcPxW.addEventListener('input', () => updateFromPx('W'));
     dom.calcPxH.addEventListener('input', () => updateFromPx('H'));
     dom.calcDpi.addEventListener('input', () => updateFromMm('both'));
-    
+
     if (dom.calcPreset) {
         dom.calcPreset.addEventListener('change', () => {
             const val = dom.calcPreset.value;
@@ -44,24 +43,24 @@ function openCalculator(mode) {
     if (mode === 'freeform') {
         const mmW = parseFloat(dom.widthInput.value);
         const mmH = parseFloat(dom.heightInput.value);
-        
+
         if (!isNaN(mmW)) dom.calcMmW.value = mmW;
         else dom.calcMmW.value = '';
-        
+
         if (!isNaN(mmH)) dom.calcMmH.value = mmH;
         else dom.calcMmH.value = '';
-        
+
         updateFromMm('both');
     } else {
         const pxW = parseFloat(dom.rectWidthPx.value);
         const pxH = parseFloat(dom.rectHeightPx.value);
-        
+
         if (!isNaN(pxW)) dom.calcPxW.value = pxW;
         else dom.calcPxW.value = '';
-        
+
         if (!isNaN(pxH)) dom.calcPxH.value = pxH;
         else dom.calcPxH.value = '';
-        
+
         updateFromPx('both');
     }
 
@@ -74,7 +73,7 @@ function closeCalculator() {
 
 function updateFromMm(axis) {
     const dpi = parseFloat(dom.calcDpi.value) || 300;
-    
+
     if (axis === 'W' || axis === 'both') {
         const mm = parseFloat(dom.calcMmW.value);
         if (!isNaN(mm)) {
@@ -83,7 +82,7 @@ function updateFromMm(axis) {
             dom.calcPxW.value = '';
         }
     }
-    
+
     if (axis === 'H' || axis === 'both') {
         const mm = parseFloat(dom.calcMmH.value);
         if (!isNaN(mm)) {
@@ -96,7 +95,7 @@ function updateFromMm(axis) {
 
 function updateFromPx(axis) {
     const dpi = parseFloat(dom.calcDpi.value) || 300;
-    
+
     if (axis === 'W' || axis === 'both') {
         const px = parseFloat(dom.calcPxW.value);
         if (!isNaN(px)) {
@@ -105,7 +104,7 @@ function updateFromPx(axis) {
             dom.calcMmW.value = '';
         }
     }
-    
+
     if (axis === 'H' || axis === 'both') {
         const px = parseFloat(dom.calcPxH.value);
         if (!isNaN(px)) {
@@ -123,16 +122,16 @@ function applyCalculator() {
     if (state.editMode === 'rect') {
         const pxW = parseInt(dom.calcPxW.value);
         const pxH = parseInt(dom.calcPxH.value);
-        
+
         if (!isNaN(pxW)) dom.rectWidthPx.value = pxW;
         if (!isNaN(pxH)) dom.rectHeightPx.value = pxH;
-        
+
         // Trigger the input event to sync state and redraw
         dom.rectWidthPx.dispatchEvent(new Event('input'));
     } else {
         const mmW = parseFloat(dom.calcMmW.value);
         const mmH = parseFloat(dom.calcMmH.value);
-        
+
         if (!isNaN(mmW)) dom.widthInput.value = mmW;
         if (!isNaN(mmH)) dom.heightInput.value = mmH;
     }

@@ -1,4 +1,4 @@
-import { dom, initDom } from './dom.js';
+import { initDom } from './dom.js';
 import { state } from './state.js';
 import { bindEvents } from './events.js';
 import { updateButtonStates } from './ui.js';
