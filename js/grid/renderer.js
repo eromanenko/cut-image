@@ -64,4 +64,48 @@ export function redraw() {
         dom.ctx.stroke();
         dom.ctx.setLineDash([]); 
     }
+
+    drawDimensions();
+}
+
+function drawDimensions() {
+    const xLines = [0, ...state.lines.filter(l => l.x !== null).map(l => l.x), dom.canvas.width].sort((a, b) => a - b);
+    const yLines = [0, ...state.lines.filter(l => l.y !== null).map(l => l.y), dom.canvas.height].sort((a, b) => a - b);
+
+    dom.ctx.font = "bold 12px Arial";
+    dom.ctx.fillStyle = "red";
+    
+    // Horizontal segments (top)
+    dom.ctx.textAlign = "center";
+    dom.ctx.textBaseline = "top";
+    for (let i = 0; i < xLines.length - 1; i++) {
+        const dist = Math.round(xLines[i+1] - xLines[i]);
+        if (dist < 10) continue; 
+        const midX = (xLines[i] + xLines[i+1]) / 2;
+        const text = dist + "px";
+        
+        const metrics = dom.ctx.measureText(text);
+        dom.ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        dom.ctx.fillRect(midX - metrics.width / 2 - 3, 5, metrics.width + 6, 16);
+        
+        dom.ctx.fillStyle = "red";
+        dom.ctx.fillText(text, midX, 7);
+    }
+
+    // Vertical segments (left)
+    dom.ctx.textAlign = "left";
+    dom.ctx.textBaseline = "middle";
+    for (let i = 0; i < yLines.length - 1; i++) {
+        const dist = Math.round(yLines[i+1] - yLines[i]);
+        if (dist < 10) continue;
+        const midY = (yLines[i] + yLines[i+1]) / 2;
+        const text = dist + "px";
+
+        const metrics = dom.ctx.measureText(text);
+        dom.ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        dom.ctx.fillRect(5, midY - 9, metrics.width + 6, 18);
+
+        dom.ctx.fillStyle = "red";
+        dom.ctx.fillText(text, 8, midY);
+    }
 }

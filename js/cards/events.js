@@ -322,7 +322,7 @@ export function bindEvents() {
     // ── Canvas Mouse Events ──────────────────────────────────────────────────
     dom.canvas.addEventListener("mousedown", (e) => {
         if (!state.isImageLoaded) return;
-        dom.canvas.focus();
+        dom.canvas.focus({ preventScroll: true });
 
         const pos = getMousePos(e);
 
