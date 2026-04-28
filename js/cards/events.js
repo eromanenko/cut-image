@@ -207,6 +207,14 @@ export function bindEvents() {
         input.addEventListener('input', () => { syncRectDimensions(); redraw(); });
     });
 
+    dom.dpiInput.addEventListener('change', () => {
+        if (state.isPdf && state.pdfDoc) {
+            const requestedDpi = parseInt(dom.dpiInput.value) || 300;
+            state.PDF_SCALE = requestedDpi / 72;
+            renderPdfPageForPreview(state.currentPreviewPage);
+        }
+    });
+
     dom.getSizeBtn.addEventListener("click", () => {
         if (state.detectedCards.length === 0) {
             alert("No cards available. Please add a manual card or detect cards first.");

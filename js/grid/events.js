@@ -11,6 +11,13 @@ export function bindEvents() {
     dom.skipEdgesCheckbox.addEventListener('change', updateDownloadButtonText);
     dom.minSizeInput.addEventListener('input', updateDownloadButtonText);
     dom.dpiInput.addEventListener('input', updateDownloadButtonText);
+    dom.dpiInput.addEventListener('change', () => {
+        if (state.isPdf && state.pdfDoc) {
+            const requestedDpi = parseInt(dom.dpiInput.value) || 300;
+            state.PDF_SCALE = requestedDpi / 72;
+            renderPdfPageForPreview(state.currentPreviewPage);
+        }
+    });
 
     dom.fileInput.addEventListener("change", handleFileUpload);
 

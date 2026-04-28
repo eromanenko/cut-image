@@ -50,6 +50,8 @@ export function handleFileUpload(event) {
 
     if (file.type === "application/pdf") {
         state.isPdf = true;
+        const requestedDpi = parseInt(dom.dpiInput.value) || 300;
+        state.PDF_SCALE = requestedDpi / 72;
         dom.pdfControls.style.display = "flex";
 
         file.arrayBuffer().then(async arrayBuffer => {

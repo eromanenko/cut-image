@@ -23,23 +23,29 @@ export function redraw() {
             drawLinePath(line);
         }
         dom.ctx.strokeStyle = "red";
-        dom.ctx.lineWidth = 2;
+        dom.ctx.lineWidth = 1;
+        dom.ctx.setLineDash([5, 5]);
         dom.ctx.stroke();
+        dom.ctx.setLineDash([]);
 
         if (state.hoverLine && state.hoverLine !== state.selectedLine) {
             dom.ctx.beginPath();
             drawLinePath(state.hoverLine);
             dom.ctx.strokeStyle = "rgba(0, 123, 255, 0.6)"; 
-            dom.ctx.lineWidth = 4;
+            dom.ctx.lineWidth = 2;
+            dom.ctx.setLineDash([5, 5]);
             dom.ctx.stroke();
+            dom.ctx.setLineDash([]);
         }
 
         if (state.selectedLine) {
             dom.ctx.beginPath();
             drawLinePath(state.selectedLine);
             dom.ctx.strokeStyle = "#007bff"; 
-            dom.ctx.lineWidth = 3;
+            dom.ctx.lineWidth = 2;
+            dom.ctx.setLineDash([5, 5]);
             dom.ctx.stroke();
+            dom.ctx.setLineDash([]);
         }
     }
 
@@ -53,7 +59,7 @@ export function redraw() {
             dom.ctx.lineTo(dom.canvas.width, state.currentMousePos.y);
         }
         dom.ctx.strokeStyle = "rgba(255, 0, 0, 0.4)"; 
-        dom.ctx.lineWidth = 2;
+        dom.ctx.lineWidth = 1;
         dom.ctx.setLineDash([5, 5]); 
         dom.ctx.stroke();
         dom.ctx.setLineDash([]); 

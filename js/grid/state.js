@@ -7,7 +7,7 @@ export const state = {
     isPdf: false,
     pdfDoc: null,
     currentPreviewPage: 1,
-    PDF_SCALE: 2,
+    PDF_SCALE: 4.166666666666667, // 300 DPI (72 * 4.166... = 300)
 
     isDragging: false,
     draggedLine: null,
