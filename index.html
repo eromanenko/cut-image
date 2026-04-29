@@ -114,34 +114,33 @@
             </div>
 
             <!-- Checkbox for skipping edges + minimum size -->
-            <div class="controls hide-on-stuck" style="margin-top: -10px;">
-                <label class="checkbox-container">
+            <div class="controls hide-on-stuck">
+                <div class="input-container">
                     <input type="checkbox" id="skipEdgesCheckbox">
-                    Keep only inner slices (discard edges)
-                </label>
-                <label class="checkbox-container">
-                    Min size (mm): <input type="number" id="minSizeInput" value="10" min="0" max="100" step="1"
-                        style="width: 50px; margin-left: 5px;">
-                </label>
-                <label class="checkbox-container">
-                    DPI: <input type="number" id="dpiInput" value="300" min="72" step="1"
-                        style="width: 60px; margin-left: 5px;">
-                </label>
+                    <label for="skipEdgesCheckbox">Keep only inner slices (discard edges)</label>
+                </div>
+
+                <div class="input-container">
+                    <label for="minSizeInput">Min size (mm):</label>
+                    <input type="number" id="minSizeInput" value="10" min="0" max="100" step="1" style="width: 50px;">
+                </div>
+                <div class="input-container">
+                    <label for="dpiInput">DPI:</label>
+                    <input type="number" id="dpiInput" value="300" min="72" step="1" style="width: 60px;">
+                </div>
             </div>
 
             <!-- Additional controls for PDF navigation -->
-            <div class="controls" id="pdfControls"
-                style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
-                <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Previous Page</button>
+            <div class="controls" id="pdfControls" style="display: none; margin-bottom: 20px; align-items: center;">
+                <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Previous</button>
                 <span id="pageIndicator"
                     style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
-                <button id="nextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
-                <label class="checkbox-container" id="allPagesCheckContainer" style="margin-left: 20px;">
+                <button id="nextPageBtn" class="pdf-nav-btn" disabled>Next →</button>
+                <div class="input-container">
                     <input type="checkbox" id="allPagesCheckbox" checked>
-                    All pages
-                </label>
-                <span id="pairingModeContainer"
-                    style="display: none; align-items: center; gap: 6px; margin-left: 16px;">
+                    <label for="allPagesCheckbox" id="allPagesCheckContainer">All pages</label>
+                </div>
+                <span id="pairingModeContainer" style="display: none; align-items: center; gap: 6px;">
                     <select id="pairingModeSelect" style="padding: 3px 6px;">
                         <option value="none">Not pairing</option>
                         <option value="horizontal">Horizontal mirror</option>
@@ -195,6 +194,9 @@
                 <div class="info-tooltip">
                     <div class="info-icon">i</div>
                     <div class="tooltip-content" id="ceInstructions">
+                        <b>Modes:</b> Switch between <b>Free Form</b> (✏️ pencil icon) — each card has individually
+                        adjustable corners — and <b>Rectangular</b> (⬜ square icon) — all cards share the same fixed
+                        width, height, and skew.<br><br>
                         <span id="ceInstrFreeform">
                             <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. <b>Click
                                 and drag</b> the red corners to adjust borders. You can also <b>drag the whole card</b>
@@ -225,10 +227,10 @@
                 Computer Vision libraries (OpenCV)... Please wait.</div>
 
             <!-- Styling Controls (Freeform only) -->
-            <div class="controls hide-on-stuck" id="ceFreeformStylingRow" style="margin-top: -10px;">
-                <label class="checkbox-container">
+            <div class="controls hide-on-stuck" id="ceFreeformStylingRow">
+                <label class="input-container">
                     Line Color: <input type="color" id="ceLineColor" value="#808080"
-                        style="margin-left: 5px; cursor: pointer; height: calc(var(--control-height) - 10px);"
+                        style="cursor: pointer; height: calc(var(--control-height) - 10px);"
                         title="Line Color (Press C to cycle)">
                     <button type="button" class="fixed-color-btn" data-color="#000000"
                         style="background-color: #000000;" title="Black"></button>
@@ -243,27 +245,27 @@
                     <button type="button" class="fixed-color-btn" data-color="#ff0000"
                         style="background-color: #ff0000;" title="Red"></button>
                 </label>
-                <label class="checkbox-container">
+                <label class="input-container">
                     Line Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.5"
                         style="margin-left: 5px; cursor: pointer;">
-                    <span id="ceLineOpacityVal" style="display:inline-block; width: 3ch;">0.50</span>
+                    <span id="ceLineOpacityVal" style="display:inline-block; width: 4ch;">0.50</span>
                 </label>
-                <label class="checkbox-container" title="Toggle Zoom Window (Z)">
+                <div class="input-container">
                     <input type="checkbox" id="ceZoomCheckbox" checked>
-                    Zoom Window
-                </label>
+                    <label for="ceZoomCheckbox" title="Toggle Zoom Window (Z)">Zoom Window</label>
+                </div>
             </div>
 
             <!-- Dimensions Controls (Freeform only) -->
-            <div class="controls hide-on-stuck" id="ceFreeformDimensionsRow" style="margin-top: -10px;">
-                <label class="checkbox-container">
-                    Width (mm): <input type="number" id="ceWidthInput" min="0" step="0.1" placeholder="e.g. 61"
-                        style="width: 70px; margin-left: 5px;">
-                </label>
-                <label class="checkbox-container">
-                    Height (mm): <input type="number" id="ceHeightInput" min="0" step="0.1" placeholder="e.g. 112"
-                        style="width: 70px; margin-left: 5px;">
-                </label>
+            <div class="controls hide-on-stuck" id="ceFreeformDimensionsRow">
+                <div class="input-container">
+                    <label for="ceWidthInput">Width (mm):</label>
+                    <input type="number" id="ceWidthInput" min="0" step="0.1" style="width: 60px;">
+                </div>
+                <div class="input-container">
+                    <label for="ceHeightInput">Height (mm):</label>
+                    <input type="number" id="ceHeightInput" min="0" step="0.1" style="width: 60px;">
+                </div>
                 <button id="ceFreeformCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -277,24 +279,24 @@
                         <line x1="8" y1="18" x2="8" y2="18"></line>
                     </svg>
                 </button>
-                <label class="checkbox-container">
-                    DPI: <input type="number" id="ceDpiInput" value="300" min="72" step="1"
-                        style="width: 70px; margin-left: 5px;">
-                </label>
-                <button id="ceGetSizeBtn" title="Get size from the first selected card" style="margin-left: 10px;">🎯
+                <div class="input-container">
+                    <label for="ceDpiInput">DPI:</label>
+                    <input type="number" id="ceDpiInput" value="300" min="72" step="1" style="width: 60px;">
+                </div>
+                <button id="ceGetSizeBtn" title="Get size from the first selected card">🎯
                     Get from 1st Card</button>
             </div>
 
             <!-- Rect-mode Controls (Rectangle mode only) -->
-            <div class="controls hide-on-stuck" id="ceRectControls" style="display: none; margin-top: -10px;">
-                <label class="checkbox-container">
-                    Width (px): <input type="number" id="ceRectWidthPx" min="1" step="1" placeholder="e.g. 720"
-                        style="width: 80px; margin-left: 5px;">
-                </label>
-                <label class="checkbox-container">
-                    Height (px): <input type="number" id="ceRectHeightPx" min="1" step="1" placeholder="e.g. 1323"
-                        style="width: 80px; margin-left: 5px;">
-                </label>
+            <div class="controls hide-on-stuck" id="ceRectControls" style="display: none;">
+                <div class="input-container">
+                    <label for="ceRectWidthPx">Width (px):</label>
+                    <input type="number" id="ceRectWidthPx" min="1" step="1" style="width: 80px;">
+                </div>
+                <div class="input-container">
+                    <label for="ceRectHeightPx">Height (px):</label>
+                    <input type="number" id="ceRectHeightPx" min="1" step="1" style="width: 80px;">
+                </div>
                 <button id="ceRectCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -308,11 +310,13 @@
                         <line x1="8" y1="18" x2="8" y2="18"></line>
                     </svg>
                 </button>
-                <label class="checkbox-container"
-                    title="Pixels the top-right corner is lower than the top-left corner (parallelogram skew to compensate scanner distortion)">
-                    Skew (px): <input type="number" id="ceRectSkewPx" value="0" step="1"
-                        style="width: 70px; margin-left: 5px;">
-                </label>
+                <div class="input-container">
+                    <label for="ceRectSkewPx"
+                        title="Pixels the top-right corner is lower than the top-left corner (parallelogram skew to compensate scanner distortion)">
+                        Skew (px):
+                    </label>
+                    <input type="number" id="ceRectSkewPx" value="0" step="1" style="width: 60px;">
+                </div>
             </div>
 
             <!-- Zoom Window Container -->
@@ -323,8 +327,7 @@
             </div>
 
             <!-- Additional controls for PDF navigation -->
-            <div class="controls" id="cePdfControls"
-                style="display: none; margin-top: -10px; margin-bottom: 20px; align-items: center;">
+            <div class="controls" id="cePdfControls" style="display: none; margin-bottom: 20px; align-items: center;">
                 <button id="cePrevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
                 <span id="cePageIndicator"
                     style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
@@ -350,17 +353,18 @@
                     </svg>
                 </label>
                 <input type="file" id="dsFileInput" accept="image/*,.tif,.tiff" class="hidden-file-input">
-                <label class="checkbox-container">
-                    DPI: <input type="number" id="dsDpiInput" value="300" min="72" step="1"
-                        style="width: 60px; margin-left: 5px;">
-                </label>
+                <div class="input-container">
+                    <label for="dsDpiInput">DPI: </label>
+                    <input type="number" id="dsDpiInput" value="300" min="72" step="1" style="width: 60px;">
+                </div>
                 <button id="dsTuneBtn" disabled title="Tune parameters on a small preview">Tune Parameters</button>
                 <button id="dsUndoBtn" disabled title="Undo last filter">Undo</button>
                 <button id="dsProcessBtn" disabled title="Apply the selected filter">Apply Filter</button>
                 <button id="dsDownloadBtn" disabled title="Save the result">Download Image</button>
-                <label class="checkbox-container" title="Hold to see original image">
-                    <input type="checkbox" id="dsCompareCheckbox"> Compare (Original)
-                </label>
+                <div class="input-container">
+                    <input type="checkbox" id="dsCompareCheckbox">
+                    <label for="dsCompareCheckbox" title="Hold to see original image">Compare (Original)</label>
+                </div>
 
                 <!-- Info Tooltip -->
                 <div class="info-tooltip">
@@ -379,24 +383,30 @@
                 Computer Vision libraries (OpenCV)... Please wait.</div>
 
             <!-- Filter settings -->
-            <div class="controls hide-on-stuck" style="margin-top: -10px;">
-                <label class="checkbox-container">
-                    Method:
-                    <select id="dsFilterMethod" style="margin-left: 5px; padding: 3px;">
+            <div class="controls hide-on-stuck">
+                <div class="input-container">
+                    <label>Method:</label>
+                    <select id="dsFilterMethod" style="padding: 3px;">
                         <option value="bilateral">Bilateral Filter</option>
                         <option value="gaussian">Gaussian Blur + Unsharp</option>
                         <option value="median">Median Blur</option>
                     </select>
-                </label>
+                </div>
 
                 <!-- Bilateral controls -->
                 <span id="dsBilateralControls" style="display:inline-flex; align-items:center; gap:10px;">
-                    <label>Diameter: <input type="number" id="dsBiD" value="9" min="3" max="50" step="2"
-                            style="width: 50px;"></label>
-                    <label>SigmaColor: <input type="number" id="dsBiSigmaColor" value="75" min="10" max="250"
-                            style="width: 50px;"></label>
-                    <label>SigmaSpace: <input type="number" id="dsBiSigmaSpace" value="75" min="10" max="250"
-                            style="width: 50px;"></label>
+                    <div class="input-container">
+                        <label for="dsBiD">Diameter:</label>
+                        <input type="number" id="dsBiD" value="9" min="3" max="50" step="2" style="width: 50px;">
+                    </div>
+                    <div class="input-container">
+                        <label for="dsBiSigmaColor">SigmaColor:</label>
+                        <input type="number" id="dsBiSigmaColor" value="75" min="10" max="250" style="width: 50px;">
+                    </div>
+                    <div class="input-container">
+                        <label for="dsBiSigmaSpace">SigmaSpace:</label>
+                        <input type="number" id="dsBiSigmaSpace" value="75" min="10" max="250" style="width: 50px;">
+                    </div>
                 </span>
 
                 <!-- Gaussian unsharp controls -->
@@ -487,14 +497,15 @@
                     automatically.</p>
                 <div
                     style="margin-bottom: 15px; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-                    <label class="checkbox-container">
-                        Method:
-                        <select id="dsTuneMethod" style="margin-left: 5px; padding: 3px;">
+                    <div class="input-container">
+                        <label for="dsTuneMethod">Method:</label>
+                        <select id="dsTuneMethod" style="padding: 3px;">
                             <option value="bilateral">Bilateral Filter</option>
                             <option value="gaussian">Gaussian Blur + Unsharp</option>
                             <option value="median">Median Blur</option>
                         </select>
-                    </label>
+
+                    </div>
                     <div style="margin-top: 10px;">
                         <span id="dsTuneBiControls" style="display:inline-flex; align-items:center; gap:10px;">
                             <label>Diameter: <input type="number" id="dsTuneBiD" min="3" max="50" step="2"

@@ -1,8 +1,8 @@
 :root {
     --primary-color: #007bff;
     --hover-color: #0056b3;
-    --disabled-color: #ccc;
     --control-height: 32px;
+    --input-bg: #f0f0f0;
 }
 
 body {
@@ -41,16 +41,8 @@ body {
     font-family: 'Consolas', 'Monaco', monospace;
 }
 
-.instructions {
-    font-size: 14px;
-    color: #555;
-    margin-bottom: 20px;
-    line-height: 1.5;
-    text-wrap: balance;
-}
-
 .controls {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -120,8 +112,8 @@ input[type="file"]::file-selector-button:hover,
 }
 
 button:disabled {
-    background-color: var(--disabled-color);
     cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .canvas-container {
@@ -173,20 +165,38 @@ canvas {
     background-color: #dde2e6;
 }
 
-.checkbox-container {
-    cursor: pointer;
+.input-container {
     font-size: 14px;
-    user-select: none;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 5px;
-    background: #f0f0f0;
+    background: var(--input-bg);
     padding: 0 12px;
     height: var(--control-height);
     border-radius: 5px;
     border: 1px solid #ddd;
     box-sizing: border-box;
-    vertical-align: middle;
+    gap: 5px;
+}
+
+.input-container:has(input[type="checkbox"]) {
+    cursor: pointer;
+    user-select: none;
+    padding-left: 8px;
+}
+
+.input-container input[type="checkbox"] {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.input-container label {
+    line-height: 1;
+}
+
+.input-container:has(input[type="text"]),
+.input-container:has(input[type="number"]),
+.input-container:has(select) {
+    padding-right: 0;
 }
 
 .controls input[type="text"],
@@ -209,13 +219,15 @@ canvas {
 }
 
 /* Square icon buttons like calculator and file open */
-.ce-calc-btn, .file-btn {
+.ce-calc-btn,
+.file-btn {
     padding: 0 !important;
     width: var(--control-height) !important;
     flex-shrink: 0;
 }
 
-.file-btn svg, .ce-calc-btn svg {
+.file-btn svg,
+.ce-calc-btn svg {
     width: 20px;
     height: 20px;
 }
@@ -411,7 +423,8 @@ button.tab-btn:hover:not(:disabled) {
     color: #666;
 }
 
-.ce-calc-group input, .ce-calc-group select {
+.ce-calc-group input,
+.ce-calc-group select {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -561,6 +574,7 @@ button.tab-btn:hover:not(:disabled) {
     border-style: solid;
     border-color: transparent transparent #fff transparent;
 }
+
 .zoom-window-resizer {
     position: absolute;
     right: 0;
