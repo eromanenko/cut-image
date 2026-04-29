@@ -3,24 +3,35 @@
     --hover-color: #0056b3;
     --control-height: 32px;
     --input-bg: #f0f0f0;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-primary: #333;
+    --text-muted: #888;
+    --border-color: #dee2e6;
+    --border-color-dark: #ccc;
+    --radius-sm: 4px;
+    --radius-lg: 8px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     text-align: center;
-    background-color: #f8f9fa;
+    background-color: var(--bg-color);
     margin: 0;
     padding: 20px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
     padding: 0 10px;
+    max-width: 960px;
+    margin: auto;
+    margin-bottom: 20px;
 }
 
 .app-title-group {
@@ -32,12 +43,12 @@ body {
 .app-title {
     margin: 0;
     font-size: 20px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .app-version {
     font-size: 13px;
-    color: #888;
+    color: var(--text-muted);
     font-family: 'Consolas', 'Monaco', monospace;
 }
 
@@ -55,14 +66,14 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    background-color: #f8f9fa;
+    background-color: var(--bg-color);
     padding-bottom: 15px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
     transition: box-shadow 0.2s, padding-bottom 0.3s ease;
 }
 
 .sticky-controls.stuck {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow);
     padding-bottom: 5px;
 }
 
@@ -94,7 +105,7 @@ input[type="file"]::file-selector-button,
     border: none;
     height: var(--control-height);
     padding: 0 16px;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s;
@@ -119,11 +130,11 @@ button:disabled {
 .canvas-container {
     position: relative;
     display: inline-block;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    background-color: white;
-    border-radius: 4px;
+    box-shadow: var(--shadow);
+    background-color: var(--card-bg);
+    border-radius: var(--radius-sm);
     margin-top: 30px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     max-width: 100%;
     /* Prevent container expanding beyond window */
 }
@@ -133,7 +144,7 @@ button:disabled {
     top: -24px;
     right: 5px;
     font-size: 13px;
-    color: #666;
+    color: var(--text-muted);
     font-weight: 600;
     max-width: 80%;
     white-space: nowrap;
@@ -157,7 +168,7 @@ canvas {
 
 .pdf-nav-btn {
     background-color: #e9ecef;
-    color: #333;
+    color: var(--text-primary);
     border: 1px solid #ced4da;
 }
 
@@ -172,8 +183,8 @@ canvas {
     background: var(--input-bg);
     padding: 0 12px;
     height: var(--control-height);
-    border-radius: 5px;
-    border: 1px solid #ddd;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
     box-sizing: border-box;
     gap: 5px;
 }
@@ -186,7 +197,6 @@ canvas {
 
 .input-container input[type="checkbox"] {
     margin: 0;
-    flex-shrink: 0;
 }
 
 .input-container label {
@@ -204,8 +214,8 @@ canvas {
 .controls select {
     height: var(--control-height);
     padding: 0 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border: 1px solid var(--border-color-dark);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     box-sizing: border-box;
     vertical-align: middle;
@@ -258,8 +268,8 @@ canvas {
 
 button.tab-btn:hover,
 button.tab-btn:hover:not(:disabled) {
-    background-color: #e9ecef;
-    color: #333;
+    background-color: var(--bg-neutral, #e9ecef);
+    color: var(--text-primary);
 }
 
 .tab-btn.active {
@@ -277,9 +287,9 @@ button.tab-btn:hover:not(:disabled) {
 
 /* Fixed color buttons for color picker */
 .fixed-color-btn {
-    width: 25px;
+    width: 12px;
     height: 25px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     border: 1px solid #999;
     padding: 0;
     margin-left: 4px;
@@ -296,7 +306,7 @@ button.tab-btn:hover:not(:disabled) {
 /* Mode toggle (Freeform / Rectangle segmented control) */
 .mode-toggle {
     display: inline-flex;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
     border: 1px solid var(--primary-color);
 }
@@ -306,7 +316,7 @@ button.tab-btn:hover:not(:disabled) {
     color: var(--primary-color);
     border: none;
     border-radius: 0;
-    padding: 0 12px;
+    padding: 0 8px;
     font-size: 18px;
     font-weight: 600;
     cursor: pointer;
@@ -314,7 +324,6 @@ button.tab-btn:hover:not(:disabled) {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
     height: var(--control-height);
     box-sizing: border-box;
 }
@@ -349,10 +358,10 @@ button.tab-btn:hover:not(:disabled) {
 }
 
 .ce-modal-content {
-    background-color: white;
+    background-color: var(--card-bg);
     padding: 0;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
     width: 400px;
     overflow: hidden;
     animation: ce-modal-fadein 0.2s ease-out;
@@ -371,9 +380,9 @@ button.tab-btn:hover:not(:disabled) {
 }
 
 .ce-modal-header {
-    background-color: #f8f9fa;
+    background-color: var(--bg-color);
     padding: 12px 16px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -411,11 +420,6 @@ button.tab-btn:hover:not(:disabled) {
     flex-direction: column;
 }
 
-.ce-calc-group.full-width {
-    flex: none;
-    width: 100%;
-}
-
 .ce-calc-group label {
     font-size: 12px;
     font-weight: bold;
@@ -426,8 +430,8 @@ button.tab-btn:hover:not(:disabled) {
 .ce-calc-group input,
 .ce-calc-group select {
     padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border: 1px solid var(--border-color-dark);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     width: 100%;
     box-sizing: border-box;
@@ -435,8 +439,8 @@ button.tab-btn:hover:not(:disabled) {
 
 .ce-modal-footer {
     padding: 12px 16px;
-    background-color: #f8f9fa;
-    border-top: 1px solid #dee2e6;
+    background-color: var(--bg-color);
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: flex-end;
     gap: 10px;
@@ -457,23 +461,6 @@ button.tab-btn:hover:not(:disabled) {
     font-size: 14px;
 }
 
-/* Calculator buttons next to inputs */
-.ce-calc-btn {
-    padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--control-height);
-    height: var(--control-height);
-    flex-shrink: 0;
-    box-sizing: border-box;
-}
-
-.ce-calc-btn svg {
-    width: 24px;
-    height: 24px;
-}
-
 /* Draggable Zoom Window */
 .zoom-window {
     position: fixed;
@@ -481,9 +468,9 @@ button.tab-btn:hover:not(:disabled) {
     left: 20px;
     z-index: 9999;
     border: 2px solid var(--primary-color);
-    border-radius: 6px;
-    background: #fff;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
     overflow: hidden;
     min-width: 150px;
     min-height: 150px;
@@ -534,10 +521,10 @@ button.tab-btn:hover:not(:disabled) {
 .tooltip-content {
     visibility: hidden;
     width: 450px;
-    background-color: #fff;
-    color: #333;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
     text-align: left;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     padding: 15px;
     position: absolute;
     z-index: 1001;
@@ -546,8 +533,8 @@ button.tab-btn:hover:not(:disabled) {
     opacity: 0;
     transition: opacity 0.3s, transform 0.3s;
     transform: translateY(-10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    border: 1px solid #ddd;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     font-size: 13px;
     line-height: 1.5;
     pointer-events: none;
@@ -558,10 +545,6 @@ button.tab-btn:hover:not(:disabled) {
     visibility: visible;
     opacity: 1;
     transform: translateY(0);
-}
-
-.tooltip-content b {
-    color: var(--primary-color);
 }
 
 /* Arrow for tooltip */
