@@ -3,6 +3,8 @@ import { state } from './state.js';
 
 export function initCalculator() {
     if (!dom.calcBtnFreeform || !dom.calcBtnRect) return;
+    if (!dom.calcModal || !dom.calcCancelBtn || !dom.calcCancelX || !dom.calcApplyBtn) return;
+    if (!dom.calcMmW || !dom.calcMmH || !dom.calcPxW || !dom.calcPxH || !dom.calcDpi) return;
 
     dom.calcBtnFreeform.addEventListener('click', () => openCalculator('freeform'));
     dom.calcBtnRect.addEventListener('click', () => openCalculator('rect'));

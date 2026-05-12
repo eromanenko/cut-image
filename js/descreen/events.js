@@ -46,25 +46,28 @@ export function bindEvents() {
         }
     });
 
-    // Provide a mousedown/mouseup quick compare
-    dom.compareCheckbox.closest('label').addEventListener('mousedown', () => {
-        if (!dom.compareCheckbox.checked) {
-            dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
-            dom.ctx.drawImage(dom.sourceCanvas, 0, 0);
-        }
-    });
-    dom.compareCheckbox.closest('label').addEventListener('mouseup', () => {
-        if (!dom.compareCheckbox.checked) {
-            dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
-            dom.ctx.drawImage(dom.resultCanvas, 0, 0);
-        }
-    });
-    dom.compareCheckbox.closest('label').addEventListener('mouseleave', () => {
-        if (!dom.compareCheckbox.checked && state.isImageLoaded) {
-            dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
-            dom.ctx.drawImage(dom.resultCanvas, 0, 0);
-        }
-    });
+    // Provide a mousedown/mouseup quick compare (only if checkbox is inside a <label>)
+    const compareLabel = dom.compareCheckbox.closest('label');
+    if (compareLabel) {
+        compareLabel.addEventListener('mousedown', () => {
+            if (!dom.compareCheckbox.checked) {
+                dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+                dom.ctx.drawImage(dom.sourceCanvas, 0, 0);
+            }
+        });
+        compareLabel.addEventListener('mouseup', () => {
+            if (!dom.compareCheckbox.checked) {
+                dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+                dom.ctx.drawImage(dom.resultCanvas, 0, 0);
+            }
+        });
+        compareLabel.addEventListener('mouseleave', () => {
+            if (!dom.compareCheckbox.checked && state.isImageLoaded) {
+                dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+                dom.ctx.drawImage(dom.resultCanvas, 0, 0);
+            }
+        });
+    }
 
     dom.downloadBtn.addEventListener('click', async () => {
         if (!state.isImageLoaded) return;

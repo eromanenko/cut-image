@@ -16,6 +16,222 @@ import {
 import { initCalculator } from './calculator.js';
 
 // ---------------------------------------------------------------------------
+// Placement helpers: find the first free top-left position for a new card
+// ---------------------------------------------------------------------------
+
+/**
+ * For freeform mode: scan the canvas top→bottom, left→right with a step equal
+ * to the card dimensions. Returns the first center {x, y} where a card of
+ * size (w×h) does not overlap any existing freeform card.
+ */
+function findTopLeftFreePositionFreeform(w, h) {
+    const canvasW = dom.sourceCanvas.width  || dom.canvas.width;
+    const canvasH = dom.sourceCanvas.height || dom.canvas.height;
+    const stepX = Math.max(1, Math.round(w));
+    const stepY = Math.max(1, Math.round(h));
+    const halfW = w / 2;
+    const halfH = h / 2;
+
+    for (let cy = halfH; cy + halfH <= canvasH; cy += stepY) {
+        for (let cx = halfW; cx + halfW <= canvasW; cx += stepX) {
+            if (!freeformCardOverlapsExisting(cx, cy)) {
+                return snapFreeformPosition(cx, cy, canvasW, canvasH);
+            }
+        }
+    }
+    // Fallback: top-left corner
+    return { x: halfW, y: halfH };
+}
+
+/**
+ * Returns true if the CENTER point (cx, cy) falls inside any existing
+ * freeform card's axis-aligned bounding box.
+ */
+function freeformCardOverlapsExisting(cx, cy) {
+    for (const card of state.detectedCards) {
+        const xs = card.map(p => p.x);
+        const ys = card.map(p => p.y);
+        const cl = Math.min(...xs), cr = Math.max(...xs);
+        const ct = Math.min(...ys), cb = Math.max(...ys);
+        if (cx >= cl && cx <= cr && cy >= ct && cy <= cb) return true;
+    }
+    return false;
+}
+
+/**
+ * Snap the raw free-slot center (cx, cy) to the midpoint of the real gap
+ * between neighboring cards' AABB edges. This corrects for the fact that
+ * auto-detected cards may have margins not accounted for in the card size.
+ *
+ * X: centered between the right edge of the nearest left neighbor
+ *    and the left edge of the nearest right neighbor.
+ * Y: uses the average cy of cards in the same row (cards whose cy is
+ *    within 75% of the card height), so new card aligns with the row.
+ */
+function snapFreeformPosition(cx, cy, canvasW, canvasH) {
+    if (state.detectedCards.length === 0) return { x: cx, y: cy };
+
+    const boxes = state.detectedCards.map(card => {
+        const xs = card.map(p => p.x);
+        const ys = card.map(p => p.y);
+        const l = Math.min(...xs), r = Math.max(...xs);
+        const t = Math.min(...ys), b = Math.max(...ys);
+        return { cx: (l + r) / 2, cy: (t + b) / 2, l, r, t, b };
+    });
+
+    const cardH = boxes[0].b - boxes[0].t;
+
+    // Same-row cards: cy within 75% of card height
+    const sameRow = boxes.filter(b => Math.abs(b.cy - cy) < cardH * 0.75);
+
+    // --- Snap X: search only within same-row cards ---
+    const xPool = sameRow.length > 0 ? sameRow : boxes;
+    let leftNeighbor = null, rightNeighbor = null;
+    let leftDist = Infinity, rightDist = Infinity;
+    for (const b of xPool) {
+        if (b.cx < cx) {
+            const d = cx - b.cx;
+            if (d < leftDist) { leftDist = d; leftNeighbor = b; }
+        } else if (b.cx > cx) {
+            const d = b.cx - cx;
+            if (d < rightDist) { rightDist = d; rightNeighbor = b; }
+        }
+    }
+    const leftEdge  = leftNeighbor  ? leftNeighbor.r  : 0;
+    const rightEdge = rightNeighbor ? rightNeighbor.l : canvasW;
+    const snappedCx = (leftNeighbor || rightNeighbor)
+        ? (leftEdge + rightEdge) / 2
+        : cx;
+
+    // --- Snap Y: align with same-row cards ---
+    let snappedCy;
+    if (sameRow.length > 0) {
+        snappedCy = sameRow.reduce((s, b) => s + b.cy, 0) / sameRow.length;
+    } else {
+        let topNeighbor = null, bottomNeighbor = null;
+        let topDist = Infinity, bottomDist = Infinity;
+        for (const b of boxes) {
+            if (b.cy < cy) {
+                const d = cy - b.cy;
+                if (d < topDist) { topDist = d; topNeighbor = b; }
+            } else if (b.cy > cy) {
+                const d = b.cy - cy;
+                if (d < bottomDist) { bottomDist = d; bottomNeighbor = b; }
+            }
+        }
+        const topEdge    = topNeighbor    ? topNeighbor.b    : 0;
+        const bottomEdge = bottomNeighbor ? bottomNeighbor.t : canvasH;
+        snappedCy = (topNeighbor || bottomNeighbor)
+            ? (topEdge + bottomEdge) / 2
+            : cy;
+    }
+
+    return { x: snappedCx, y: snappedCy };
+}
+
+/**
+ * For rect mode: scan the canvas top→bottom, left→right with a step equal to
+ * the card dimensions. Returns the first center {x, y} where a rect card does
+ * not overlap any existing rect card.
+ */
+function findTopLeftFreePositionRect() {
+    const W = state.rectWidth;
+    const H = state.rectHeight;
+    if (W <= 0 || H <= 0) return null;
+
+    const canvasW = dom.canvas.width;
+    const canvasH = dom.canvas.height;
+    const stepX = Math.max(1, Math.round(W));
+    const stepY = Math.max(1, Math.round(H));
+
+    for (let cy = H / 2; cy + H / 2 <= canvasH; cy += stepY) {
+        for (let cx = W / 2; cx + W / 2 <= canvasW; cx += stepX) {
+            const candidate = createRectCard(cx, cy);
+            if (!rectCardOverlapsExisting(candidate)) {
+                return snapRectPosition(cx, cy, canvasW, canvasH);
+            }
+        }
+    }
+    // Fallback: top-left corner
+    return { x: W / 2, y: H / 2 };
+}
+
+/**
+ * Snap the raw rect-mode free-slot center to the midpoint of the actual gap
+ * between neighboring rect cards' AABB edges.
+ */
+function snapRectPosition(cx, cy, canvasW, canvasH) {
+    if (state.rectCards.length === 0) return { x: cx, y: cy };
+
+    const boxes = state.rectCards.map(card => {
+        const corners = getRectCardCorners(card);
+        const xs = corners.map(p => p.x);
+        const ys = corners.map(p => p.y);
+        const l = Math.min(...xs), r = Math.max(...xs);
+        const t = Math.min(...ys), b = Math.max(...ys);
+        return { cx: (l + r) / 2, cy: (t + b) / 2, l, r, t, b };
+    });
+
+    let leftNeighbor = null, rightNeighbor = null;
+    let leftDist = Infinity, rightDist = Infinity;
+    for (const b of boxes) {
+        if (b.cx < cx) {
+            const d = cx - b.cx; if (d < leftDist)  { leftDist  = d; leftNeighbor  = b; }
+        } else if (b.cx > cx) {
+            const d = b.cx - cx; if (d < rightDist) { rightDist = d; rightNeighbor = b; }
+        }
+    }
+    const leftEdge  = leftNeighbor  ? leftNeighbor.r  : 0;
+    const rightEdge = rightNeighbor ? rightNeighbor.l : canvasW;
+    const snappedCx = (leftNeighbor || rightNeighbor) ? (leftEdge + rightEdge) / 2 : cx;
+
+    const H = state.rectHeight || (canvasH / 2);
+    const sameRow = boxes.filter(b => Math.abs(b.cy - cy) < H * 0.75);
+    let snappedCy;
+    if (sameRow.length > 0) {
+        snappedCy = sameRow.reduce((s, b) => s + b.cy, 0) / sameRow.length;
+    } else {
+        let topNeighbor = null, bottomNeighbor = null;
+        let topDist = Infinity, bottomDist = Infinity;
+        for (const b of boxes) {
+            if (b.cy < cy) {
+                const d = cy - b.cy; if (d < topDist)    { topDist    = d; topNeighbor    = b; }
+            } else if (b.cy > cy) {
+                const d = b.cy - cy; if (d < bottomDist) { bottomDist = d; bottomNeighbor = b; }
+            }
+        }
+        const topEdge    = topNeighbor    ? topNeighbor.b    : 0;
+        const bottomEdge = bottomNeighbor ? bottomNeighbor.t : canvasH;
+        snappedCy = (topNeighbor || bottomNeighbor) ? (topEdge + bottomEdge) / 2 : cy;
+    }
+
+    return { x: snappedCx, y: snappedCy };
+}
+
+/**
+ * Returns true if the CENTER point of the candidate rect card falls inside
+ * any existing rect card's axis-aligned bounding box.
+ */
+function rectCardOverlapsExisting(candidate) {
+    const corners = getRectCardCorners(candidate);
+    const xs = corners.map(p => p.x);
+    const ys = corners.map(p => p.y);
+    // Center of candidate
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+
+    for (const card of state.rectCards) {
+        const ec = getRectCardCorners(card);
+        const exs = ec.map(p => p.x);
+        const eys = ec.map(p => p.y);
+        const el = Math.min(...exs), er = Math.max(...exs);
+        const et = Math.min(...eys), eb = Math.max(...eys);
+        if (cx >= el && cx <= er && cy >= et && cy <= eb) return true;
+    }
+    return false;
+}
+
+// ---------------------------------------------------------------------------
 // Freeform: delete selected card
 // ---------------------------------------------------------------------------
 
@@ -247,41 +463,46 @@ export function bindEvents() {
         if (!state.isImageLoaded) return;
 
         if (state.editMode === 'rect') {
-            // Centre of the currently visible part of the canvas
-            const rect   = dom.canvas.getBoundingClientRect();
-            const scaleX = dom.canvas.width  / rect.width;
-            const scaleY = dom.canvas.height / rect.height;
-            const vx0 = Math.max(0, -rect.left);
-            const vy0 = Math.max(0, -rect.top);
-            const vx1 = Math.min(rect.width,  window.innerWidth  - rect.left);
-            const vy1 = Math.min(rect.height, window.innerHeight - rect.top);
-            const cx  = ((vx0 + vx1) / 2) * scaleX;
-            const cy  = ((vy0 + vy1) / 2) * scaleY;
-
             if (state.rectWidth <= 0 || state.rectHeight <= 0) {
                 alert("Please set Width and Height (px) for Rectangle mode first.");
                 return;
             }
 
-            const card = createRectCard(cx, cy);
+            const pos = findTopLeftFreePositionRect();
+            const card = createRectCard(pos.x, pos.y);
             state.rectCards.push(card);
             state.selectedRectCardIndex = state.rectCards.length - 1;
+            // Scroll to the newly placed card
+            const newCorners = getRectCardCorners(card);
+            scrollToRectCard(card, newCorners);
         } else {
-            let cx = dom.sourceCanvas.width  / 2;
-            let cy = dom.sourceCanvas.height / 2;
+            // Determine card size from width/height/dpi inputs if available
+            const dpi = parseFloat(dom.dpiInput.value) || 300;
+            const mmW = parseFloat(dom.widthInput.value);
+            const mmH = parseFloat(dom.heightInput.value);
 
-            let w = Math.min(dom.sourceCanvas.width * 0.2, cx * 0.8);
-            if (w < 100) w = 100;
-            let h = w * 1.5;
+            let w, h;
+            if (mmW > 0 && mmH > 0) {
+                w = (mmW * dpi) / 25.4;
+                h = (mmH * dpi) / 25.4;
+            } else {
+                w = Math.min(dom.sourceCanvas.width * 0.2, dom.sourceCanvas.width * 0.4);
+                if (w < 100) w = 100;
+                h = w * 1.5;
+            }
 
-            let pts = [
-                { x: cx - w/2, y: cy - h/2 },
-                { x: cx + w/2, y: cy - h/2 },
-                { x: cx + w/2, y: cy + h/2 },
-                { x: cx - w/2, y: cy + h/2 },
+            const pos = findTopLeftFreePositionFreeform(w, h);
+            const pts = [
+                { x: pos.x - w/2, y: pos.y - h/2 },
+                { x: pos.x + w/2, y: pos.y - h/2 },
+                { x: pos.x + w/2, y: pos.y + h/2 },
+                { x: pos.x - w/2, y: pos.y + h/2 },
             ];
 
             state.detectedCards.push(pts);
+            // Select TL corner and scroll to it
+            state.selectedPoint = pts[0];
+            scrollToCorner(pts[0], 0);
         }
 
         updateButtonStates();
