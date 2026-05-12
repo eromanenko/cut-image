@@ -166,6 +166,8 @@ export function handleAutoDetect() {
             dom.processButton.disabled    = false;
             dom.processButton.textContent = "Auto-Detect";
             updateButtonStates();
+            // Focus canvas so keyboard navigation works immediately
+            dom.canvas.focus({ preventScroll: true });
         }
     }, 50);
 }

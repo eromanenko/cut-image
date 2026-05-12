@@ -407,16 +407,17 @@ export function bindEvents() {
     initCalculator();
     // ── Buttons ─────────────────────────────────────────────────────────────
     dom.processButton.addEventListener('click', handleAutoDetect);
-    dom.downloadButton.addEventListener('click', exportCards);
+    dom.downloadButton.addEventListener('click', () => { exportCards(); dom.canvas.focus({ preventScroll: true }); });
     dom.fileInput.addEventListener('change', handleFileUpload);
     dom.deleteButton.addEventListener('click', () => {
         if (state.editMode === 'rect') deleteSelectedRectCard();
         else deleteSelectedCard();
+        dom.canvas.focus({ preventScroll: true });
     });
 
     // Mode toggle
-    dom.freeformModeBtn.addEventListener('click', () => switchMode('freeform'));
-    dom.rectModeBtn.addEventListener('click',     () => switchMode('rect'));
+    dom.freeformModeBtn.addEventListener('click', () => { switchMode('freeform'); dom.canvas.focus({ preventScroll: true }); });
+    dom.rectModeBtn.addEventListener('click',     () => { switchMode('rect'); dom.canvas.focus({ preventScroll: true }); });
 
     // Rect-mode dimension inputs → update state & redraw
     [dom.rectWidthPx, dom.rectHeightPx, dom.rectSkewPx].forEach(input => {
@@ -457,6 +458,7 @@ export function bindEvents() {
 
         dom.widthInput.value  = mmW.toFixed(1);
         dom.heightInput.value = mmH.toFixed(1);
+        dom.canvas.focus({ preventScroll: true });
     });
 
     dom.addManualButton.addEventListener('click', () => {
@@ -507,6 +509,7 @@ export function bindEvents() {
 
         updateButtonStates();
         redraw();
+        dom.canvas.focus({ preventScroll: true });
     });
 
     // ── Styles (freeform only) ───────────────────────────────────────────────
@@ -530,6 +533,7 @@ export function bindEvents() {
         if (state.currentPreviewPage > 1) {
             state.currentPreviewPage--;
             renderPdfPageForPreview(state.currentPreviewPage);
+            dom.canvas.focus({ preventScroll: true });
         }
     });
 
@@ -537,6 +541,7 @@ export function bindEvents() {
         if (state.pdfDoc && state.currentPreviewPage < state.pdfDoc.numPages) {
             state.currentPreviewPage++;
             renderPdfPageForPreview(state.currentPreviewPage);
+            dom.canvas.focus({ preventScroll: true });
         }
     });
 
