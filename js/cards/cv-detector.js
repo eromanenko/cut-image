@@ -136,6 +136,8 @@ export function detectCards() {
         alert("No cards could be automatically detected. Make sure the background contrasts with the cards.");
     }
 
+    import('./ini-handler.js').then(m => m.saveCurrentToDatabase());
+
     redraw();
     updateButtonStates();
 }

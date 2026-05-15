@@ -3,6 +3,7 @@ import { state, resetState } from './state.js';
 import { redraw } from './renderer.js';
 import { updateButtonStates } from './ui.js';
 import { extractTiffDpi, extractImageDpi } from '../grid/dpi.js';
+import { loadCurrentFromDatabase } from './ini-handler.js';
 
 export async function renderPdfPageForPreview(pageNumber) {
     if (!state.pdfDoc) return;
@@ -32,6 +33,9 @@ export async function renderPdfPageForPreview(pageNumber) {
         state.isImageLoaded = true;
         dom.canvas.parentElement.style.display = 'inline-block';
         state.detectedCards = []; // clear previous detections on new page
+        
+        const hasLoaded = loadCurrentFromDatabase();
+        
         redraw();
         updateButtonStates();
     } catch (err) {
@@ -44,6 +48,7 @@ export function handleFileUpload(event) {
     if (!file) return;
 
     resetState();
+    state.currentFileName = file.name;
     state.originalFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     dom.prefixInput.value = state.originalFileName + "-";
     if (dom.fileNameDisplay) dom.fileNameDisplay.textContent = file.name;
@@ -101,6 +106,9 @@ export function handleFileUpload(event) {
                     dom.canvas.height = h;
                     state.isImageLoaded = true;
                     dom.canvas.parentElement.style.display = 'inline-block';
+                    
+                    loadCurrentFromDatabase();
+
                     redraw();
                     updateButtonStates();
                 } catch (err) {
@@ -125,6 +133,9 @@ export function handleFileUpload(event) {
                         dom.canvas.height = image.height;
                         state.isImageLoaded = true;
                         dom.canvas.parentElement.style.display = 'inline-block';
+                        
+                        loadCurrentFromDatabase();
+
                         redraw();
                         updateButtonStates();
                     };

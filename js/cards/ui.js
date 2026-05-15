@@ -6,6 +6,10 @@ export function updateButtonStates() {
 
     dom.processButton.disabled = !(state.isCvReady && state.isImageLoaded);
     dom.addManualButton.disabled = !state.isImageLoaded;
+    
+    if (dom.saveCoordsButton) {
+        dom.saveCoordsButton.disabled = Object.keys(state.coordsDatabase || {}).length === 0 && !state.isImageLoaded;
+    }
 
     if (isRect) {
         const total = state.rectCards.length;

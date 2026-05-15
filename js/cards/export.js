@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { updateButtonStates } from './ui.js';
 import { getRectCardCorners } from './rect-mode.js';
 import { injectPngDpi } from '../grid/png-modifier.js';
+import { generateCurrentIniFileContent } from './ini-handler.js';
 
 export async function exportCards() {
     const isRect     = state.editMode === 'rect';
@@ -72,6 +73,11 @@ export async function exportCards() {
         }
 
         srcMat.delete();
+
+        const iniContent = generateCurrentIniFileContent();
+        if (iniContent) {
+            zip.file(`${state.originalFileName}.ini`, iniContent);
+        }
 
         const content = await zip.generateAsync({ type: "blob" });
         const a       = document.createElement("a");

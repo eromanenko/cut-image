@@ -14,6 +14,7 @@ import {
     pointInRectCard,
 } from './rect-mode.js';
 import { initCalculator } from './calculator.js';
+import { saveCurrentToDatabase, serializeDatabaseToIni, parseIniToDatabase } from './ini-handler.js';
 
 // ---------------------------------------------------------------------------
 // Placement helpers: find the first free top-left position for a new card
@@ -242,6 +243,7 @@ export function deleteSelectedCard() {
     if (index !== -1) {
         state.detectedCards.splice(index, 1);
         state.selectedPoint = null;
+        saveCurrentToDatabase();
         updateButtonStates();
         redraw();
     }
@@ -258,6 +260,7 @@ function deleteSelectedRectCard() {
     state.selectedRectCardIndex = state.rectCards.length > 0
         ? Math.min(state.selectedRectCardIndex, state.rectCards.length - 1)
         : -1;
+    saveCurrentToDatabase();
     updateButtonStates();
     redraw();
 }
@@ -284,6 +287,7 @@ function switchMode(newMode) {
     state.selectedRectCardIndex = -1;
     state.editMode = newMode;
 
+    saveCurrentToDatabase();
     applyModeUI(newMode);
     updateButtonStates();
     redraw();
@@ -415,6 +419,40 @@ export function bindEvents() {
         dom.canvas.focus({ preventScroll: true });
     });
 
+    if (dom.saveCoordsButton) {
+        dom.saveCoordsButton.addEventListener('click', () => {
+            const ini = serializeDatabaseToIni();
+            if (!ini) return;
+            const blob = new Blob([ini], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cut-coords.ini';
+            a.click();
+            URL.revokeObjectURL(url);
+            dom.canvas.focus({ preventScroll: true });
+        });
+    }
+
+    if (dom.loadCoordsButton) {
+        dom.loadCoordsButton.addEventListener('click', () => {
+            dom.loadCoordsInput.click();
+        });
+        dom.loadCoordsInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                parseIniToDatabase(ev.target.result);
+                updateButtonStates();
+                dom.canvas.focus({ preventScroll: true });
+            };
+            reader.readAsText(file);
+            // clear value so it can be selected again
+            e.target.value = '';
+        });
+    }
+
     // Mode toggle
     dom.freeformModeBtn.addEventListener('click', () => { switchMode('freeform'); dom.canvas.focus({ preventScroll: true }); });
     dom.rectModeBtn.addEventListener('click',     () => { switchMode('rect'); dom.canvas.focus({ preventScroll: true }); });
@@ -507,6 +545,7 @@ export function bindEvents() {
             scrollToCorner(pts[0], 0);
         }
 
+        saveCurrentToDatabase();
         updateButtonStates();
         redraw();
         dom.canvas.focus({ preventScroll: true });
@@ -594,10 +633,12 @@ export function bindEvents() {
     window.addEventListener("mouseup", () => {
         isDraggingZoom = false;
         isResizingZoom = false;
+        let coordsChanged = false;
         if (state.isDraggingPoint) {
             state.isDraggingPoint = false;
             state.draggedPoint    = null;
             stopAutoScroll();
+            coordsChanged = true;
             if (dom.canvas.matches(':hover')) {
                 dom.canvas.style.cursor = state.hoveredPoint ? 'grab' : 'crosshair';
             }
@@ -606,14 +647,17 @@ export function bindEvents() {
             state.isDraggingCard = false;
             state.draggedCard    = null;
             stopAutoScroll();
+            coordsChanged = true;
             if (dom.canvas.matches(':hover')) dom.canvas.style.cursor = 'crosshair';
         }
         if (state.isDraggingRectCard) {
             state.isDraggingRectCard   = false;
             state.draggedRectCardIndex = -1;
             stopAutoScroll();
+            coordsChanged = true;
             if (dom.canvas.matches(':hover')) dom.canvas.style.cursor = 'move';
         }
+        if (coordsChanged) saveCurrentToDatabase();
     });
 
     // ── Keyboard Events ──────────────────────────────────────────────────────
@@ -960,7 +1004,11 @@ function handleFreeformKeyDown(e) {
         }
     }
 
-    if (handled) { e.preventDefault(); redraw(); }
+    if (handled) { 
+        e.preventDefault(); 
+        redraw(); 
+        if (dx !== 0 || dy !== 0) saveCurrentToDatabase();
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1004,6 +1052,7 @@ function handleRectKeyDown(e) {
         if (e.repeat) return;                         // ignore auto-repeat
         const delta = e.shiftKey ? -0.05 : 0.05;     // 0.05\u00B0 per press
         rotateRectCard(card, delta);
+        saveCurrentToDatabase();
         redraw();
         return;
     }
@@ -1026,5 +1075,9 @@ function handleRectKeyDown(e) {
         moveRectCard(card, dx, dy);
     }
 
-    if (handled) { e.preventDefault(); redraw(); }
+    if (handled) { 
+        e.preventDefault(); 
+        redraw(); 
+        if (dx !== 0 || dy !== 0) saveCurrentToDatabase();
+    }
 }

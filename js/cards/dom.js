@@ -7,6 +7,9 @@ export function initDom() {
     dom.addManualButton = document.getElementById("ceAddManualButton");
     dom.deleteButton = document.getElementById("ceDeleteButton");
     dom.downloadButton = document.getElementById("ceDownloadButton");
+    dom.saveCoordsButton = document.getElementById("ceSaveCoordsButton");
+    dom.loadCoordsButton = document.getElementById("ceLoadCoordsButton");
+    dom.loadCoordsInput = document.getElementById("ceLoadCoordsInput");
     dom.canvas = document.getElementById("ceCanvas");
     dom.ctx = dom.canvas.getContext("2d");
 

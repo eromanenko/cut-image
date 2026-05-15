@@ -41,6 +41,12 @@ export const state = {
     rectWidth: 0,
     rectHeight: 0,
     rectSkew: 0,
+
+    // -----------------------------------------------------------------------
+    // Persistent Coordinates
+    // -----------------------------------------------------------------------
+    coordsDatabase: {}, // { "filename.jpg": { editMode, dpi, freeformCards, rectCards, rectGlobal } }
+    currentFileName: "",
 };
 
 export function resetState() {
