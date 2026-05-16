@@ -10,7 +10,7 @@ export function getCurrentFileKey() {
     return state.currentFileName;
 }
 
-export function saveCurrentToDatabase() {
+export function saveCurrentToDatabase(isEdit = true) {
     const key = getCurrentFileKey();
     if (!key) return;
 
@@ -29,6 +29,9 @@ export function saveCurrentToDatabase() {
     }
 
     state.coordsDatabase[key] = record;
+    if (isEdit) {
+        state.hasUnsavedChanges = true;
+    }
 }
 
 export function loadCurrentFromDatabase() {
@@ -172,7 +175,7 @@ export function parseIniToDatabase(iniText) {
 
 export function generateCurrentIniFileContent() {
     // Generate INI content for JUST the current file (used for ZIP export)
-    saveCurrentToDatabase();
+    saveCurrentToDatabase(false);
     
     const key = getCurrentFileKey();
     if (!key) return "";

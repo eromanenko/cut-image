@@ -47,6 +47,8 @@ export const state = {
     // -----------------------------------------------------------------------
     coordsDatabase: {}, // { "filename.jpg": { editMode, dpi, freeformCards, rectCards, rectGlobal } }
     currentFileName: "",
+    
+    hasUnsavedChanges: false,
 };
 
 export function resetState() {

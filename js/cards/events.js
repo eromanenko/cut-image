@@ -4,7 +4,7 @@ import { redraw, updateZoomWindow } from './renderer.js';
 import { handleAutoDetect } from './cv-detector.js';
 import { exportCards } from './export.js';
 import { handleFileUpload, renderPdfPageForPreview } from './file-loader.js';
-import { updateButtonStates, scrollToCorner, scrollToRectCard, applyModeUI } from './ui.js';
+import { updateButtonStates, scrollToCorner, scrollToRectCard, applyModeUI, showIniStatsModal } from './ui.js';
 import { getMousePos, findPointNear, findCardContaining } from './utils.js';
 import {
     getRectCardCorners,
@@ -430,6 +430,15 @@ export function bindEvents() {
             a.download = 'cut-coords.ini';
             a.click();
             URL.revokeObjectURL(url);
+            state.hasUnsavedChanges = false;
+            dom.canvas.focus({ preventScroll: true });
+        });
+    }
+
+    if (dom.viewCoordsButton) {
+        dom.viewCoordsButton.addEventListener('click', () => {
+            saveCurrentToDatabase(false);
+            showIniStatsModal(state.coordsDatabase);
             dom.canvas.focus({ preventScroll: true });
         });
     }
@@ -444,6 +453,8 @@ export function bindEvents() {
             const reader = new FileReader();
             reader.onload = (ev) => {
                 parseIniToDatabase(ev.target.result);
+                state.hasUnsavedChanges = false;
+                showIniStatsModal(state.coordsDatabase);
                 updateButtonStates();
                 dom.canvas.focus({ preventScroll: true });
             };
@@ -452,6 +463,9 @@ export function bindEvents() {
             e.target.value = '';
         });
     }
+
+    if (dom.iniStatsOkBtn) dom.iniStatsOkBtn.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; dom.canvas.focus({ preventScroll: true }); });
+    if (dom.iniStatsCancelX) dom.iniStatsCancelX.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; dom.canvas.focus({ preventScroll: true }); });
 
     // Mode toggle
     dom.freeformModeBtn.addEventListener('click', () => { switchMode('freeform'); dom.canvas.focus({ preventScroll: true }); });
@@ -707,6 +721,15 @@ export function bindEvents() {
 
         // ── Freeform keyboard ──
         handleFreeformKeyDown(e);
+    });
+
+    // ── Warn before leaving with unsaved changes ──
+    window.addEventListener("beforeunload", (e) => {
+        if (state.hasUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+            return e.returnValue;
+        }
     });
 }
 

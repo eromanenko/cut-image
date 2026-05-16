@@ -8,6 +8,7 @@ export function initDom() {
     dom.deleteButton = document.getElementById("ceDeleteButton");
     dom.downloadButton = document.getElementById("ceDownloadButton");
     dom.saveCoordsButton = document.getElementById("ceSaveCoordsButton");
+    dom.viewCoordsButton = document.getElementById("ceViewCoordsButton");
     dom.loadCoordsButton = document.getElementById("ceLoadCoordsButton");
     dom.loadCoordsInput = document.getElementById("ceLoadCoordsInput");
     dom.canvas = document.getElementById("ceCanvas");
@@ -69,4 +70,10 @@ export function initDom() {
     dom.calcCancelBtn = document.getElementById("ceCalcCancelBtn");
     dom.calcCancelX = document.getElementById("ceCalcCancelX");
     dom.fileNameDisplay = document.getElementById("ceFileName");
+
+    // INI Stats Modal
+    dom.iniStatsModal = document.getElementById("ceIniStatsModal");
+    dom.iniStatsList = document.getElementById("ceIniStatsList");
+    dom.iniStatsOkBtn = document.getElementById("ceIniStatsOkBtn");
+    dom.iniStatsCancelX = document.getElementById("ceIniStatsCancelX");
 }
