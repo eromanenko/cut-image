@@ -81,53 +81,7 @@ function snapFreeformPosition(cx, cy, canvasW, canvasH) {
     });
 
     const cardH = boxes[0].b - boxes[0].t;
-
-    // Same-row cards: cy within 75% of card height
-    const sameRow = boxes.filter(b => Math.abs(b.cy - cy) < cardH * 0.75);
-
-    // --- Snap X: search only within same-row cards ---
-    const xPool = sameRow.length > 0 ? sameRow : boxes;
-    let leftNeighbor = null, rightNeighbor = null;
-    let leftDist = Infinity, rightDist = Infinity;
-    for (const b of xPool) {
-        if (b.cx < cx) {
-            const d = cx - b.cx;
-            if (d < leftDist) { leftDist = d; leftNeighbor = b; }
-        } else if (b.cx > cx) {
-            const d = b.cx - cx;
-            if (d < rightDist) { rightDist = d; rightNeighbor = b; }
-        }
-    }
-    const leftEdge  = leftNeighbor  ? leftNeighbor.r  : 0;
-    const rightEdge = rightNeighbor ? rightNeighbor.l : canvasW;
-    const snappedCx = (leftNeighbor || rightNeighbor)
-        ? (leftEdge + rightEdge) / 2
-        : cx;
-
-    // --- Snap Y: align with same-row cards ---
-    let snappedCy;
-    if (sameRow.length > 0) {
-        snappedCy = sameRow.reduce((s, b) => s + b.cy, 0) / sameRow.length;
-    } else {
-        let topNeighbor = null, bottomNeighbor = null;
-        let topDist = Infinity, bottomDist = Infinity;
-        for (const b of boxes) {
-            if (b.cy < cy) {
-                const d = cy - b.cy;
-                if (d < topDist) { topDist = d; topNeighbor = b; }
-            } else if (b.cy > cy) {
-                const d = b.cy - cy;
-                if (d < bottomDist) { bottomDist = d; bottomNeighbor = b; }
-            }
-        }
-        const topEdge    = topNeighbor    ? topNeighbor.b    : 0;
-        const bottomEdge = bottomNeighbor ? bottomNeighbor.t : canvasH;
-        snappedCy = (topNeighbor || bottomNeighbor)
-            ? (topEdge + bottomEdge) / 2
-            : cy;
-    }
-
-    return { x: snappedCx, y: snappedCy };
+    return snapToGap(cx, cy, boxes, cardH, canvasW, canvasH, true);
 }
 
 /**
@@ -173,21 +127,46 @@ function snapRectPosition(cx, cy, canvasW, canvasH) {
         return { cx: (l + r) / 2, cy: (t + b) / 2, l, r, t, b };
     });
 
+    const cardH = state.rectHeight || (canvasH / 2);
+    return snapToGap(cx, cy, boxes, cardH, canvasW, canvasH, false);
+}
+
+/**
+ * Shared snap implementation: given a list of AABB boxes, snap (cx, cy) to
+ * the midpoint of the gap between its nearest neighbors.
+ *
+ * @param {number}  cx         - raw candidate center X
+ * @param {number}  cy         - raw candidate center Y
+ * @param {Array}   boxes      - [{cx, cy, l, r, t, b}] existing card AABBs
+ * @param {number}  cardH      - reference card height for same-row detection
+ * @param {number}  canvasW    - canvas width (fallback edge)
+ * @param {number}  canvasH    - canvas height (fallback edge)
+ * @param {boolean} useRowForX - if true, X-search is limited to same-row cards
+ */
+function snapToGap(cx, cy, boxes, cardH, canvasW, canvasH, useRowForX) {
+    // Cards whose centre-Y is within 75% of cardH are considered the same row
+    const sameRow = boxes.filter(b => Math.abs(b.cy - cy) < cardH * 0.75);
+
+    // --- Snap X ---
+    const xPool = (useRowForX && sameRow.length > 0) ? sameRow : boxes;
     let leftNeighbor = null, rightNeighbor = null;
     let leftDist = Infinity, rightDist = Infinity;
-    for (const b of boxes) {
+    for (const b of xPool) {
         if (b.cx < cx) {
-            const d = cx - b.cx; if (d < leftDist)  { leftDist  = d; leftNeighbor  = b; }
+            const d = cx - b.cx;
+            if (d < leftDist) { leftDist = d; leftNeighbor = b; }
         } else if (b.cx > cx) {
-            const d = b.cx - cx; if (d < rightDist) { rightDist = d; rightNeighbor = b; }
+            const d = b.cx - cx;
+            if (d < rightDist) { rightDist = d; rightNeighbor = b; }
         }
     }
     const leftEdge  = leftNeighbor  ? leftNeighbor.r  : 0;
     const rightEdge = rightNeighbor ? rightNeighbor.l : canvasW;
-    const snappedCx = (leftNeighbor || rightNeighbor) ? (leftEdge + rightEdge) / 2 : cx;
+    const snappedCx = (leftNeighbor || rightNeighbor)
+        ? (leftEdge + rightEdge) / 2
+        : cx;
 
-    const H = state.rectHeight || (canvasH / 2);
-    const sameRow = boxes.filter(b => Math.abs(b.cy - cy) < H * 0.75);
+    // --- Snap Y ---
     let snappedCy;
     if (sameRow.length > 0) {
         snappedCy = sameRow.reduce((s, b) => s + b.cy, 0) / sameRow.length;
@@ -196,14 +175,18 @@ function snapRectPosition(cx, cy, canvasW, canvasH) {
         let topDist = Infinity, bottomDist = Infinity;
         for (const b of boxes) {
             if (b.cy < cy) {
-                const d = cy - b.cy; if (d < topDist)    { topDist    = d; topNeighbor    = b; }
+                const d = cy - b.cy;
+                if (d < topDist)    { topDist    = d; topNeighbor    = b; }
             } else if (b.cy > cy) {
-                const d = b.cy - cy; if (d < bottomDist) { bottomDist = d; bottomNeighbor = b; }
+                const d = b.cy - cy;
+                if (d < bottomDist) { bottomDist = d; bottomNeighbor = b; }
             }
         }
         const topEdge    = topNeighbor    ? topNeighbor.b    : 0;
         const bottomEdge = bottomNeighbor ? bottomNeighbor.t : canvasH;
-        snappedCy = (topNeighbor || bottomNeighbor) ? (topEdge + bottomEdge) / 2 : cy;
+        snappedCy = (topNeighbor || bottomNeighbor)
+            ? (topEdge + bottomEdge) / 2
+            : cy;
     }
 
     return { x: snappedCx, y: snappedCy };
@@ -238,7 +221,7 @@ function rectCardOverlapsExisting(candidate) {
 
 export function deleteSelectedCard() {
     if (!state.selectedPoint) return;
-    if (!confirm("Are you sure you want to unselect this card?")) return;
+    if (!confirm("Are you sure you want to delete this card?")) return;
     const index = state.detectedCards.findIndex(card => card.includes(state.selectedPoint));
     if (index !== -1) {
         state.detectedCards.splice(index, 1);
@@ -255,7 +238,7 @@ export function deleteSelectedCard() {
 
 function deleteSelectedRectCard() {
     if (state.selectedRectCardIndex === -1) return;
-    if (!confirm("Are you sure you want to unselect this card?")) return;
+    if (!confirm("Are you sure you want to delete this card?")) return;
     state.rectCards.splice(state.selectedRectCardIndex, 1);
     state.selectedRectCardIndex = state.rectCards.length > 0
         ? Math.min(state.selectedRectCardIndex, state.rectCards.length - 1)

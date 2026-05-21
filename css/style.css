@@ -246,6 +246,12 @@ canvas {
     display: none !important;
 }
 
+/* Narrow number inputs — replaces inline style="width: Xpx" */
+.input-narrow-sm { width: 50px; }
+.input-narrow-md { width: 60px; }
+.input-narrow-lg { width: 80px; }
+.input-wide      { width: 150px; }
+
 /* Tabs styling */
 .tabs {
     display: flex;
@@ -568,3 +574,18 @@ button.tab-btn:hover:not(:disabled) {
     background: linear-gradient(135deg, transparent 50%, var(--primary-color) 50%);
     z-index: 10000;
 }
+
+/* Descreen filter controls — visibility driven by data-method on parent */
+.ds-method-controls {
+    display: none;
+    align-items: center;
+    gap: 10px;
+}
+[data-method="bilateral"]  #dsBilateralControls,
+[data-method="gaussian"]   #dsGaussianControls,
+[data-method="median"]     #dsMedianControls,
+[data-method="bilateral"]  #dsTuneBiControls,
+[data-method="gaussian"]   #dsTuneGaussControls,
+[data-method="median"]     #dsTuneMedianControls {
+    display: inline-flex;
+}

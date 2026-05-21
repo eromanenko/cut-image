@@ -27,13 +27,7 @@ export function bindEvents() {
     });
     
     dom.filterMethod.addEventListener('change', (e) => {
-        dom.bilateralControls.style.display = 'none';
-        dom.gaussianControls.style.display = 'none';
-        dom.medianControls.style.display = 'none';
-        
-        if (e.target.value === 'bilateral') dom.bilateralControls.style.display = 'inline-flex';
-        else if (e.target.value === 'gaussian') dom.gaussianControls.style.display = 'inline-flex';
-        else if (e.target.value === 'median') dom.medianControls.style.display = 'inline-flex';
+        e.currentTarget.closest('[data-method]').dataset.method = e.target.value;
     });
     
     dom.compareCheckbox.addEventListener('change', (e) => {

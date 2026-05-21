@@ -1,7 +1,16 @@
-﻿import { dom } from './dom.js';
+import { dom } from './dom.js';
 import { state } from './state.js';
 import { hexToRgb, sortDetectedCards } from './utils.js';
 import { getRectCardCorners, getRectCardCenter, sortRectCards } from './rect-mode.js';
+
+// ---------------------------------------------------------------------------
+// Canvas font constants
+// ---------------------------------------------------------------------------
+
+const FONT_CARD_NUMBER_FREEFORM = 'bold 30px Arial'; // large index label (top-left of card)
+const FONT_CARD_NUMBER_RECT     = 'bold 28px Arial'; // index label in rect mode
+const FONT_CARD_INFO            = 'bold 14px Arial'; // dimensions / angle info pill
+const FONT_ZOOM_LABEL           = 'bold 11px Arial'; // TL/TR/BR/BL corner labels in zoom window
 
 // ---------------------------------------------------------------------------
 // Main redraw
@@ -82,12 +91,12 @@ function redrawFreeformMode() {
             dom.ctx.stroke();
         }
 
-        dom.ctx.font = "bold 30px Arial";
+        dom.ctx.font = FONT_CARD_NUMBER_FREEFORM;
         dom.ctx.fillStyle = "red";
         dom.ctx.fillText((i + 1).toString(), card[0].x + 20, card[0].y + 40);
 
         if (card.includes(state.selectedPoint) || card.includes(state.hoveredPoint) || card === state.draggedCard || card === state.hoveredCard) {
-            dom.ctx.font = "bold 14px Arial";
+            dom.ctx.font = FONT_CARD_INFO;
             dom.ctx.textAlign = "center";
             dom.ctx.textBaseline = "middle";
 
@@ -202,7 +211,7 @@ function redrawRectMode() {
         dom.ctx.stroke();
 
         // Card number near TL corner
-        dom.ctx.font = 'bold 28px Arial';
+        dom.ctx.font = FONT_CARD_NUMBER_RECT;
         dom.ctx.fillStyle = isSelected ? '#007bff' : 'rgba(180,0,0,0.8)';
         dom.ctx.textAlign = 'left';
         dom.ctx.textBaseline = 'top';
@@ -212,15 +221,15 @@ function redrawRectMode() {
         // Extra info for selected / hovered card
         if (isActive) {
             const center = getRectCardCenter(card);
-            dom.ctx.font = 'bold 14px Arial';
+            dom.ctx.font = FONT_CARD_INFO;
             dom.ctx.textAlign = 'center';
             dom.ctx.textBaseline = 'middle';
 
             const info = [
-                `${state.rectWidth} Ãƒâ€” ${state.rectHeight} px`,
+                `${state.rectWidth} × ${state.rectHeight} px`,
                 state.rectSkew !== 0 ? `skew ${state.rectSkew} px` : null,
                 card.angle !== 0 ? `${card.angle.toFixed(1)}\u00B0` : null,
-            ].filter(Boolean).join('  Ã‚Â·  ');
+            ].filter(Boolean).join('  ·  ');
 
             // Background pill
             const metrics = dom.ctx.measureText(info);
@@ -405,7 +414,7 @@ function updateZoomWindowRect() {
 
         // Corner label near the outer corner of each quadrant
         const labels = ['TL', 'TR', 'BR', 'BL'];
-        dom.zoomCtx.font         = 'bold 11px Arial';
+        dom.zoomCtx.font         = FONT_ZOOM_LABEL;
         dom.zoomCtx.fillStyle    = 'rgba(0,0,180,0.65)';
         dom.zoomCtx.textAlign    = (i === 1 || i === 2) ? 'right' : 'left';
         dom.zoomCtx.textBaseline = (i < 2) ? 'top' : 'bottom';

@@ -1,32 +1,38 @@
-// Tab switching logic. Make it global so inline onclick handlers work.
-window.switchTab = function (tabId) {
+// Tab switching logic — driven by data-tab attributes on .tab-btn elements.
+function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-    const btn = document.querySelector(`.tab-btn[onclick*="switchTab('${tabId}')"]`);
+    const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
     if (btn) {
         btn.classList.add('active');
     } else {
-        console.warn("Tab button not found for:", tabId);
+        console.warn('Tab button not found for:', tabId);
     }
 
     const content = document.getElementById(`tab-${tabId}`);
     if (content) {
         content.classList.add('active');
     } else {
-        console.error("Tab content not found for:", `tab-${tabId}`);
+        console.error('Tab content not found for:', `tab-${tabId}`);
     }
 
     // Update URL without reloading
     try {
         window.history.replaceState({ tab: tabId }, '', '?tab=' + tabId);
     } catch (e) {
-        console.error("URL update failed", e);
+        console.error('URL update failed', e);
     }
 }
 
 // Initialize tab from URL on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Bind tab button clicks
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Restore tab from URL
     const params = new URLSearchParams(window.location.search);
     const tabId = params.get('tab');
     if (tabId && document.getElementById(`tab-${tabId}`)) {
@@ -39,11 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('scroll', () => {
             const scrollPos = window.scrollY || window.pageYOffset;
             stickyEls.forEach(el => {
-                if (scrollPos > 10) {
-                    el.classList.add('stuck');
-                } else {
-                    el.classList.remove('stuck');
-                }
+                el.classList.toggle('stuck', scrollPos > 10);
             });
         }, { passive: true });
     }

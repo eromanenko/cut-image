@@ -68,9 +68,9 @@
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('grid')">Grid Slicing</button>
-            <button class="tab-btn" onclick="switchTab('cards')">Card Extraction</button>
-            <button class="tab-btn" onclick="switchTab('descreen')">Descreen [BETA]</button>
+            <button class="tab-btn active" data-tab="grid">Grid Slicing</button>
+            <button class="tab-btn" data-tab="cards">Card Extraction</button>
+            <button class="tab-btn" data-tab="descreen">Descreen [BETA]</button>
         </div>
     </header>
 
@@ -85,7 +85,7 @@
                     </svg>
                 </label>
                 <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf" class="hidden-file-input">
-                <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
+                <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
                 <button id="autoDetectButton" disabled>Auto-Detect</button>
                 <button id="downloadButton" disabled>Download</button>
                 <button id="resetButton" disabled>Reset Lines</button>
@@ -122,11 +122,11 @@
 
                 <div class="input-container">
                     <label for="minSizeInput">Min size (mm):</label>
-                    <input type="number" id="minSizeInput" value="10" min="0" max="100" step="1" style="width: 50px;">
+                    <input type="number" id="minSizeInput" value="10" min="0" max="100" step="1" class="input-narrow-sm">
                 </div>
                 <div class="input-container">
                     <label for="dpiInput">DPI:</label>
-                    <input type="number" id="dpiInput" value="300" min="72" step="1" style="width: 60px;">
+                    <input type="number" id="dpiInput" value="300" min="72" step="1" class="input-narrow-md">
                 </div>
             </div>
 
@@ -184,7 +184,7 @@
                 </label>
                 <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf"
                     class="hidden-file-input">
-                <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" style="width: 150px;">
+                <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
                 <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
                 <button id="ceAddManualButton" disabled title="Add Manual Card (N)">Add Manual</button>
                 <button id="ceDeleteButton" disabled title="Delete Card (D)">Delete</button>
@@ -286,11 +286,11 @@
             <div class="controls hide-on-stuck" id="ceFreeformDimensionsRow">
                 <div class="input-container">
                     <label for="ceWidthInput">Width (mm):</label>
-                    <input type="number" id="ceWidthInput" min="0" step="0.1" style="width: 60px;">
+                    <input type="number" id="ceWidthInput" min="0" step="0.1" class="input-narrow-md">
                 </div>
                 <div class="input-container">
                     <label for="ceHeightInput">Height (mm):</label>
-                    <input type="number" id="ceHeightInput" min="0" step="0.1" style="width: 60px;">
+                    <input type="number" id="ceHeightInput" min="0" step="0.1" class="input-narrow-md">
                 </div>
                 <button id="ceFreeformCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
@@ -307,7 +307,7 @@
                 </button>
                 <div class="input-container">
                     <label for="ceDpiInput">DPI:</label>
-                    <input type="number" id="ceDpiInput" value="300" min="72" step="1" style="width: 60px;">
+                    <input type="number" id="ceDpiInput" value="300" min="72" step="1" class="input-narrow-md">
                 </div>
                 <button id="ceGetSizeBtn" title="Get size from the first selected card">🎯
                     Get from 1st Card</button>
@@ -317,11 +317,11 @@
             <div class="controls hide-on-stuck" id="ceRectControls" style="display: none;">
                 <div class="input-container">
                     <label for="ceRectWidthPx">Width (px):</label>
-                    <input type="number" id="ceRectWidthPx" min="1" step="1" style="width: 80px;">
+                    <input type="number" id="ceRectWidthPx" min="1" step="1" class="input-narrow-lg">
                 </div>
                 <div class="input-container">
                     <label for="ceRectHeightPx">Height (px):</label>
-                    <input type="number" id="ceRectHeightPx" min="1" step="1" style="width: 80px;">
+                    <input type="number" id="ceRectHeightPx" min="1" step="1" class="input-narrow-lg">
                 </div>
                 <button id="ceRectCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
@@ -341,7 +341,7 @@
                         title="Pixels the top-right corner is lower than the top-left corner (parallelogram skew to compensate scanner distortion)">
                         Skew (px):
                     </label>
-                    <input type="number" id="ceRectSkewPx" value="0" step="1" style="width: 60px;">
+                    <input type="number" id="ceRectSkewPx" value="0" step="1" class="input-narrow-md">
                 </div>
             </div>
 
@@ -381,7 +381,7 @@
                 <input type="file" id="dsFileInput" accept="image/*,.tif,.tiff" class="hidden-file-input">
                 <div class="input-container">
                     <label for="dsDpiInput">DPI: </label>
-                    <input type="number" id="dsDpiInput" value="300" min="72" step="1" style="width: 60px;">
+                    <input type="number" id="dsDpiInput" value="300" min="72" step="1" class="input-narrow-md">
                 </div>
                 <button id="dsTuneBtn" disabled title="Tune parameters on a small preview">Tune Parameters</button>
                 <button id="dsUndoBtn" disabled title="Undo last filter">Undo</button>
@@ -409,10 +409,10 @@
                 Computer Vision libraries (OpenCV)... Please wait.</div>
 
             <!-- Filter settings -->
-            <div class="controls hide-on-stuck">
+            <div class="controls hide-on-stuck" data-method="bilateral">
                 <div class="input-container">
                     <label>Method:</label>
-                    <select id="dsFilterMethod" style="padding: 3px;">
+                    <select id="dsFilterMethod">
                         <option value="bilateral">Bilateral Filter</option>
                         <option value="gaussian">Gaussian Blur + Unsharp</option>
                         <option value="median">Median Blur</option>
@@ -420,33 +420,30 @@
                 </div>
 
                 <!-- Bilateral controls -->
-                <span id="dsBilateralControls" style="display:inline-flex; align-items:center; gap:10px;">
+                <span id="dsBilateralControls" class="ds-method-controls">
                     <div class="input-container">
                         <label for="dsBiD">Diameter:</label>
-                        <input type="number" id="dsBiD" value="9" min="3" max="50" step="2" style="width: 50px;">
+                        <input type="number" id="dsBiD" value="9" min="3" max="50" step="2" class="input-narrow-sm">
                     </div>
                     <div class="input-container">
                         <label for="dsBiSigmaColor">SigmaColor:</label>
-                        <input type="number" id="dsBiSigmaColor" value="75" min="10" max="250" style="width: 50px;">
+                        <input type="number" id="dsBiSigmaColor" value="75" min="10" max="250" class="input-narrow-sm">
                     </div>
                     <div class="input-container">
                         <label for="dsBiSigmaSpace">SigmaSpace:</label>
-                        <input type="number" id="dsBiSigmaSpace" value="75" min="10" max="250" style="width: 50px;">
+                        <input type="number" id="dsBiSigmaSpace" value="75" min="10" max="250" class="input-narrow-sm">
                     </div>
                 </span>
 
                 <!-- Gaussian unsharp controls -->
-                <span id="dsGaussianControls" style="display:none; align-items:center; gap:10px;">
-                    <label>Blur (k): <input type="number" id="dsGaussK" value="5" min="3" max="31" step="2"
-                            style="width: 50px;"></label>
-                    <label>Amount: <input type="number" id="dsUnsharpAmount" value="1.5" min="0" max="5" step="0.1"
-                            style="width: 50px;"></label>
+                <span id="dsGaussianControls" class="ds-method-controls">
+                    <label>Blur (k): <input type="number" id="dsGaussK" value="5" min="3" max="31" step="2" class="input-narrow-sm"></label>
+                    <label>Amount: <input type="number" id="dsUnsharpAmount" value="1.5" min="0" max="5" step="0.1" class="input-narrow-sm"></label>
                 </span>
 
                 <!-- Median controls -->
-                <span id="dsMedianControls" style="display:none; align-items:center; gap:10px;">
-                    <label>Kernel: <input type="number" id="dsMedianK" value="5" min="3" max="31" step="2"
-                            style="width: 50px;"></label>
+                <span id="dsMedianControls" class="ds-method-controls">
+                    <label>Kernel: <input type="number" id="dsMedianK" value="5" min="3" max="31" step="2" class="input-narrow-sm"></label>
                 </span>
             </div>
         </div>
@@ -551,24 +548,18 @@
                         </select>
 
                     </div>
-                    <div style="margin-top: 10px;">
-                        <span id="dsTuneBiControls" style="display:inline-flex; align-items:center; gap:10px;">
-                            <label>Diameter: <input type="number" id="dsTuneBiD" min="3" max="50" step="2"
-                                    style="width: 50px;"></label>
-                            <label>SigmaColor: <input type="number" id="dsTuneBiColor" min="10" max="250"
-                                    style="width: 50px;"></label>
-                            <label>SigmaSpace: <input type="number" id="dsTuneBiSpace" min="10" max="250"
-                                    style="width: 50px;"></label>
+                    <div style="margin-top: 10px;" data-method="bilateral">
+                        <span id="dsTuneBiControls" class="ds-method-controls">
+                            <label>Diameter: <input type="number" id="dsTuneBiD" min="3" max="50" step="2" class="input-narrow-sm"></label>
+                            <label>SigmaColor: <input type="number" id="dsTuneBiColor" min="10" max="250" class="input-narrow-sm"></label>
+                            <label>SigmaSpace: <input type="number" id="dsTuneBiSpace" min="10" max="250" class="input-narrow-sm"></label>
                         </span>
-                        <span id="dsTuneGaussControls" style="display:none; align-items:center; gap:10px;">
-                            <label>Blur (k): <input type="number" id="dsTuneGaussK" min="3" max="31" step="2"
-                                    style="width: 50px;"></label>
-                            <label>Amount: <input type="number" id="dsTuneUnsharpAmt" min="0" max="5" step="0.1"
-                                    style="width: 50px;"></label>
+                        <span id="dsTuneGaussControls" class="ds-method-controls">
+                            <label>Blur (k): <input type="number" id="dsTuneGaussK" min="3" max="31" step="2" class="input-narrow-sm"></label>
+                            <label>Amount: <input type="number" id="dsTuneUnsharpAmt" min="0" max="5" step="0.1" class="input-narrow-sm"></label>
                         </span>
-                        <span id="dsTuneMedianControls" style="display:none; align-items:center; gap:10px;">
-                            <label>Kernel: <input type="number" id="dsTuneMedianK" min="3" max="31" step="2"
-                                    style="width: 50px;"></label>
+                        <span id="dsTuneMedianControls" class="ds-method-controls">
+                            <label>Kernel: <input type="number" id="dsTuneMedianK" min="3" max="31" step="2" class="input-narrow-sm"></label>
                         </span>
                     </div>
                 </div>

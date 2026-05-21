@@ -92,13 +92,7 @@ function applyTune() {
 }
 
 function updateTuneMethodControls() {
-    dom.tuneBiControls.style.display = 'none';
-    dom.tuneGaussControls.style.display = 'none';
-    dom.tuneMedianControls.style.display = 'none';
-    
-    if (dom.tuneMethod.value === 'bilateral') dom.tuneBiControls.style.display = 'inline-flex';
-    else if (dom.tuneMethod.value === 'gaussian') dom.tuneGaussControls.style.display = 'inline-flex';
-    else if (dom.tuneMethod.value === 'median') dom.tuneMedianControls.style.display = 'inline-flex';
+    dom.tuneBiControls.closest('[data-method]').dataset.method = dom.tuneMethod.value;
 }
 
 function startDrag(e) {
