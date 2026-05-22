@@ -1,89 +1,165 @@
+/* ============================================================
+   Design Tokens — Variant A: Precision Tool (Teal)
+   ============================================================ */
 :root {
-    --primary-color: #007bff;
-    --hover-color: #0056b3;
-    --control-height: 32px;
-    --input-bg: #f0f0f0;
-    --bg-color: #f8f9fa;
-    --card-bg: #ffffff;
-    --text-primary: #333;
-    --text-muted: #888;
-    --border-color: #dee2e6;
-    --border-color-dark: #ccc;
-    --radius-sm: 4px;
-    --radius-lg: 8px;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --accent:          #0D9488;
+    --accent-hover:    #0F766E;
+    --accent-light:    #CCFBF1;
+    --accent-text:     #134E4A;
+
+    --bg:              #F8FAFC;
+    --surface:         #FFFFFF;
+    --surface-2:       #F1F5F9;
+
+    --text:            #1E293B;
+    --text-muted:      #64748B;
+    --text-subtle:     #94A3B8;
+
+    --border:          #E2E8F0;
+    --border-focus:    #0D9488;
+
+    --radius-sm:       5px;
+    --radius-md:       7px;
+    --radius-lg:       10px;
+
+    --shadow-sm:       0 1px 2px rgba(0,0,0,0.06);
+    --shadow:          0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg:       0 4px 24px rgba(0,0,0,0.10);
+
+    --control-height:  32px;
+    --font-ui:         'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono:       'DM Mono', 'Consolas', monospace;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    line-height: 1.5;
     text-align: center;
-    background-color: var(--bg-color);
+    background-color: var(--bg);
     margin: 0;
-    padding: 20px;
-    color: var(--text-primary);
+    padding: 20px 20px 40px;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
 }
 
+/* ============================================================
+   Header
+   ============================================================ */
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 10px;
-    max-width: 960px;
-    margin: auto;
-    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding: 0 4px;
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    height: 48px;
 }
 
 .app-title-group {
     display: flex;
     align-items: baseline;
-    gap: 10px;
+    gap: 8px;
 }
 
 .app-title {
     margin: 0;
-    font-size: 20px;
-    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
 }
 
 .app-version {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-family: 'Consolas', 'Monaco', monospace;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-subtle);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 1px 7px;
+    letter-spacing: 0;
 }
 
-.controls {
-    margin-bottom: 12px;
+/* ============================================================
+   Tabs
+   ============================================================ */
+.tabs {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    transition: margin-bottom 0.3s ease;
+    align-items: stretch;
+    gap: 0;
+    height: 100%;
 }
 
+.tab-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 0 16px;
+    height: 100%;
+    font-family: var(--font-ui);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    position: relative;
+    top: 1px; /* aligns border-bottom with header border */
+}
+
+button.tab-btn:hover,
+button.tab-btn:hover:not(:disabled) {
+    background: transparent;
+    color: var(--text);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ============================================================
+   Sticky Controls
+   ============================================================ */
 .sticky-controls {
     position: sticky;
     top: 0;
     z-index: 100;
-    background-color: var(--bg-color);
-    padding-bottom: 15px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
+    background-color: var(--bg);
+    padding-bottom: 12px;
+    box-shadow: none;
     transition: box-shadow 0.2s, padding-bottom 0.3s ease;
 }
 
 .sticky-controls.stuck {
     box-shadow: var(--shadow);
-    padding-bottom: 5px;
+    padding-bottom: 4px;
 }
 
-.sticky-controls.stuck>.controls:first-child {
+.sticky-controls.stuck > .controls:first-child {
     margin-bottom: 0;
 }
 
 .hide-on-stuck {
     max-height: 150px;
-    /* Enough to comfortably fit the row */
     opacity: 1;
     overflow: hidden;
     transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
@@ -97,96 +173,125 @@ body {
     pointer-events: none;
 }
 
+/* ============================================================
+   Controls Row
+   ============================================================ */
+.controls {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    transition: margin-bottom 0.3s ease;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
 button,
 input[type="file"]::file-selector-button,
 .file-btn {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
+    background-color: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
     height: var(--control-height);
-    padding: 0 16px;
+    padding: 0 13px;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
     vertical-align: middle;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
 }
 
 button:hover:not(:disabled),
 input[type="file"]::file-selector-button:hover,
 .file-btn:hover {
-    background-color: var(--hover-color);
+    background-color: var(--surface-2);
+    border-color: #CBD5E1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 button:disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.45;
+    box-shadow: none;
 }
 
-.canvas-container {
-    position: relative;
-    display: inline-block;
-    box-shadow: var(--shadow);
-    background-color: var(--card-bg);
-    border-radius: var(--radius-sm);
-    margin-top: 30px;
-    border: 1px solid var(--border-color);
-    max-width: 100%;
-    /* Prevent container expanding beyond window */
+/* Primary action button (Download, Auto-Detect) */
+#downloadButton,
+#autoDetectButton,
+#ceProcessButton,
+#ceDownloadButton,
+#dsProcessBtn,
+#dsDownloadBtn {
+    background-color: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 1px 3px rgba(13,148,136,0.25);
 }
 
-.filename-display {
-    position: absolute;
-    top: -24px;
-    right: 5px;
-    font-size: 13px;
+#downloadButton:hover:not(:disabled),
+#autoDetectButton:hover:not(:disabled),
+#ceProcessButton:hover:not(:disabled),
+#ceDownloadButton:hover:not(:disabled),
+#dsProcessBtn:hover:not(:disabled),
+#dsDownloadBtn:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: 0 2px 6px rgba(13,148,136,0.35);
+}
+
+/* ============================================================
+   File Button (folder icon)
+   ============================================================ */
+.ce-calc-btn,
+.file-btn {
+    padding: 0 !important;
+    width: var(--control-height) !important;
+    flex-shrink: 0;
+}
+
+.file-btn svg,
+.ce-calc-btn svg {
+    width: 16px;
+    height: 16px;
     color: var(--text-muted);
-    font-weight: 600;
-    max-width: 80%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    pointer-events: none;
 }
 
-canvas {
-    display: block;
-    cursor: crosshair;
-    /* Disable selection outline when focused */
-    outline: none;
-    /* Prevent user text selection while dragging */
-    user-select: none;
-    touch-action: none;
-    max-width: 100%;
-    /* Scale canvas visually to fit screen */
-    height: auto;
+.file-btn:hover svg,
+.ce-calc-btn:hover svg {
+    color: var(--accent);
 }
 
-.pdf-nav-btn {
-    background-color: #e9ecef;
-    color: var(--text-primary);
-    border: 1px solid #ced4da;
+.hidden-file-input {
+    display: none !important;
 }
 
-.pdf-nav-btn:hover:not(:disabled) {
-    background-color: #dde2e6;
-}
-
+/* ============================================================
+   Inputs
+   ============================================================ */
 .input-container {
-    font-size: 14px;
+    font-size: 13px;
     display: flex;
     align-items: center;
-    background: var(--input-bg);
-    padding: 0 12px;
+    background: var(--surface);
+    padding: 0 10px;
     height: var(--control-height);
     border-radius: var(--radius-sm);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border);
     box-sizing: border-box;
-    gap: 5px;
+    gap: 6px;
+    box-shadow: var(--shadow-sm);
+    color: var(--text-muted);
 }
 
 .input-container:has(input[type="checkbox"]) {
@@ -197,10 +302,16 @@ canvas {
 
 .input-container input[type="checkbox"] {
     margin: 0;
+    accent-color: var(--accent);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
 }
 
 .input-container label {
     line-height: 1;
+    cursor: pointer;
+    color: var(--text);
 }
 
 .input-container:has(input[type="text"]),
@@ -214,115 +325,77 @@ canvas {
 .controls select {
     height: var(--control-height);
     padding: 0 8px;
-    border: 1px solid var(--border-color-dark);
-    border-radius: var(--radius-sm);
-    font-size: 14px;
+    border: none;
+    border-left: 1px solid var(--border);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 13px;
+    font-family: var(--font-mono);
     box-sizing: border-box;
     vertical-align: middle;
     outline: none;
+    background: transparent;
+    color: var(--text);
+}
+
+.controls input[type="text"] {
+    font-family: var(--font-ui);
 }
 
 .controls input[type="text"]:focus,
 .controls input[type="number"]:focus,
 .controls select:focus {
-    border-color: var(--primary-color);
+    border-color: var(--border-focus);
+    outline: none;
 }
 
-/* Square icon buttons like calculator and file open */
-.ce-calc-btn,
-.file-btn {
-    padding: 0 !important;
-    width: var(--control-height) !important;
-    flex-shrink: 0;
+.controls input[type="text"]:focus ~ *,
+.controls input[type="number"]:focus ~ * {
+    border-color: var(--border-focus);
 }
 
-.file-btn svg,
-.ce-calc-btn svg {
-    width: 20px;
-    height: 20px;
+.input-container:has(input:focus),
+.input-container:has(select:focus) {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px rgba(13,148,136,0.12);
 }
 
-.hidden-file-input {
-    display: none !important;
-}
-
-/* Narrow number inputs — replaces inline style="width: Xpx" */
+/* Input width helpers */
 .input-narrow-sm { width: 50px; }
-.input-narrow-md { width: 60px; }
+.input-narrow-md { width: 62px; }
 .input-narrow-lg { width: 80px; }
-.input-wide      { width: 150px; }
+.input-wide      { width: 140px; }
 
-/* Tabs styling */
-.tabs {
-    display: flex;
-    justify-content: center;
-    border-bottom: none;
+/* ============================================================
+   PDF Nav Buttons
+   ============================================================ */
+.pdf-nav-btn {
+    background-color: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
 }
 
-.tab-btn {
-    background-color: transparent;
-    color: #555;
-    border: none;
-    border-bottom: 3px solid transparent;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-radius: 0;
+.pdf-nav-btn:hover:not(:disabled) {
+    background-color: var(--surface-2);
+    color: var(--text);
 }
 
-button.tab-btn:hover,
-button.tab-btn:hover:not(:disabled) {
-    background-color: var(--bg-neutral, #e9ecef);
-    color: var(--text-primary);
-}
-
-.tab-btn.active {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* Fixed color buttons for color picker */
-.fixed-color-btn {
-    width: 12px;
-    height: 25px;
-    border-radius: var(--radius-sm);
-    border: 1px solid #999;
-    padding: 0;
-    margin-left: 4px;
-    cursor: pointer;
-    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1);
-    transition: transform 0.1s, box-shadow 0.1s;
-}
-
-.fixed-color-btn:hover:not(:disabled) {
-    transform: scale(1.15);
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
-}
-
-/* Mode toggle (Freeform / Rectangle segmented control) */
+/* ============================================================
+   Mode Toggle (Freeform / Rectangle)
+   ============================================================ */
 .mode-toggle {
     display: inline-flex;
     border-radius: var(--radius-sm);
     overflow: hidden;
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
 }
 
 .mode-btn {
-    background-color: #fff;
-    color: var(--primary-color);
+    background-color: var(--surface);
+    color: var(--text-muted);
     border: none;
     border-radius: 0;
-    padding: 0 8px;
+    padding: 0 9px;
     font-size: 18px;
     font-weight: 600;
     cursor: pointer;
@@ -332,63 +405,249 @@ button.tab-btn:hover:not(:disabled) {
     justify-content: center;
     height: var(--control-height);
     box-sizing: border-box;
+    box-shadow: none;
 }
 
 .mode-btn:hover:not(:disabled):not(.active) {
-    background-color: #e8f1ff;
-    color: var(--primary-color);
+    background-color: var(--surface-2);
+    color: var(--text);
+    border-color: transparent;
 }
 
 .mode-btn.active {
-    background-color: var(--primary-color);
+    background-color: var(--accent);
     color: #fff;
 }
 
 .mode-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
 }
 
-/* Modal Styling */
+/* ============================================================
+   Fixed Color Buttons (color picker swatches)
+   ============================================================ */
+.fixed-color-btn {
+    width: 12px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(0,0,0,0.15);
+    padding: 0;
+    margin-left: 3px;
+    cursor: pointer;
+    box-shadow: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.fixed-color-btn:hover:not(:disabled) {
+    transform: scale(1.2);
+    box-shadow: 0 0 4px rgba(0,0,0,0.25);
+    border-color: transparent;
+}
+
+/* ============================================================
+   Canvas Container
+   ============================================================ */
+.canvas-container {
+    position: relative;
+    display: inline-block;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    margin-top: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    max-width: 100%;
+}
+
+.filename-display {
+    position: absolute;
+    top: -22px;
+    right: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-subtle);
+    font-weight: 400;
+    max-width: 80%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
+canvas {
+    display: block;
+    cursor: crosshair;
+    outline: none;
+    user-select: none;
+    touch-action: none;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   Draggable Zoom Window
+   ============================================================ */
+.zoom-window {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    min-width: 150px;
+    min-height: 150px;
+}
+
+.zoom-window-header {
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    padding: 4px 8px;
+    text-align: center;
+    cursor: move;
+    user-select: none;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.zoom-window-resizer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 14px;
+    height: 14px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, var(--accent) 50%);
+    z-index: 10000;
+    opacity: 0.6;
+}
+
+.zoom-window-resizer:hover {
+    opacity: 1;
+}
+
+/* ============================================================
+   Info Tooltips
+   ============================================================ */
+.info-tooltip {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.info-icon {
+    width: 22px;
+    height: 22px;
+    background-color: var(--surface-2);
+    color: var(--text-muted);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: help;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.info-icon:hover {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent-hover);
+}
+
+.tooltip-content {
+    visibility: hidden;
+    width: 440px;
+    background-color: var(--surface);
+    color: var(--text);
+    text-align: left;
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    position: absolute;
+    z-index: 1001;
+    top: 130%;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    font-size: 12.5px;
+    line-height: 1.6;
+    pointer-events: none;
+    text-wrap: wrap;
+}
+
+.info-tooltip:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tooltip-content::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    right: 6px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: transparent transparent var(--surface) transparent;
+}
+
+/* ============================================================
+   Modals
+   ============================================================ */
 .ce-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(15, 23, 42, 0.45);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 10000;
+    backdrop-filter: blur(2px);
 }
 
 .ce-modal-content {
-    background-color: var(--card-bg);
+    background-color: var(--surface);
     padding: 0;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
     width: 400px;
     overflow: hidden;
-    animation: ce-modal-fadein 0.2s ease-out;
+    animation: ce-modal-fadein 0.18s ease-out;
 }
 
 @keyframes ce-modal-fadein {
     from {
         opacity: 0;
-        transform: translateY(-20px);
+        transform: translateY(-12px) scale(0.98);
     }
-
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
 .ce-modal-header {
-    background-color: var(--bg-color);
+    background-color: var(--surface-2);
     padding: 12px 16px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -396,24 +655,78 @@ button.tab-btn:hover:not(:disabled) {
 
 .ce-modal-header h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
 }
 
 .ce-modal-close {
-    font-size: 24px;
+    font-size: 20px;
     cursor: pointer;
     line-height: 1;
-    color: #aaa;
+    color: var(--text-subtle);
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
 }
 
 .ce-modal-close:hover {
-    color: #333;
+    color: var(--text);
+    background: var(--surface-2);
 }
 
 .ce-modal-body {
     padding: 16px;
 }
 
+.ce-modal-footer {
+    padding: 12px 16px;
+    background-color: var(--surface-2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.ce-modal-footer button {
+    padding: 0 16px;
+    font-size: 13px;
+    height: 32px;
+}
+
+/* ============================================================
+   Modal Buttons
+   ============================================================ */
+.btn-primary {
+    background-color: var(--accent) !important;
+    color: white !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 1px 3px rgba(13,148,136,0.25) !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-hover) !important;
+    border-color: var(--accent-hover) !important;
+}
+
+.btn-secondary {
+    background-color: var(--surface) !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border) !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--surface-2) !important;
+    color: var(--text) !important;
+}
+
+/* ============================================================
+   Pixel Calculator (Modal)
+   ============================================================ */
 .ce-calc-row {
     display: flex;
     gap: 12px;
@@ -427,160 +740,44 @@ button.tab-btn:hover:not(:disabled) {
 }
 
 .ce-calc-group label {
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 4px;
-    color: #666;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .ce-calc-group input,
 .ce-calc-group select {
-    padding: 8px;
-    border: 1px solid var(--border-color-dark);
+    padding: 7px 10px;
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    font-size: 14px;
+    font-size: 13px;
+    font-family: var(--font-mono);
     width: 100%;
     box-sizing: border-box;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.ce-modal-footer {
-    padding: 12px 16px;
-    background-color: var(--bg-color);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+.ce-calc-group input:focus,
+.ce-calc-group select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px rgba(13,148,136,0.12);
 }
 
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-
-.ce-modal-footer button {
-    padding: 8px 16px;
-    font-size: 14px;
-}
-
-/* Draggable Zoom Window */
-.zoom-window {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 9999;
-    border: 2px solid var(--primary-color);
-    border-radius: var(--radius-sm);
-    background: var(--card-bg);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    min-width: 150px;
-    min-height: 150px;
-}
-
-.zoom-window-header {
-    background: var(--primary-color);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 4px;
-    text-align: center;
-    cursor: move;
-    user-select: none;
-}
-
-/* Info Tooltips */
-.info-tooltip {
-    position: relative;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-.info-icon {
-    width: 24px;
-    height: 24px;
-    background-color: #f0f0f0;
-    color: #555;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: serif;
-    font-style: italic;
-    font-weight: bold;
-    cursor: help;
-    border: 1px solid #ccc;
-    transition: all 0.2s;
-    user-select: none;
-}
-
-.info-icon:hover {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--hover-color);
-}
-
-.tooltip-content {
-    visibility: hidden;
-    width: 450px;
-    background-color: var(--card-bg);
-    color: var(--text-primary);
-    text-align: left;
-    border-radius: var(--radius-lg);
-    padding: 15px;
-    position: absolute;
-    z-index: 1001;
-    top: 130%;
-    right: 0;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    transform: translateY(-10px);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
-    font-size: 13px;
-    line-height: 1.5;
-    pointer-events: none;
-    text-wrap: wrap;
-}
-
-.info-tooltip:hover .tooltip-content {
-    visibility: visible;
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Arrow for tooltip */
-.tooltip-content::after {
-    content: "";
-    position: absolute;
-    bottom: 100%;
-    right: 5px;
-    border-width: 8px;
-    border-style: solid;
-    border-color: transparent transparent #fff transparent;
-}
-
-.zoom-window-resizer {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 15px;
-    height: 15px;
-    cursor: nwse-resize;
-    background: linear-gradient(135deg, transparent 50%, var(--primary-color) 50%);
-    z-index: 10000;
-}
-
-/* Descreen filter controls — visibility driven by data-method on parent */
+/* ============================================================
+   Descreen Method Controls
+   ============================================================ */
 .ds-method-controls {
     display: none;
     align-items: center;
     gap: 10px;
 }
+
 [data-method="bilateral"]  #dsBilateralControls,
 [data-method="gaussian"]   #dsGaussianControls,
 [data-method="median"]     #dsMedianControls,
@@ -588,4 +785,4 @@ button.tab-btn:hover:not(:disabled) {
 [data-method="gaussian"]   #dsTuneGaussControls,
 [data-method="median"]     #dsTuneMedianControls {
     display: inline-flex;
-}
+}

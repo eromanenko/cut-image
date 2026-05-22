@@ -450,6 +450,27 @@ export function bindEvents() {
     if (dom.iniStatsOkBtn) dom.iniStatsOkBtn.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; dom.canvas.focus({ preventScroll: true }); });
     if (dom.iniStatsCancelX) dom.iniStatsCancelX.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; dom.canvas.focus({ preventScroll: true }); });
 
+    if (dom.iniStatsLoadMoreBtn && dom.iniStatsLoadMoreInput) {
+        dom.iniStatsLoadMoreBtn.addEventListener('click', () => {
+            dom.iniStatsLoadMoreInput.click();
+        });
+        dom.iniStatsLoadMoreInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                parseIniToDatabase(ev.target.result, true); // true = merge
+                state.hasUnsavedChanges = false;
+                showIniStatsModal(state.coordsDatabase);
+                updateButtonStates();
+                dom.canvas.focus({ preventScroll: true });
+            };
+            reader.readAsText(file);
+            // clear value so it can be selected again
+            e.target.value = '';
+        });
+    }
+
     // Mode toggle
     dom.freeformModeBtn.addEventListener('click', () => { switchMode('freeform'); dom.canvas.focus({ preventScroll: true }); });
     dom.rectModeBtn.addEventListener('click',     () => { switchMode('rect'); dom.canvas.focus({ preventScroll: true }); });
@@ -666,12 +687,13 @@ export function bindEvents() {
         // Global shortcuts (both modes)
         if (!e.ctrlKey && !e.metaKey && !e.altKey) {
             const key = e.key.toLowerCase();
-            if (key === 'o') { dom.fileInput.click(); return; }
-            if (key === 'a') { if (!dom.processButton.disabled) dom.processButton.click(); return; }
-            if (key === 'n') { if (!dom.addManualButton.disabled) dom.addManualButton.click(); return; }
-            if (key === 'd') { if (!dom.deleteButton.disabled) dom.deleteButton.click(); return; }
-            if (key === 's') { if (!dom.downloadButton.disabled) dom.downloadButton.click(); return; }
-            if (key === 'z') {
+            const code = e.code;
+            if (key === 'o' || key === 'о' || code === 'KeyO') { dom.fileInput.click(); e.preventDefault(); return; }
+            if (key === 'a' || key === 'ф' || code === 'KeyA') { if (!dom.processButton.disabled) dom.processButton.click(); e.preventDefault(); return; }
+            if (key === 'n' || key === 'т' || code === 'KeyN') { if (!dom.addManualButton.disabled) dom.addManualButton.click(); e.preventDefault(); return; }
+            if (key === 'd' || key === 'в' || code === 'KeyD') { if (!dom.deleteButton.disabled) dom.deleteButton.click(); e.preventDefault(); return; }
+            if (key === 's' || key === 'і' || key === 'ы' || code === 'KeyS') { if (!dom.downloadButton.disabled) dom.downloadButton.click(); e.preventDefault(); return; }
+            if (key === 'z' || key === 'я' || code === 'KeyZ') {
                 dom.zoomCheckbox.checked = !dom.zoomCheckbox.checked;
                 dom.zoomCheckbox.dispatchEvent(new Event('change'));
                 return;

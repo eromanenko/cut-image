@@ -105,7 +105,7 @@ export function serializeDatabaseToIni() {
     return ini.trim();
 }
 
-export function parseIniToDatabase(iniText) {
+export function parseIniToDatabase(iniText, merge = false) {
     const lines = iniText.split(/\r?\n/);
     let currentKey = null;
     let db = {};
@@ -168,7 +168,11 @@ export function parseIniToDatabase(iniText) {
         }
     }
 
-    state.coordsDatabase = db;
+    if (merge) {
+        state.coordsDatabase = { ...state.coordsDatabase, ...db };
+    } else {
+        state.coordsDatabase = db;
+    }
     // If we have an active image, immediately try to load its coords.
     loadCurrentFromDatabase();
 }

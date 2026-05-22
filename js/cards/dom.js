@@ -76,4 +76,6 @@ export function initDom() {
     dom.iniStatsList = document.getElementById("ceIniStatsList");
     dom.iniStatsOkBtn = document.getElementById("ceIniStatsOkBtn");
     dom.iniStatsCancelX = document.getElementById("ceIniStatsCancelX");
+    dom.iniStatsLoadMoreBtn = document.getElementById("ceIniStatsLoadMoreBtn");
+    dom.iniStatsLoadMoreInput = document.getElementById("ceIniStatsLoadMoreInput");
 }

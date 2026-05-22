@@ -323,14 +323,7 @@ function updateZoomWindowFreeform() {
     dom.zoomCtx.imageSmoothingEnabled = false;
     dom.zoomCtx.drawImage(dom.canvas, sx, sy, sourceSizeW, sourceSizeH, 0, 0, zoomWidth, zoomHeight);
 
-    dom.zoomCtx.beginPath();
-    dom.zoomCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
-    dom.zoomCtx.lineWidth = 1;
-    dom.zoomCtx.moveTo(0, crosshairY);
-    dom.zoomCtx.lineTo(zoomWidth, crosshairY);
-    dom.zoomCtx.moveTo(crosshairX, 0);
-    dom.zoomCtx.lineTo(crosshairX, zoomHeight);
-    dom.zoomCtx.stroke();
+
 }
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ Rect-mode zoom: 4-quadrant (one quadrant per corner) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -402,15 +395,7 @@ function updateZoomWindowRect() {
 
         dom.zoomCtx.drawImage(dom.canvas, sx, sy, srcW, srcH, off.dx, off.dy, qw, qh);
 
-        // Crosshair through the corner position
-        dom.zoomCtx.beginPath();
-        dom.zoomCtx.strokeStyle = 'rgba(0,0,0,0.4)';
-        dom.zoomCtx.lineWidth   = 1;
-        dom.zoomCtx.moveTo(off.dx,           off.dy + ch.cy);
-        dom.zoomCtx.lineTo(off.dx + qw,      off.dy + ch.cy);
-        dom.zoomCtx.moveTo(off.dx + ch.cx,   off.dy);
-        dom.zoomCtx.lineTo(off.dx + ch.cx,   off.dy + qh);
-        dom.zoomCtx.stroke();
+
 
         // Corner label near the outer corner of each quadrant
         const labels = ['TL', 'TR', 'BR', 'BL'];

@@ -148,7 +148,20 @@ export function bindEvents() {
     });
 
     window.addEventListener("keydown", (e) => {
-        if (e.key === "Shift") {
+        if (e.target.tagName === 'INPUT') return;
+        const tabGrid = document.getElementById("tab-grid");
+        if (tabGrid && !tabGrid.classList.contains("active")) return;
+
+        // Global shortcuts for Grid Slicing
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+            const key = e.key.toLowerCase();
+            const code = e.code;
+            if (key === 'o' || key === 'о' || code === 'KeyO') { dom.fileInput.click(); e.preventDefault(); return; }
+            if (key === 'a' || key === 'ф' || code === 'KeyA') { if (!dom.autoDetectButton.disabled) dom.autoDetectButton.click(); e.preventDefault(); return; }
+            if (key === 's' || key === 'і' || key === 'ы' || code === 'KeyS') { if (!dom.downloadButton.disabled) dom.downloadButton.click(); e.preventDefault(); return; }
+        }
+
+        if (e.key === "Shift" || e.code === "ShiftLeft" || e.code === "ShiftRight") {
             state.isShiftPressed = true;
             if (state.isMouseOverCanvas && state.isImageLoaded) {
                 if (state.hoverLine) {

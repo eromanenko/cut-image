@@ -1,5 +1,6 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
+import { redraw } from './renderer.js';
 
 export function updateButtonStates() {
     const isRect = state.editMode === 'rect';
@@ -180,6 +181,57 @@ export function showIniStatsModal(db) {
             countSpan.style.whiteSpace = 'nowrap';
             countSpan.textContent = `${count} card${count !== 1 ? 's' : ''}`;
             
+            li.style.cursor = 'pointer';
+            li.title = "Click to apply this layout to the current image";
+            li.onmouseover = () => li.style.backgroundColor = '#f0f0f0';
+            li.onmouseout = () => li.style.backgroundColor = 'transparent';
+
+            li.addEventListener('click', () => {
+                if (!state.isImageLoaded) return;
+                
+                const totalCards = state.editMode === 'freeform' ? state.detectedCards.length : state.rectCards.length;
+                if (totalCards > 0) {
+                    if (!confirm(`You already have ${totalCards} card${totalCards !== 1 ? 's' : ''} on the current image. Loading this layout will replace them. Continue?`)) {
+                        return;
+                    }
+                }
+                
+                state.editMode = record.editMode || 'freeform';
+                if (record.dpi && dom.dpiInput) dom.dpiInput.value = record.dpi;
+                
+                if (state.editMode === 'freeform') {
+                    state.detectedCards = JSON.parse(JSON.stringify(record.cards || []));
+                    state.rectCards = [];
+                } else {
+                    state.rectCards = JSON.parse(JSON.stringify(record.rectCards || []));
+                    state.rectWidth = record.rectWidth || 0;
+                    state.rectHeight = record.rectHeight || 0;
+                    state.rectSkew = record.rectSkew || 0;
+                    state.detectedCards = [];
+                }
+                
+                if (dom.freeformModeBtn && dom.rectModeBtn) {
+                    applyModeUI(state.editMode);
+                }
+                if (state.editMode === 'rect') {
+                    if (dom.rectWidthPx) dom.rectWidthPx.value = state.rectWidth;
+                    if (dom.rectHeightPx) dom.rectHeightPx.value = state.rectHeight;
+                    if (dom.rectSkewPx) dom.rectSkewPx.value = state.rectSkew;
+                }
+                
+                state.hasUnsavedChanges = true;
+                state.selectedPoint = null;
+                state.hoveredPoint = null;
+                state.selectedRectCardIndex = -1;
+                state.hoveredRectCardIndex = -1;
+                
+                updateButtonStates();
+                redraw();
+                
+                dom.iniStatsModal.style.display = 'none';
+                dom.canvas.focus({ preventScroll: true });
+            });
+
             li.appendChild(iconSpan);
             li.appendChild(nameSpan);
             li.appendChild(countSpan);
