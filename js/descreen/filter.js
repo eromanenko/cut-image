@@ -1,6 +1,7 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
 import { updateButtonStates } from './ui.js';
+import { showAlert } from '../dialogs.js';
 
 export function applyFilter() {
     if (!state.isImageLoaded || !state.isCvReady) return;
@@ -9,7 +10,7 @@ export function applyFilter() {
     updateButtonStates();
     dom.processBtn.textContent = "Processing...";
 
-    setTimeout(() => {
+    setTimeout(async () => {
         try {
             let src = cv.imread(dom.resultCanvas);
             let dst = new cv.Mat();
@@ -59,7 +60,7 @@ export function applyFilter() {
             
         } catch (err) {
             console.error("Filter error:", err);
-            alert("An error occurred applying the filter. See console.");
+            await showAlert("An error occurred applying the filter. See console.");
         } finally {
             state.isProcessing = false;
             dom.processBtn.textContent = "Apply Filter";

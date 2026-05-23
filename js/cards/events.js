@@ -5,6 +5,7 @@ import { handleAutoDetect } from './cv-detector.js';
 import { exportCards } from './export.js';
 import { handleFileUpload, renderPdfPageForPreview } from './file-loader.js';
 import { updateButtonStates, scrollToCorner, scrollToRectCard, applyModeUI, showIniStatsModal } from './ui.js';
+import { showAlert, showConfirm } from '../dialogs.js';
 import { getMousePos, findPointNear, findCardContaining } from './utils.js';
 import {
     getRectCardCorners,
@@ -219,9 +220,10 @@ function rectCardOverlapsExisting(candidate) {
 // Freeform: delete selected card
 // ---------------------------------------------------------------------------
 
-export function deleteSelectedCard() {
+export async function deleteSelectedCard() {
     if (!state.selectedPoint) return;
-    if (!confirm("Are you sure you want to delete this card?")) return;
+    const proceed = await showConfirm("Are you sure you want to delete this card?");
+    if (!proceed) return;
     const index = state.detectedCards.findIndex(card => card.includes(state.selectedPoint));
     if (index !== -1) {
         state.detectedCards.splice(index, 1);
@@ -236,9 +238,10 @@ export function deleteSelectedCard() {
 // Rect-mode: delete selected card
 // ---------------------------------------------------------------------------
 
-function deleteSelectedRectCard() {
+async function deleteSelectedRectCard() {
     if (state.selectedRectCardIndex === -1) return;
-    if (!confirm("Are you sure you want to delete this card?")) return;
+    const proceed = await showConfirm("Are you sure you want to delete this card?");
+    if (!proceed) return;
     state.rectCards.splice(state.selectedRectCardIndex, 1);
     state.selectedRectCardIndex = state.rectCards.length > 0
         ? Math.min(state.selectedRectCardIndex, state.rectCards.length - 1)
@@ -256,12 +259,13 @@ function hasCards() {
     return state.detectedCards.length > 0 || state.rectCards.length > 0;
 }
 
-function switchMode(newMode) {
+async function switchMode(newMode) {
     if (state.editMode === newMode) return;
 
     if (hasCards()) {
         const msg = `You have ${state.detectedCards.length + state.rectCards.length} card(s). Switching modes will unselect all of them. Continue?`;
-        if (!confirm(msg)) return;
+        const proceed = await showConfirm(msg);
+        if (!proceed) return;
     }
 
     state.detectedCards.length = 0;
@@ -488,9 +492,9 @@ export function bindEvents() {
         }
     });
 
-    dom.getSizeBtn.addEventListener("click", () => {
+    dom.getSizeBtn.addEventListener("click", async () => {
         if (state.detectedCards.length === 0) {
-            alert("No cards available. Please add a manual card or detect cards first.");
+            await showAlert("No cards available. Please add a manual card or detect cards first.");
             return;
         }
 
@@ -517,12 +521,12 @@ export function bindEvents() {
         dom.canvas.focus({ preventScroll: true });
     });
 
-    dom.addManualButton.addEventListener('click', () => {
+    dom.addManualButton.addEventListener('click', async () => {
         if (!state.isImageLoaded) return;
 
         if (state.editMode === 'rect') {
             if (state.rectWidth <= 0 || state.rectHeight <= 0) {
-                alert("Please set Width and Height (px) for Rectangle mode first.");
+                await showAlert("Please set Width and Height (px) for Rectangle mode first.");
                 return;
             }
 
@@ -850,7 +854,7 @@ function handleFreeformMouseMove(pos, e) {
 // Rect-mode mouse handlers
 // ---------------------------------------------------------------------------
 
-function handleRectMouseDown(pos, e) {
+async function handleRectMouseDown(pos, e) {
     // Find which rect card (if any) was hit — iterate in reverse so topmost card wins
     let hitIdx = -1;
     for (let i = state.rectCards.length - 1; i >= 0; i--) {
@@ -869,7 +873,7 @@ function handleRectMouseDown(pos, e) {
     } else {
         // Click outside all cards → add new card centred at click
         if (state.rectWidth <= 0 || state.rectHeight <= 0) {
-            alert("Please set Width and Height (px) for Rectangle mode first.");
+            await showAlert("Please set Width and Height (px) for Rectangle mode first.");
             return;
         }
         const card = createRectCard(pos.x, pos.y);

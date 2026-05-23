@@ -4,6 +4,7 @@ import { updateButtonStates } from './ui.js';
 import { getRectCardCorners } from './rect-mode.js';
 import { injectPngDpi } from '../grid/png-modifier.js';
 import { generateCurrentIniFileContent } from './ini-handler.js';
+import { showAlert } from '../dialogs.js';
 
 export async function exportCards() {
     const isRect     = state.editMode === 'rect';
@@ -90,7 +91,7 @@ export async function exportCards() {
 
     } catch (e) {
         console.error(e);
-        alert("Error generating card archive.");
+        await showAlert("Error generating card archive.");
     } finally {
         dom.downloadButton.disabled = false;
         updateButtonStates();

@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { resetState } from './ui.js';
 import { extractTiffDpi, extractImageDpi } from './dpi.js';
 import { redraw } from './renderer.js';
+import { showAlert } from '../dialogs.js';
 
 export async function renderPdfPageForPreview(pageNumber) {
     if (!state.pdfDoc) return;
@@ -77,7 +78,7 @@ export async function handleFileUpload(event) {
             await renderPdfPageForPreview(state.currentPreviewPage);
         } catch (err) {
             console.error("PDF load error:", err);
-            alert("Error loading PDF document.");
+            await showAlert("Error loading PDF document.");
         }
     } else {
         state.isPdf = false;
@@ -92,7 +93,7 @@ export async function handleFileUpload(event) {
             try {
                 const ifds = UTIF.decode(fileBuffer);
                 if (ifds.length === 0) {
-                    alert("Could not decode TIFF file.");
+                    await showAlert("Could not decode TIFF file.");
                     return;
                 }
                 UTIF.decodeImage(fileBuffer, ifds[0]);
@@ -119,7 +120,7 @@ export async function handleFileUpload(event) {
                 redraw();
             } catch (err) {
                 console.error("TIFF decode error:", err);
-                alert("Error decoding TIFF file: " + err.message);
+                await showAlert("Error decoding TIFF file: " + err.message);
             }
         } else {
             const detectedDpi = extractImageDpi(new Uint8Array(fileBuffer), file.type);

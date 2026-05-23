@@ -4,7 +4,8 @@ import { updateDownloadButtonText, resetLines } from './ui.js';
 import { getMousePos, findLineNear } from './utils.js';
 import { redraw } from './renderer.js';
 import { autoDetectCutMarks } from './detect.js';
-import { generateAndDownloadZip, calculateCutRegions } from './export.js';
+import { calculateCutRegions, generateAndDownloadZip } from './export.js';
+import { showAlert } from '../dialogs.js';
 import { handleFileUpload, renderPdfPageForPreview } from './file-loader.js';
 
 export function bindEvents() {
@@ -224,7 +225,7 @@ export function bindEvents() {
         calculateCutRegions();
 
         if (state.cutRegions.length === 0) {
-            alert("No regions left with these settings. Create more lines or uncheck the 'discard edges' option.");
+            await showAlert("No regions left with these settings. Create more lines or uncheck the 'discard edges' option.");
             return;
         }
 
@@ -237,7 +238,7 @@ export function bindEvents() {
             await generateAndDownloadZip();
         } catch (error) {
             console.error("Error creating archive:", error);
-            alert("An error occurred while creating the archive.");
+            await showAlert("An error occurred while creating the archive.");
         } finally {
             dom.downloadButton.disabled = false;
             updateDownloadButtonText();

@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { updateButtonStates } from './ui.js';
 
 import { extractTiffDpi, extractImageDpi } from '../grid/dpi.js';
+import { showAlert } from '../dialogs.js';
 
 export async function handleFileUpload(event) {
     const file = event.target.files[0];
@@ -43,7 +44,7 @@ export async function handleFileUpload(event) {
             }
         } catch (err) {
             console.error("TIFF decode error:", err);
-            alert("Error decoding TIFF file: " + err.message);
+            await showAlert("Error decoding TIFF file: " + err.message);
         }
     } else {
         const detectedDpi = extractImageDpi(new Uint8Array(fileBuffer), file.type);

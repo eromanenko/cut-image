@@ -1,6 +1,7 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
 import { redraw } from './renderer.js';
+import { showAlert, showConfirm } from '../dialogs.js';
 
 export function updateButtonStates() {
     const isRect = state.editMode === 'rect';
@@ -124,9 +125,9 @@ export function scrollToRectCard(card, corners) {
     });
 }
 
-export function showIniStatsModal(db) {
+export async function showIniStatsModal(db) {
     if (!db || Object.keys(db).length === 0) {
-        alert("No layouts found in the selected file.");
+        await showAlert("No layouts found in the selected file.");
         return;
     }
 
@@ -186,12 +187,25 @@ export function showIniStatsModal(db) {
             li.onmouseover = () => li.style.backgroundColor = '#f0f0f0';
             li.onmouseout = () => li.style.backgroundColor = 'transparent';
 
-            li.addEventListener('click', () => {
+            li.addEventListener('click', async (e) => {
+                if (e.target.closest('.delete-record-btn')) return;
+                
                 if (!state.isImageLoaded) return;
+                
+                const currentDpi = parseInt(dom.dpiInput.value) || 300;
+                const recordDpi = record.dpi || 300;
+                
+                if (currentDpi !== recordDpi) {
+                    const proceed = await showConfirm(`Warning: The loaded layout was saved with ${recordDpi} DPI, but the current image is set to ${currentDpi} DPI. The coordinates might not match exactly. Continue?`);
+                    if (!proceed) {
+                        return;
+                    }
+                }
                 
                 const totalCards = state.editMode === 'freeform' ? state.detectedCards.length : state.rectCards.length;
                 if (totalCards > 0) {
-                    if (!confirm(`You already have ${totalCards} card${totalCards !== 1 ? 's' : ''} on the current image. Loading this layout will replace them. Continue?`)) {
+                    const replace = await showConfirm(`You already have ${totalCards} card${totalCards !== 1 ? 's' : ''} on the current image. Loading this layout will replace them. Continue?`);
+                    if (!replace) {
                         return;
                     }
                 }
@@ -232,9 +246,31 @@ export function showIniStatsModal(db) {
                 dom.canvas.focus({ preventScroll: true });
             });
 
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-record-btn';
+            deleteBtn.style.marginLeft = '15px';
+            deleteBtn.style.background = 'none';
+            deleteBtn.style.border = 'none';
+            deleteBtn.style.color = '#dc3545';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.style.padding = '4px 8px';
+            deleteBtn.innerHTML = '&#x2715;'; // HTML entity for multiplication X
+            deleteBtn.title = "Delete layout";
+            
+            deleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const proceed = await showConfirm(`Are you sure you want to delete the layout for '${key}'?`);
+                if (proceed) {
+                    delete db[key];
+                    state.hasUnsavedChanges = true;
+                    await showIniStatsModal(db);
+                }
+            });
+
             li.appendChild(iconSpan);
             li.appendChild(nameSpan);
             li.appendChild(countSpan);
+            li.appendChild(deleteBtn);
             dom.iniStatsList.appendChild(li);
         }
     }

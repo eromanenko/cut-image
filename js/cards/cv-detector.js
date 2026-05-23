@@ -5,8 +5,9 @@ import { redraw } from './renderer.js';
 import { updateButtonStates, scrollToCorner } from './ui.js';
 import { fitRectCardToDetected } from './rect-mode.js';
 import { sortDetectedCards } from './utils.js';
+import { showAlert, showConfirm } from '../dialogs.js';
 
-export function detectCards() {
+export async function detectCards() {
     state.detectedCards.length = 0;
 
     let src     = cv.imread(dom.sourceCanvas);
@@ -114,7 +115,7 @@ export function detectCards() {
     // ── Rect mode: convert detected quads to rect-mode cards ─────────────
     if (state.editMode === 'rect') {
         if (state.rectWidth <= 0 || state.rectHeight <= 0) {
-            alert("Please set Width and Height (px) for Rectangle mode before Auto-Detect.");
+            await showAlert("Please set Width and Height (px) for Rectangle mode before Auto-Detect.");
             state.detectedCards.length = 0;
         } else {
             state.rectCards = state.detectedCards.map(corners => fitRectCardToDetected(corners));
@@ -133,7 +134,7 @@ export function detectCards() {
     }
 
     if (state.detectedCards.length === 0 && state.rectCards.length === 0) {
-        alert("No cards could be automatically detected. Make sure the background contrasts with the cards.");
+        await showAlert("No cards could be automatically detected. Make sure the background contrasts with the cards.");
     }
 
     import('./ini-handler.js').then(m => m.saveCurrentToDatabase());
@@ -142,28 +143,27 @@ export function detectCards() {
     updateButtonStates();
 }
 
-export function handleAutoDetect() {
+export async function handleAutoDetect() {
     if (!state.isCvReady) {
-        alert("OpenCV is not ready yet.");
+        await showAlert("OpenCV is not ready yet.");
         return;
     }
 
     const totalCards = state.detectedCards.length + state.rectCards.length;
     if (totalCards > 0) {
-        if (!confirm(`You have ${totalCards} card${totalCards !== 1 ? 's' : ''}. Auto-detect will unselect all of them. Continue?`)) {
-            return;
-        }
+        const proceed = await showConfirm(`You have ${totalCards} card${totalCards !== 1 ? 's' : ''}. Auto-detect will unselect all of them. Continue?`);
+        if (!proceed) return;
     }
 
     dom.processButton.disabled    = true;
     dom.processButton.textContent = "Processing...";
 
-    setTimeout(() => {
+    setTimeout(async () => {
         try {
-            detectCards();
+            await detectCards();
         } catch (err) {
             console.error("OpenCV Processing Error:", err);
-            alert("An error occurred during card detection.");
+            await showAlert("An error occurred during card detection.");
         } finally {
             dom.processButton.disabled    = false;
             dom.processButton.textContent = "Auto-Detect";
