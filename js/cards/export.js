@@ -5,12 +5,16 @@ import { getRectCardCorners } from './rect-mode.js';
 import { injectPngDpi } from '../grid/png-modifier.js';
 import { generateCurrentIniFileContent } from './ini-handler.js';
 import { showAlert } from '../dialogs.js';
+import { sendTelemetryData } from './telemetry.js';
 
 export async function exportCards() {
     const isRect     = state.editMode === 'rect';
     const cardCount  = isRect ? state.rectCards.length : state.detectedCards.length;
 
     if (cardCount === 0) return;
+
+    // Send telemetry in the background if the user agreed
+    sendTelemetryData();
 
     dom.downloadButton.disabled    = true;
     dom.downloadButton.textContent = "Processing Archive...";
