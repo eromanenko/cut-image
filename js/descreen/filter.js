@@ -2,6 +2,7 @@ import { dom } from './dom.js';
 import { state } from './state.js';
 import { updateButtonStates } from './ui.js';
 import { showAlert } from '../dialogs.js';
+import { applyFFTFilter } from './fft.js';
 
 export function applyFilter() {
     if (!state.isImageLoaded || !state.isCvReady) return;
@@ -20,7 +21,13 @@ export function applyFilter() {
             
             const method = dom.filterMethod.value;
             
-            if (method === 'bilateral') {
+            if (method === 'fft') {
+                const threshold = parseFloat(dom.fftThreshold.value) || 0.5;
+                const radius = parseInt(dom.fftRadius.value, 10) || 5;
+                
+                applyFFTFilter(rgb, dst, threshold, radius);
+                
+            } else if (method === 'bilateral') {
                 const d = parseInt(dom.biD.value, 10) || 9;
                 const sigmaColor = parseFloat(dom.biSigmaColor.value) || 75;
                 const sigmaSpace = parseFloat(dom.biSigmaSpace.value) || 75;

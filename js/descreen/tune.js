@@ -1,5 +1,6 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
+import { applyFFTFilter } from './fft.js';
 
 let tuneCropSize = 300;
 let tuneX = 0;
@@ -26,7 +27,8 @@ export function initTuneModal() {
 
     const tuneInputs = [
         dom.tuneBiD, dom.tuneBiColor, dom.tuneBiSpace,
-        dom.tuneGaussK, dom.tuneUnsharpAmt, dom.tuneMedianK
+        dom.tuneGaussK, dom.tuneUnsharpAmt, dom.tuneMedianK,
+        dom.tuneFftThreshold, dom.tuneFftRadius
     ];
 
     tuneInputs.forEach(input => {
@@ -62,6 +64,8 @@ function openModal() {
     dom.tuneGaussK.value = dom.gaussK.value;
     dom.tuneUnsharpAmt.value = dom.unsharpAmount.value;
     dom.tuneMedianK.value = dom.medianK.value;
+    dom.tuneFftThreshold.value = dom.fftThreshold.value;
+    dom.tuneFftRadius.value = dom.fftRadius.value;
 
     updateTuneMethodControls();
     
@@ -84,6 +88,8 @@ function applyTune() {
     dom.gaussK.value = dom.tuneGaussK.value;
     dom.unsharpAmount.value = dom.tuneUnsharpAmt.value;
     dom.medianK.value = dom.tuneMedianK.value;
+    dom.fftThreshold.value = dom.tuneFftThreshold.value;
+    dom.fftRadius.value = dom.tuneFftRadius.value;
 
     // Trigger main form controls update manually to reflect selected method
     dom.filterMethod.dispatchEvent(new Event('change'));
@@ -156,7 +162,12 @@ function renderTune() {
         
         const method = dom.tuneMethod.value;
         
-        if (method === 'bilateral') {
+        if (method === 'fft') {
+            const threshold = parseFloat(dom.tuneFftThreshold.value) || 0.5;
+            const radius = parseInt(dom.tuneFftRadius.value, 10) || 5;
+            applyFFTFilter(rgb, dst, threshold, radius);
+            
+        } else if (method === 'bilateral') {
             const d = parseInt(dom.tuneBiD.value, 10) || 9;
             const sigmaColor = parseFloat(dom.tuneBiColor.value) || 75;
             const sigmaSpace = parseFloat(dom.tuneBiSpace.value) || 75;

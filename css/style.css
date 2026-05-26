@@ -778,9 +778,11 @@ canvas {
     gap: 10px;
 }
 
+[data-method="fft"]        #dsFftControls,
 [data-method="bilateral"]  #dsBilateralControls,
 [data-method="gaussian"]   #dsGaussianControls,
 [data-method="median"]     #dsMedianControls,
+[data-method="fft"]        #dsTuneFftControls,
 [data-method="bilateral"]  #dsTuneBiControls,
 [data-method="gaussian"]   #dsTuneGaussControls,
 [data-method="median"]     #dsTuneMedianControls {
