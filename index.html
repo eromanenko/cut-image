@@ -269,10 +269,9 @@
 
             <!-- Styling Controls (Freeform only) -->
             <div class="controls hide-on-stuck" id="ceFreeformStylingRow">
-                <label class="input-container">
-                    Line Color: <input type="color" id="ceLineColor" value="#808080"
-                        style="cursor: pointer; height: calc(var(--control-height) - 10px);"
-                        title="Line Color (Press C to cycle)">
+                <div class="input-container">
+                    Line Color: <input type="color" id="ceLineColor" value="#007bff"
+                        title="Change drawn line color (C)" style="cursor: pointer; height: calc(var(--control-height) - 10px);">
                     <button type="button" class="fixed-color-btn" data-color="#000000"
                         style="background-color: #000000;" title="Black"></button>
                     <button type="button" class="fixed-color-btn" data-color="#ffffff"
@@ -285,12 +284,12 @@
                         style="background-color: #0000ff;" title="Blue"></button>
                     <button type="button" class="fixed-color-btn" data-color="#ff0000"
                         style="background-color: #ff0000;" title="Red"></button>
-                </label>
-                <label class="input-container">
-                    Line Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.5"
-                        style="margin-left: 5px; cursor: pointer;">
-                    <span id="ceLineOpacityVal" style="display:inline-block; width: 4ch;">0.50</span>
-                </label>
+                </div>
+                <div class="input-container">
+                    Line Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.75"
+                        style="margin-left: 5px; cursor: pointer;" title="Change line opacity">
+                    <span id="ceLineOpacityVal" style="display:inline-block; width: 4ch;">0.75</span>
+                </div>
                 <div class="input-container">
                     <input type="checkbox" id="ceZoomCheckbox" checked>
                     <label for="ceZoomCheckbox" title="Toggle Zoom Window (Z)">Zoom Window</label>
