@@ -29,27 +29,34 @@ export async function detectCards() {
     let imgArea    = src.rows * src.cols;
     let minCardArea = imgArea * 0.01;
 
-    // For freeform mode, use mm dimensions from the freeform inputs.
-    // For rect mode, use pixel dimensions directly.
-    let targetW_px = 0, targetH_px = 0, targetArea = 0, targetAR = 0;
-    let targetMinPx = 0, targetMaxPx = 0;
+    let targetParams = [];
 
     if (state.editMode === 'rect') {
-        targetW_px = state.rectWidth;
-        targetH_px = state.rectHeight;
+        if (state.rectWidth > 0 && state.rectHeight > 0) {
+            const w = state.rectWidth;
+            const h = state.rectHeight;
+            targetParams.push({
+                area: w * h,
+                ar: Math.max(w / h, h / w),
+                minPx: Math.min(w, h),
+                maxPx: Math.max(w, h)
+            });
+        }
     } else {
-        const expectedW = parseFloat(dom.widthInput.value)  || 0;
-        const expectedH = parseFloat(dom.heightInput.value) || 0;
-        const dpi       = parseFloat(dom.dpiInput.value)    || 300;
-        targetW_px = (expectedW * dpi) / 25.4;
-        targetH_px = (expectedH * dpi) / 25.4;
-    }
-
-    if (targetW_px > 0 && targetH_px > 0) {
-        targetArea   = targetW_px * targetH_px;
-        targetAR     = Math.max(targetW_px / targetH_px, targetH_px / targetW_px);
-        targetMinPx  = Math.min(targetW_px, targetH_px);
-        targetMaxPx  = Math.max(targetW_px, targetH_px);
+        const dpi = parseFloat(dom.dpiInput.value) || 300;
+        const targetSizes = dom.getTargetSizes ? dom.getTargetSizes() : [];
+        for (const size of targetSizes) {
+            if (size.w > 0 && size.h > 0) {
+                const w = (size.w * dpi) / 25.4;
+                const h = (size.h * dpi) / 25.4;
+                targetParams.push({
+                    area: w * h,
+                    ar: Math.max(w / h, h / w),
+                    minPx: Math.min(w, h),
+                    maxPx: Math.max(w, h)
+                });
+            }
+        }
     }
 
     let foundCenters = [];
@@ -59,7 +66,7 @@ export async function detectCards() {
         let contour = contours.get(i);
         let area    = cv.contourArea(contour);
 
-        if (area < minCardArea && targetArea === 0) continue;
+        if (area < minCardArea && targetParams.length === 0) continue;
 
         let rect    = cv.minAreaRect(contour);
 
@@ -75,17 +82,25 @@ export async function detectCards() {
         let rectArea = rectW * rectH;
         let rectAR   = rectW > 0 && rectH > 0 ? Math.max(rectW / rectH, rectH / rectW) : 0;
 
-        if (targetArea > 0) {
-            if (rectArea < targetArea * 0.40 || rectArea > targetArea * 1.30) continue;
-            if (targetAR > 0 && Math.abs(rectAR - targetAR) / targetAR > 0.20) continue;
+        if (targetParams.length > 0) {
+            let matchedParam = null;
+            for (const param of targetParams) {
+                if (rectArea >= param.area * 0.40 && rectArea <= param.area * 1.30) {
+                    if (param.ar > 0 && Math.abs(rectAR - param.ar) / param.ar <= 0.20) {
+                        matchedParam = param;
+                        break;
+                    }
+                }
+            }
+            if (!matchedParam) continue;
 
             // Snap to exact physical dimensions
             if (rect.size.width < rect.size.height) {
-                rect.size.width  = targetMinPx;
-                rect.size.height = targetMaxPx;
+                rect.size.width  = matchedParam.minPx;
+                rect.size.height = matchedParam.maxPx;
             } else {
-                rect.size.width  = targetMaxPx;
-                rect.size.height = targetMinPx;
+                rect.size.width  = matchedParam.maxPx;
+                rect.size.height = matchedParam.minPx;
             }
         } else {
             if (area < minCardArea) continue;

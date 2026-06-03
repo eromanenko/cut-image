@@ -11,6 +11,7 @@ export function initDom() {
     dom.viewCoordsButton = document.getElementById("ceViewCoordsButton");
     dom.loadCoordsButton = document.getElementById("ceLoadCoordsButton");
     dom.loadCoordsInput = document.getElementById("ceLoadCoordsInput");
+    dom.viewCoordsCount = document.getElementById("ceViewCoordsCount");
     dom.canvas = document.getElementById("ceCanvas");
     dom.ctx = dom.canvas.getContext("2d");
 
@@ -30,10 +31,10 @@ export function initDom() {
     dom.zoomTitle = document.getElementById("ceZoomTitle");
     dom.zoomResizer = document.getElementById("ceZoomResizer");
 
-    dom.widthInput = document.getElementById("ceWidthInput");
-    dom.heightInput = document.getElementById("ceHeightInput");
+    dom.sizeListContainer = document.getElementById("ceSizeListContainer");
+    dom.addSizeBtn = document.getElementById("ceAddSizeBtn");
+    dom.forceSizeCheckbox = document.getElementById("ceForceSizeCheckbox");
     dom.dpiInput = document.getElementById("ceDpiInput");
-    dom.getSizeBtn = document.getElementById("ceGetSizeBtn");
 
     dom.sourceCanvas = document.createElement("canvas");
     dom.sourceCtx = dom.sourceCanvas.getContext("2d");
@@ -78,4 +79,18 @@ export function initDom() {
     dom.iniStatsCancelX = document.getElementById("ceIniStatsCancelX");
     dom.iniStatsLoadMoreBtn = document.getElementById("ceIniStatsLoadMoreBtn");
     dom.iniStatsLoadMoreInput = document.getElementById("ceIniStatsLoadMoreInput");
+}
+
+export function getTargetSizes() {
+    if (!dom.sizeListContainer) return [];
+    const sizes = [];
+    const rows = dom.sizeListContainer.querySelectorAll('.ce-size-row');
+    rows.forEach(row => {
+        const w = parseFloat(row.querySelector('.ceWidthInput').value) || 0;
+        const h = parseFloat(row.querySelector('.ceHeightInput').value) || 0;
+        if (w > 0 && h > 0) {
+            sizes.push({ w, h });
+        }
+    });
+    return sizes;
 }

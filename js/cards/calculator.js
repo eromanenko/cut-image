@@ -2,11 +2,10 @@ import { dom } from './dom.js';
 import { state } from './state.js';
 
 export function initCalculator() {
-    if (!dom.calcBtnFreeform || !dom.calcBtnRect) return;
+    if (!dom.calcBtnRect) return;
     if (!dom.calcModal || !dom.calcCancelBtn || !dom.calcCancelX || !dom.calcApplyBtn) return;
     if (!dom.calcMmW || !dom.calcMmH || !dom.calcPxW || !dom.calcPxH || !dom.calcDpi) return;
 
-    dom.calcBtnFreeform.addEventListener('click', () => openCalculator('freeform'));
     dom.calcBtnRect.addEventListener('click', () => openCalculator('rect'));
 
     dom.calcCancelBtn.addEventListener('click', closeCalculator);
@@ -37,14 +36,21 @@ export function initCalculator() {
     });
 }
 
-function openCalculator(mode) {
+let currentTargetRow = null;
+let calcKeydownHandler = null;
+
+export function openCalculator(mode, targetRow = null) {
+    currentTargetRow = targetRow;
     const dpi = parseFloat(dom.dpiInput.value) || 300;
     dom.calcDpi.value = dpi;
     if (dom.calcPreset) dom.calcPreset.value = '';
 
     if (mode === 'freeform') {
-        const mmW = parseFloat(dom.widthInput.value);
-        const mmH = parseFloat(dom.heightInput.value);
+        const wInput = targetRow ? targetRow.querySelector('.ceWidthInput') : null;
+        const hInput = targetRow ? targetRow.querySelector('.ceHeightInput') : null;
+        
+        const mmW = wInput ? parseFloat(wInput.value) : NaN;
+        const mmH = hInput ? parseFloat(hInput.value) : NaN;
 
         if (!isNaN(mmW)) dom.calcMmW.value = mmW;
         else dom.calcMmW.value = '';
@@ -67,10 +73,36 @@ function openCalculator(mode) {
     }
 
     dom.calcModal.style.display = 'flex';
+    
+    // Add keydown handler
+    calcKeydownHandler = (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeCalculator();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            applyCalculator();
+        }
+    };
+    document.addEventListener('keydown', calcKeydownHandler);
+    
+    // Focus first input
+    if (mode === 'freeform' && dom.calcMmW) {
+        setTimeout(() => dom.calcMmW.focus(), 10);
+    } else if (dom.calcPxW) {
+        setTimeout(() => dom.calcPxW.focus(), 10);
+    }
 }
 
 function closeCalculator() {
+    if (calcKeydownHandler) {
+        document.removeEventListener('keydown', calcKeydownHandler);
+        calcKeydownHandler = null;
+    }
     dom.calcModal.style.display = 'none';
+    currentTargetRow = null;
 }
 
 function updateFromMm(axis) {
@@ -130,12 +162,15 @@ function applyCalculator() {
 
         // Trigger the input event to sync state and redraw
         dom.rectWidthPx.dispatchEvent(new Event('input'));
-    } else {
+    } else if (currentTargetRow) {
         const mmW = parseFloat(dom.calcMmW.value);
         const mmH = parseFloat(dom.calcMmH.value);
 
-        if (!isNaN(mmW)) dom.widthInput.value = mmW;
-        if (!isNaN(mmH)) dom.heightInput.value = mmH;
+        const wInput = currentTargetRow.querySelector('.ceWidthInput');
+        const hInput = currentTargetRow.querySelector('.ceHeightInput');
+
+        if (!isNaN(mmW) && wInput) wInput.value = mmW;
+        if (!isNaN(mmH) && hInput) hInput.value = mmH;
     }
 
     closeCalculator();

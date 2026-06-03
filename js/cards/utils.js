@@ -8,6 +8,11 @@ export function hexToRgb(hex) {
     return { r, g, b };
 }
 
+export function getRenderScale() {
+    if (!dom.canvas || dom.canvas.clientWidth === 0) return 1;
+    return dom.canvas.width / dom.canvas.clientWidth;
+}
+
 export function getMousePos(event) {
     const rect = dom.canvas.getBoundingClientRect();
     const scaleX = dom.canvas.width / rect.width;
@@ -20,7 +25,8 @@ export function getMousePos(event) {
 
 export function findPointNear(x, y) {
     let closest = null;
-    let minDistance = 20;
+    const scale = getRenderScale();
+    let minDistance = 20 * scale;
     for (const card of state.detectedCards) {
         for (const pt of card) {
             const dist = Math.hypot(pt.x - x, pt.y - y);

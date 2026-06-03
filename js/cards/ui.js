@@ -13,6 +13,22 @@ export function updateButtonStates() {
         dom.saveCoordsButton.disabled = Object.keys(state.coordsDatabase || {}).length === 0 && !state.isImageLoaded;
     }
 
+    if (dom.viewCoordsCount) {
+        let fileCount = 0;
+        if (state.coordsDatabase) {
+            for (const [key, record] of Object.entries(state.coordsDatabase)) {
+                let count = 0;
+                if (record.editMode === 'freeform') {
+                    count = record.cards ? record.cards.length : 0;
+                } else {
+                    count = record.rectCards ? record.rectCards.length : 0;
+                }
+                if (count > 0) fileCount++;
+            }
+        }
+        dom.viewCoordsCount.textContent = fileCount.toString();
+    }
+
     if (isRect) {
         const total = state.rectCards.length;
         const current = state.selectedRectCardIndex + 1;
@@ -25,7 +41,8 @@ export function updateButtonStates() {
         dom.downloadButton.textContent = state.rectCards.length > 0
             ? `Download ${state.rectCards.length} card${state.rectCards.length !== 1 ? 's' : ''}`
             : 'Download';
-        if (dom.getSizeBtn) dom.getSizeBtn.disabled = true;
+        const getSizeBtns = document.querySelectorAll('.ceGetSizeBtn');
+        getSizeBtns.forEach(btn => btn.disabled = true);
     } else {
         const total = state.detectedCards.length;
         let current = 0;
@@ -41,14 +58,12 @@ export function updateButtonStates() {
         dom.downloadButton.textContent = state.detectedCards.length > 0
             ? `Download ${state.detectedCards.length} card${state.detectedCards.length !== 1 ? 's' : ''}`
             : 'Download';
-        if (dom.getSizeBtn) dom.getSizeBtn.disabled = state.detectedCards.length === 0;
+        const getSizeBtns = document.querySelectorAll('.ceGetSizeBtn');
+        const disableGetSize = state.detectedCards.length === 0;
+        getSizeBtns.forEach(btn => btn.disabled = disableGetSize);
     }
 }
 
-/**
- * Switch the visible toolbar rows and toggle-button active states
- * to reflect the given mode ('freeform' | 'rect').
- */
 export function applyModeUI(mode) {
     const isRect = mode === 'rect';
 
@@ -64,6 +79,20 @@ export function applyModeUI(mode) {
     // Swap instruction text
     if (dom.instrFreeform) dom.instrFreeform.style.display = isRect ? 'none' : '';
     if (dom.instrRect)     dom.instrRect.style.display     = isRect ? ''     : 'none';
+}
+
+export function pulseViewCoordsButton() {
+    if (dom.viewCoordsButton) {
+        dom.viewCoordsButton.classList.remove('highlight-pulse');
+        void dom.viewCoordsButton.offsetWidth; // Trigger reflow
+        dom.viewCoordsButton.classList.add('highlight-pulse');
+        
+        setTimeout(() => {
+            if (dom.viewCoordsButton) {
+                dom.viewCoordsButton.classList.remove('highlight-pulse');
+            }
+        }, 1000);
+    }
 }
 
 export function scrollToCorner(point, cornerIndex) {
@@ -125,6 +154,9 @@ export function scrollToRectCard(card, corners) {
     });
 }
 
+let lastIniStatsState = null;
+let iniStatsKeydownHandler = null;
+
 export async function showIniStatsModal(db) {
     if (!db || Object.keys(db).length === 0) {
         await showAlert("No layouts found in the selected file.");
@@ -134,6 +166,7 @@ export async function showIniStatsModal(db) {
     dom.iniStatsList.innerHTML = '';
     
     let hasEntries = false;
+    let fileCount = 0;
     for (const [key, record] of Object.entries(db)) {
         let count = 0;
         let iconSvg = '';
@@ -156,6 +189,7 @@ export async function showIniStatsModal(db) {
         
         if (count > 0) {
             hasEntries = true;
+            fileCount++;
             const li = document.createElement('li');
             li.style.padding = '8px 0';
             li.style.borderBottom = '1px solid #eee';
@@ -243,6 +277,7 @@ export async function showIniStatsModal(db) {
                 redraw();
                 
                 dom.iniStatsModal.style.display = 'none';
+                pulseViewCoordsButton();
                 dom.canvas.focus({ preventScroll: true });
             });
 
@@ -275,6 +310,15 @@ export async function showIniStatsModal(db) {
         }
     }
 
+    const titleEl = document.getElementById("ceIniStatsTitle");
+    if (titleEl) {
+        if (fileCount > 0) {
+            titleEl.textContent = `Cuts found for the following ${fileCount} file${fileCount !== 1 ? 's' : ''}:`;
+        } else {
+            titleEl.textContent = `Cuts found for the following files:`;
+        }
+    }
+
     if (!hasEntries) {
         const li = document.createElement('li');
         li.style.padding = '8px 0';
@@ -284,4 +328,27 @@ export async function showIniStatsModal(db) {
     }
 
     dom.iniStatsModal.style.display = 'flex';
+    
+    if (iniStatsKeydownHandler) {
+        document.removeEventListener('keydown', iniStatsKeydownHandler);
+    }
+    iniStatsKeydownHandler = (e) => {
+        // Avoid intercepting if a top-level alert/confirm is shown
+        if (document.querySelector('#custom-dialogs-container .ce-modal')) return;
+
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (dom.iniStatsCancelX) dom.iniStatsCancelX.click();
+            document.removeEventListener('keydown', iniStatsKeydownHandler);
+            iniStatsKeydownHandler = null;
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (dom.iniStatsOkBtn) dom.iniStatsOkBtn.click();
+            document.removeEventListener('keydown', iniStatsKeydownHandler);
+            iniStatsKeydownHandler = null;
+        }
+    };
+    document.addEventListener('keydown', iniStatsKeydownHandler);
 }

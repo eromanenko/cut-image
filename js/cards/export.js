@@ -43,6 +43,28 @@ export async function exportCards() {
                 let heightB = Math.hypot(card4pts[0].x - card4pts[3].x, card4pts[0].y - card4pts[3].y);
                 outW = Math.round(Math.max(widthA,  widthB));
                 outH = Math.round(Math.max(heightA, heightB));
+
+                if (dom.forceSizeCheckbox && dom.forceSizeCheckbox.checked) {
+                    const targetSizes = dom.getTargetSizes ? dom.getTargetSizes() : [];
+                    if (targetSizes.length > 0) {
+                        let bestMatch = null;
+                        let minDiff = Infinity;
+                        for (const size of targetSizes) {
+                            const sizePxW = (size.w * dpi) / 25.4;
+                            const sizePxH = (size.h * dpi) / 25.4;
+                            
+                            const diffReg = Math.abs(outW - sizePxW) + Math.abs(outH - sizePxH);
+                            if (diffReg < minDiff) { minDiff = diffReg; bestMatch = { w: sizePxW, h: sizePxH }; }
+                            
+                            const diffRot = Math.abs(outW - sizePxH) + Math.abs(outH - sizePxW);
+                            if (diffRot < minDiff) { minDiff = diffRot; bestMatch = { w: sizePxH, h: sizePxW }; }
+                        }
+                        if (bestMatch) {
+                            outW = Math.round(bestMatch.w);
+                            outH = Math.round(bestMatch.h);
+                        }
+                    }
+                }
             }
 
             let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [

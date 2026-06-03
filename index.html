@@ -69,7 +69,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v4.1.0</span>
+            <span class="app-version">v5.0.0</span>
         </div>
 
         <div class="tabs">
@@ -209,11 +209,7 @@
                         </svg>
                     </button>
                     <button id="ceViewCoordsButton" class="mode-btn" title="View Current Layouts">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
+                        <span id="ceViewCoordsCount" style="font-weight:bold; font-size:16px;">0</span>
                     </button>
                     <button id="ceLoadCoordsButton" class="mode-btn" title="Load Coordinates from INI">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -243,7 +239,8 @@
                                 and drag</b> the red corners to adjust borders. You can also <b>drag the whole card</b>
                             by clicking inside it.<br><br>
                             <b>Auto-Detect:</b> Specify exact <b>Width and Height (mm)</b> below for highly accurate
-                            detection. Use <b>🎯 Get from 1st Card</b> to auto-fill dimensions.<br><br>
+                            detection. Use <b>+ Add Size</b> to specify <b>multiple sizes</b> and detect different cards at once. Use <b>🎯 Get Size</b> to auto-fill dimensions from the currently selected card.<br><br>
+                            <b>Exporting:</b> If <b>Force export to these exact sizes</b> is checked, extracted cards will be scaled exactly to the dimensions you specified (ensuring consistent print sizes). If unchecked, cards preserve their original scanned proportions.<br><br>
                             <b>Navigation:</b> Use <b>/</b> key to cycle through corners. <b>Enter</b> jumps between
                             cards. <b>Arrow Keys</b> (+ Ctrl for ×10 step, + Shift to move opposite corner too).<br><br>
                             <b>Zoom Window:</b> <b>+</b> / <b>-</b> to adjust magnification. <b>Z</b> toggles zoom.
@@ -297,34 +294,49 @@
             </div>
 
             <!-- Dimensions Controls (Freeform only) -->
-            <div class="controls hide-on-stuck" id="ceFreeformDimensionsRow">
-                <div class="input-container">
-                    <label for="ceWidthInput">Width (mm):</label>
-                    <input type="number" id="ceWidthInput" min="0" step="0.1" class="input-narrow-md">
+            <div class="controls hide-on-stuck" id="ceFreeformDimensionsRow" style="align-items: flex-start;">
+                <div id="ceSizeListContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="ce-size-row" style="display: flex; align-items: center; gap: 10px;">
+                        <div class="input-container">
+                            <label>Width (mm):</label>
+                            <input type="number" class="ceWidthInput input-narrow-md" min="0" step="0.1">
+                        </div>
+                        <div class="input-container">
+                            <label>Height (mm):</label>
+                            <input type="number" class="ceHeightInput input-narrow-md" min="0" step="0.1">
+                        </div>
+                        <button class="ce-calc-btn ceFreeformCalcBtn" title="Open Pixel Calculator">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                                <line x1="8" y1="6" x2="16" y2="6"></line>
+                                <line x1="16" y1="14" x2="16" y2="14"></line>
+                                <line x1="16" y1="18" x2="16" y2="18"></line>
+                                <line x1="12" y1="14" x2="12" y2="14"></line>
+                                <line x1="12" y1="18" x2="12" y2="18"></line>
+                                <line x1="8" y1="14" x2="8" y2="14"></line>
+                                <line x1="8" y1="18" x2="8" y2="18"></line>
+                            </svg>
+                        </button>
+                        <button class="ceGetSizeBtn" disabled title="Get size from the current selected card">🎯 Get Size</button>
+                        <button class="ceRemoveSizeBtn icon-btn" style="display: none;" title="Remove size">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
                 </div>
-                <div class="input-container">
-                    <label for="ceHeightInput">Height (mm):</label>
-                    <input type="number" id="ceHeightInput" min="0" step="0.1" class="input-narrow-md">
+                
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button id="ceAddSizeBtn" title="Add another target size" style="padding: 4px 8px; font-weight: bold;">+ Add Size</button>
+                        <div class="input-container">
+                            <label for="ceDpiInput">DPI:</label>
+                            <input type="number" id="ceDpiInput" value="300" min="72" step="1" class="input-narrow-md">
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input type="checkbox" id="ceForceSizeCheckbox" checked>
+                        <label for="ceForceSizeCheckbox" title="If checked, the final exported image will be exactly this size. If unchecked, it will be cropped to original proportions.">Force export to these exact sizes</label>
+                    </div>
                 </div>
-                <button id="ceFreeformCalcBtn" class="ce-calc-btn" title="Open Pixel Calculator">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                        <line x1="8" y1="6" x2="16" y2="6"></line>
-                        <line x1="16" y1="14" x2="16" y2="14"></line>
-                        <line x1="16" y1="18" x2="16" y2="18"></line>
-                        <line x1="12" y1="14" x2="12" y2="14"></line>
-                        <line x1="12" y1="18" x2="12" y2="18"></line>
-                        <line x1="8" y1="14" x2="8" y2="14"></line>
-                        <line x1="8" y1="18" x2="8" y2="18"></line>
-                    </svg>
-                </button>
-                <div class="input-container">
-                    <label for="ceDpiInput">DPI:</label>
-                    <input type="number" id="ceDpiInput" value="300" min="72" step="1" class="input-narrow-md">
-                </div>
-                <button id="ceGetSizeBtn" title="Get size from the first selected card">🎯
-                    Get from 1st Card</button>
             </div>
 
             <!-- Rect-mode Controls (Rectangle mode only) -->
@@ -492,7 +504,7 @@
                 <span class="ce-modal-close" id="ceIniStatsCancelX">&times;</span>
             </div>
             <div class="ce-modal-body" style="max-height: 60vh; overflow-y: auto; text-align: left;">
-                <p style="margin-top: 0; margin-bottom: 10px; font-weight: bold;">Cuts found for the following files:
+                <p id="ceIniStatsTitle" style="margin-top: 0; margin-bottom: 10px; font-weight: bold;">Cuts found for the following files:
                 </p>
                 <ul id="ceIniStatsList" style="list-style: none; padding: 0; margin: 0;">
                     <!-- Items injected here -->

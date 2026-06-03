@@ -4,7 +4,7 @@ import { redraw, updateZoomWindow } from './renderer.js';
 import { handleAutoDetect } from './cv-detector.js';
 import { exportCards } from './export.js';
 import { handleFileUpload, renderPdfPageForPreview } from './file-loader.js';
-import { updateButtonStates, scrollToCorner, scrollToRectCard, applyModeUI, showIniStatsModal } from './ui.js';
+import { updateButtonStates, scrollToCorner, scrollToRectCard, applyModeUI, showIniStatsModal, pulseViewCoordsButton } from './ui.js';
 import { showAlert, showConfirm } from '../dialogs.js';
 import { getMousePos, findPointNear, findCardContaining } from './utils.js';
 import {
@@ -14,7 +14,7 @@ import {
     rotateRectCard,
     pointInRectCard,
 } from './rect-mode.js';
-import { initCalculator } from './calculator.js';
+import { initCalculator, openCalculator } from './calculator.js';
 import { saveCurrentToDatabase, serializeDatabaseToIni, parseIniToDatabase } from './ini-handler.js';
 
 // ---------------------------------------------------------------------------
@@ -451,8 +451,8 @@ export function bindEvents() {
         });
     }
 
-    if (dom.iniStatsOkBtn) dom.iniStatsOkBtn.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; dom.canvas.focus({ preventScroll: true }); });
-    if (dom.iniStatsCancelX) dom.iniStatsCancelX.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; dom.canvas.focus({ preventScroll: true }); });
+    if (dom.iniStatsOkBtn) dom.iniStatsOkBtn.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; pulseViewCoordsButton(); dom.canvas.focus({ preventScroll: true }); });
+    if (dom.iniStatsCancelX) dom.iniStatsCancelX.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; pulseViewCoordsButton(); dom.canvas.focus({ preventScroll: true }); });
 
     if (dom.iniStatsLoadMoreBtn && dom.iniStatsLoadMoreInput) {
         dom.iniStatsLoadMoreBtn.addEventListener('click', () => {
@@ -492,33 +492,74 @@ export function bindEvents() {
         }
     });
 
-    dom.getSizeBtn.addEventListener("click", async () => {
-        if (state.detectedCards.length === 0) {
-            await showAlert("No cards available. Please add a manual card or detect cards first.");
+    dom.sizeListContainer.addEventListener("click", async (e) => {
+        const calcBtn = e.target.closest('.ceFreeformCalcBtn');
+        if (calcBtn) {
+            const row = calcBtn.closest('.ce-size-row');
+            openCalculator('freeform', row);
             return;
         }
 
-        const card = state.detectedCards[0];
-        const dist = (p1, p2) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        const getBtn = e.target.closest('.ceGetSizeBtn');
+        if (getBtn) {
+            if (state.detectedCards.length === 0) {
+                await showAlert("No cards available. Please add a manual card or detect cards first.");
+                return;
+            }
 
-        const w1 = dist(card[0], card[1]);
-        const w2 = dist(card[2], card[3]);
-        const h1 = dist(card[1], card[2]);
-        const h2 = dist(card[3], card[0]);
+            let card = null;
+            if (state.selectedPoint) {
+                card = state.detectedCards.find(c => c.includes(state.selectedPoint));
+            }
+            if (!card) card = state.detectedCards[0];
 
-        const avgW = (w1 + w2) / 2;
-        const avgH = (h1 + h2) / 2;
+            const dist = (p1, p2) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
 
-        const pxW = Math.min(avgW, avgH);
-        const pxH = Math.max(avgW, avgH);
+            const w1 = dist(card[0], card[1]);
+            const w2 = dist(card[2], card[3]);
+            const h1 = dist(card[1], card[2]);
+            const h2 = dist(card[3], card[0]);
 
-        const dpi  = parseFloat(dom.dpiInput.value) || 300;
-        const mmW  = (pxW * 25.4) / dpi;
-        const mmH  = (pxH * 25.4) / dpi;
+            const avgW = (w1 + w2) / 2;
+            const avgH = (h1 + h2) / 2;
 
-        dom.widthInput.value  = mmW.toFixed(1);
-        dom.heightInput.value = mmH.toFixed(1);
-        dom.canvas.focus({ preventScroll: true });
+            const pxW = Math.min(avgW, avgH);
+            const pxH = Math.max(avgW, avgH);
+
+            const dpi  = parseFloat(dom.dpiInput.value) || 300;
+            const mmW  = (pxW * 25.4) / dpi;
+            const mmH  = (pxH * 25.4) / dpi;
+
+            const row = getBtn.closest('.ce-size-row');
+            row.querySelector('.ceWidthInput').value  = mmW.toFixed(1);
+            row.querySelector('.ceHeightInput').value = mmH.toFixed(1);
+            dom.canvas.focus({ preventScroll: true });
+            return;
+        }
+
+        const rmBtn = e.target.closest('.ceRemoveSizeBtn');
+        if (rmBtn) {
+            const row = rmBtn.closest('.ce-size-row');
+            row.remove();
+            const rows = dom.sizeListContainer.querySelectorAll('.ce-size-row');
+            if (rows.length === 1) {
+                rows[0].querySelector('.ceRemoveSizeBtn').style.display = 'none';
+            }
+            dom.canvas.focus({ preventScroll: true });
+            return;
+        }
+    });
+
+    dom.addSizeBtn.addEventListener("click", () => {
+        const rows = dom.sizeListContainer.querySelectorAll('.ce-size-row');
+        const newRow = rows[0].cloneNode(true);
+        newRow.querySelector('.ceWidthInput').value = '';
+        newRow.querySelector('.ceHeightInput').value = '';
+        
+        rows[0].querySelector('.ceRemoveSizeBtn').style.display = '';
+        newRow.querySelector('.ceRemoveSizeBtn').style.display = '';
+        
+        dom.sizeListContainer.appendChild(newRow);
     });
 
     dom.addManualButton.addEventListener('click', async () => {
@@ -540,13 +581,13 @@ export function bindEvents() {
         } else {
             // Determine card size from width/height/dpi inputs if available
             const dpi = parseFloat(dom.dpiInput.value) || 300;
-            const mmW = parseFloat(dom.widthInput.value);
-            const mmH = parseFloat(dom.heightInput.value);
-
+            const targetSizes = dom.getTargetSizes ? dom.getTargetSizes() : [];
             let w, h;
-            if (mmW > 0 && mmH > 0) {
-                w = (mmW * dpi) / 25.4;
-                h = (mmH * dpi) / 25.4;
+
+            if (targetSizes.length > 0) {
+                const firstSize = targetSizes[0];
+                w = (firstSize.w * dpi) / 25.4;
+                h = (firstSize.h * dpi) / 25.4;
             } else {
                 w = Math.min(dom.sourceCanvas.width * 0.2, dom.sourceCanvas.width * 0.4);
                 if (w < 100) w = 100;
@@ -749,15 +790,15 @@ export function bindEvents() {
 function createFreeformCardAt(cx, cy) {
     // Determine card size in canvas pixels
     const dpi  = parseFloat(dom.dpiInput.value) || 300;
-    const mmW  = parseFloat(dom.widthInput.value);
-    const mmH  = parseFloat(dom.heightInput.value);
-
+    const targetSizes = dom.getTargetSizes ? dom.getTargetSizes() : [];
+    
     let w, h;
 
-    if (mmW > 0 && mmH > 0) {
-        // Use values from the width/height fields
-        w = (mmW * dpi) / 25.4;
-        h = (mmH * dpi) / 25.4;
+    if (targetSizes.length > 0) {
+        // Use values from the first size field
+        const firstSize = targetSizes[0];
+        w = (firstSize.w * dpi) / 25.4;
+        h = (firstSize.h * dpi) / 25.4;
     } else if (state.selectedPoint) {
         // Derive size from the currently selected card
         const selCard = state.detectedCards.find(c => c.includes(state.selectedPoint));
@@ -773,9 +814,9 @@ function createFreeformCardAt(cx, cy) {
     }
 
     if (!w || !h) {
-        // Fallback: placeholder values (61 mm × 112 mm at 300 DPI)
-        const phW = parseFloat(dom.widthInput.placeholder)  || 61;
-        const phH = parseFloat(dom.heightInput.placeholder) || 112;
+        // Fallback: default values (61 mm × 112 mm at 300 DPI)
+        const phW = 61;
+        const phH = 112;
         w = (phW * dpi) / 25.4;
         h = (phH * dpi) / 25.4;
     }

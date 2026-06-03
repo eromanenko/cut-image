@@ -1,16 +1,14 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
-import { hexToRgb, sortDetectedCards } from './utils.js';
+import { hexToRgb, sortDetectedCards, getRenderScale } from './utils.js';
 import { getRectCardCorners, getRectCardCenter, sortRectCards } from './rect-mode.js';
 
 // ---------------------------------------------------------------------------
 // Canvas font constants
 // ---------------------------------------------------------------------------
 
-const FONT_CARD_NUMBER_FREEFORM = 'bold 30px Arial'; // large index label (top-left of card)
-const FONT_CARD_NUMBER_RECT     = 'bold 28px Arial'; // index label in rect mode
-const FONT_CARD_INFO            = 'bold 14px Arial'; // dimensions / angle info pill
-const FONT_ZOOM_LABEL           = 'bold 11px Arial'; // TL/TR/BR/BL corner labels in zoom window
+// The fonts are generated dynamically now based on getRenderScale()
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Main redraw
@@ -36,6 +34,7 @@ export function redraw() {
 
 function redrawFreeformMode() {
     sortDetectedCards();
+    const scale = getRenderScale();
 
     for (let i = 0; i < state.detectedCards.length; i++) {
         const card = state.detectedCards[i];
@@ -50,7 +49,7 @@ function redrawFreeformMode() {
         const colorRgb = hexToRgb(dom.lineColor.value);
         const opacity = dom.lineOpacity.value;
 
-        dom.ctx.lineWidth = 1.5;
+        dom.ctx.lineWidth = 1.5 * scale;
         dom.ctx.strokeStyle = `rgba(${colorRgb.r}, ${colorRgb.g}, ${colorRgb.b}, ${opacity})`;
         dom.ctx.stroke();
 
@@ -59,20 +58,20 @@ function redrawFreeformMode() {
 
         for (let j = 0; j < 4; j++) {
             const pt = card[j];
-            const radius = 10;
-            const crossSize = 4;
+            const radius = 10 * scale;
+            const crossSize = 4 * scale;
 
             let color;
             let lineW;
             if (pt === state.selectedPoint) {
                 color = "#007bff";
-                lineW = 3;
+                lineW = 3 * scale;
             } else if (pt === state.hoveredPoint) {
                 color = "orange";
-                lineW = 2.5;
+                lineW = 2.5 * scale;
             } else {
                 color = "red";
-                lineW = 2;
+                lineW = 2 * scale;
             }
 
             dom.ctx.beginPath();
@@ -87,16 +86,18 @@ function redrawFreeformMode() {
             dom.ctx.moveTo(pt.x, pt.y - crossSize);
             dom.ctx.lineTo(pt.x, pt.y + crossSize);
             dom.ctx.strokeStyle = color;
-            dom.ctx.lineWidth = 1.5;
+            dom.ctx.lineWidth = 1.5 * scale;
             dom.ctx.stroke();
         }
 
-        dom.ctx.font = FONT_CARD_NUMBER_FREEFORM;
+        const numFontSize = Math.max(16, Math.round(30 * scale));
+        dom.ctx.font = `bold ${numFontSize}px Arial`;
         dom.ctx.fillStyle = "red";
-        dom.ctx.fillText((i + 1).toString(), card[0].x + 20, card[0].y + 40);
+        dom.ctx.fillText((i + 1).toString(), card[0].x + 20 * scale, card[0].y + 40 * scale);
 
         if (card.includes(state.selectedPoint) || card.includes(state.hoveredPoint) || card === state.draggedCard || card === state.hoveredCard) {
-            dom.ctx.font = FONT_CARD_INFO;
+            const infoFontSize = Math.max(12, Math.round(14 * scale));
+            dom.ctx.font = `bold ${infoFontSize}px Arial`;
             dom.ctx.textAlign = "center";
             dom.ctx.textBaseline = "middle";
 
@@ -105,19 +106,19 @@ function redrawFreeformMode() {
 
             const drawLabel = (ctx, text, x, y, color = "#007bff") => {
                 const metrics = ctx.measureText(text);
-                const width = metrics.width + 12;
-                const height = 24;
+                const width = metrics.width + 12 * scale;
+                const height = 24 * scale;
 
                 ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 if (ctx.roundRect) {
                     ctx.beginPath();
-                    ctx.roundRect(x - width / 2, y - height / 2, width, height, 4);
+                    ctx.roundRect(x - width / 2, y - height / 2, width, height, 4 * scale);
                     ctx.fill();
                 } else {
                     ctx.fillRect(x - width / 2, y - height / 2, width, height);
                 }
                 ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 1 * scale;
                 ctx.stroke();
 
                 ctx.fillStyle = color;
@@ -151,7 +152,7 @@ function redrawFreeformMode() {
                     const dirY = cy - pt.y;
                     const lenDir = Math.hypot(dirX, dirY);
                     if (lenDir > 0) {
-                        const offsetPx = 40;
+                        const offsetPx = 40 * scale;
                         const ax = pt.x + (dirX / lenDir) * offsetPx;
                         const ay = pt.y + (dirY / lenDir) * offsetPx;
                         drawLabel(dom.ctx, `${angleDeg}\u00B0`, ax, ay, "#800080");
@@ -171,6 +172,8 @@ function redrawFreeformMode() {
 
 function redrawRectMode() {
     sortRectCards();
+    const scale = getRenderScale();
+
     for (let i = 0; i < state.rectCards.length; i++) {
         const card = state.rectCards[i];
         const corners = getRectCardCorners(card);
@@ -189,15 +192,15 @@ function redrawRectMode() {
         if (isSelected) {
             strokeColor = '#007bff';
             fillAlpha   = 0.15;
-            lineWidth   = 2.5;
+            lineWidth   = 2.5 * scale;
         } else if (isHovered) {
             strokeColor = 'orange';
             fillAlpha   = 0.10;
-            lineWidth   = 2;
+            lineWidth   = 2 * scale;
         } else {
             strokeColor = 'rgba(180,0,0,0.7)';
             fillAlpha   = 0.06;
-            lineWidth   = 1.5;
+            lineWidth   = 1.5 * scale;
         }
 
         dom.ctx.fillStyle = isSelected
@@ -211,17 +214,19 @@ function redrawRectMode() {
         dom.ctx.stroke();
 
         // Card number near TL corner
-        dom.ctx.font = FONT_CARD_NUMBER_RECT;
+        const numFontSize = Math.max(16, Math.round(28 * scale));
+        dom.ctx.font = `bold ${numFontSize}px Arial`;
         dom.ctx.fillStyle = isSelected ? '#007bff' : 'rgba(180,0,0,0.8)';
         dom.ctx.textAlign = 'left';
         dom.ctx.textBaseline = 'top';
-        const labelPad = 6;
+        const labelPad = 6 * scale;
         dom.ctx.fillText((i + 1).toString(), corners[0].x + labelPad, corners[0].y + labelPad);
 
         // Extra info for selected / hovered card
         if (isActive) {
             const center = getRectCardCenter(card);
-            dom.ctx.font = FONT_CARD_INFO;
+            const infoFontSize = Math.max(12, Math.round(14 * scale));
+            dom.ctx.font = `bold ${infoFontSize}px Arial`;
             dom.ctx.textAlign = 'center';
             dom.ctx.textBaseline = 'middle';
 
@@ -233,18 +238,18 @@ function redrawRectMode() {
 
             // Background pill
             const metrics = dom.ctx.measureText(info);
-            const pw = metrics.width + 16;
-            const ph = 22;
+            const pw = metrics.width + 16 * scale;
+            const ph = 22 * scale;
             dom.ctx.fillStyle = 'rgba(255,255,255,0.88)';
             if (dom.ctx.roundRect) {
                 dom.ctx.beginPath();
-                dom.ctx.roundRect(center.x - pw / 2, center.y - ph / 2, pw, ph, 4);
+                dom.ctx.roundRect(center.x - pw / 2, center.y - ph / 2, pw, ph, 4 * scale);
                 dom.ctx.fill();
             } else {
                 dom.ctx.fillRect(center.x - pw / 2, center.y - ph / 2, pw, ph);
             }
             dom.ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-            dom.ctx.lineWidth = 1;
+            dom.ctx.lineWidth = 1 * scale;
             dom.ctx.stroke();
 
             dom.ctx.fillStyle = '#333';

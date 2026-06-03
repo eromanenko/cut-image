@@ -37,13 +37,26 @@ export function showAlert(message) {
         const closeBtn = modal.querySelector('.ce-modal-close');
         const okBtn = modal.querySelector('.btn-primary');
         
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape' || e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                cleanup();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+
         const cleanup = () => {
+            document.removeEventListener('keydown', handleKeyDown);
             modal.remove();
             resolve();
         };
         
         closeBtn.addEventListener('click', cleanup);
         okBtn.addEventListener('click', cleanup);
+        
+        // Focus OK button for accessibility
+        setTimeout(() => okBtn.focus(), 10);
     });
 }
 
@@ -78,12 +91,27 @@ export function showConfirm(message) {
         const cancelBtn = modal.querySelector('.btn-secondary');
         const okBtn = modal.querySelector('.btn-primary');
         
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                handleCancel();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                handleOk();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+
         const handleCancel = () => {
+            document.removeEventListener('keydown', handleKeyDown);
             modal.remove();
             resolve(false);
         };
         
         const handleOk = () => {
+            document.removeEventListener('keydown', handleKeyDown);
             modal.remove();
             resolve(true);
         };
@@ -91,5 +119,8 @@ export function showConfirm(message) {
         closeBtn.addEventListener('click', handleCancel);
         cancelBtn.addEventListener('click', handleCancel);
         okBtn.addEventListener('click', handleOk);
+        
+        // Focus OK button for accessibility
+        setTimeout(() => okBtn.focus(), 10);
     });
 }

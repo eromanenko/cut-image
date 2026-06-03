@@ -9,6 +9,7 @@ let isDragging = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
 let tuneTimeout = null;
+let tuneKeydownHandler = null;
 
 export function initTuneModal() {
     dom.tuneBtn.addEventListener('click', openModal);
@@ -71,11 +72,33 @@ function openModal() {
     
     dom.tuneModal.style.display = "flex";
     
+    if (tuneKeydownHandler) {
+        document.removeEventListener('keydown', tuneKeydownHandler);
+    }
+    tuneKeydownHandler = (e) => {
+        if (document.querySelector('#custom-dialogs-container .ce-modal')) return;
+
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            applyTune();
+        }
+    };
+    document.addEventListener('keydown', tuneKeydownHandler);
+    
     updateTuneSource();
     queueTuneRender();
 }
 
 function closeModal() {
+    if (tuneKeydownHandler) {
+        document.removeEventListener('keydown', tuneKeydownHandler);
+        tuneKeydownHandler = null;
+    }
     dom.tuneModal.style.display = "none";
 }
 
