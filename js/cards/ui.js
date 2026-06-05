@@ -7,7 +7,6 @@ export function updateButtonStates() {
     const isRect = state.editMode === 'rect';
 
     dom.processButton.disabled = !(state.isCvReady && state.isImageLoaded);
-    dom.addManualButton.disabled = !state.isImageLoaded;
     
     if (dom.saveCoordsButton) {
         dom.saveCoordsButton.disabled = Object.keys(state.coordsDatabase || {}).length === 0 && !state.isImageLoaded;
@@ -30,13 +29,6 @@ export function updateButtonStates() {
     }
 
     if (isRect) {
-        const total = state.rectCards.length;
-        const current = state.selectedRectCardIndex + 1;
-        dom.deleteButton.disabled = state.selectedRectCardIndex === -1;
-        dom.deleteButton.textContent = (total > 0 && current > 0) 
-            ? `Unselect ${current}/${total}` 
-            : 'Unselect';
-
         dom.downloadButton.disabled = state.rectCards.length === 0;
         dom.downloadButton.textContent = state.rectCards.length > 0
             ? `Download ${state.rectCards.length} card${state.rectCards.length !== 1 ? 's' : ''}`
@@ -44,16 +36,6 @@ export function updateButtonStates() {
         const getSizeBtns = document.querySelectorAll('.ceGetSizeBtn');
         getSizeBtns.forEach(btn => btn.disabled = true);
     } else {
-        const total = state.detectedCards.length;
-        let current = 0;
-        if (state.selectedPoint) {
-            current = state.detectedCards.findIndex(c => c.includes(state.selectedPoint)) + 1;
-        }
-        dom.deleteButton.disabled = (state.selectedPoint === null);
-        dom.deleteButton.textContent = (total > 0 && current > 0) 
-            ? `Unselect ${current}/${total}` 
-            : 'Unselect';
-
         dom.downloadButton.disabled = state.detectedCards.length === 0;
         dom.downloadButton.textContent = state.detectedCards.length > 0
             ? `Download ${state.detectedCards.length} card${state.detectedCards.length !== 1 ? 's' : ''}`

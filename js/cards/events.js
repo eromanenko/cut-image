@@ -90,7 +90,7 @@ function snapFreeformPosition(cx, cy, canvasW, canvasH) {
  * the card dimensions. Returns the first center {x, y} where a rect card does
  * not overlap any existing rect card.
  */
-function findTopLeftFreePositionRect() {
+function findTopLeftFreePositionRect(angle = 0) {
     const W = state.rectWidth;
     const H = state.rectHeight;
     if (W <= 0 || H <= 0) return null;
@@ -102,7 +102,7 @@ function findTopLeftFreePositionRect() {
 
     for (let cy = H / 2; cy + H / 2 <= canvasH; cy += stepY) {
         for (let cx = W / 2; cx + W / 2 <= canvasW; cx += stepX) {
-            const candidate = createRectCard(cx, cy);
+            const candidate = createRectCard(cx, cy, angle);
             if (!rectCardOverlapsExisting(candidate)) {
                 return snapRectPosition(cx, cy, canvasW, canvasH);
             }
@@ -391,6 +391,21 @@ function syncRectDimensions() {
 }
 
 // ---------------------------------------------------------------------------
+// Continuous rotation state
+// ---------------------------------------------------------------------------
+
+let isRotatingCard = false;
+let rotationDelta = 0;
+let rotationTargetCard = null;
+
+function rotationLoop() {
+    if (!isRotatingCard || !rotationTargetCard) return;
+    rotateRectCard(rotationTargetCard, rotationDelta);
+    redraw();
+    requestAnimationFrame(rotationLoop);
+}
+
+// ---------------------------------------------------------------------------
 // bindEvents
 // ---------------------------------------------------------------------------
 
@@ -400,11 +415,6 @@ export function bindEvents() {
     dom.processButton.addEventListener('click', handleAutoDetect);
     dom.downloadButton.addEventListener('click', () => { exportCards(); dom.canvas.focus({ preventScroll: true }); });
     dom.fileInput.addEventListener('change', handleFileUpload);
-    dom.deleteButton.addEventListener('click', () => {
-        if (state.editMode === 'rect') deleteSelectedRectCard();
-        else deleteSelectedCard();
-        dom.canvas.focus({ preventScroll: true });
-    });
 
     if (dom.saveCoordsButton) {
         dom.saveCoordsButton.addEventListener('click', () => {
@@ -562,57 +572,7 @@ export function bindEvents() {
         dom.sizeListContainer.appendChild(newRow);
     });
 
-    dom.addManualButton.addEventListener('click', async () => {
-        if (!state.isImageLoaded) return;
 
-        if (state.editMode === 'rect') {
-            if (state.rectWidth <= 0 || state.rectHeight <= 0) {
-                await showAlert("Please set Width and Height (px) for Rectangle mode first.");
-                return;
-            }
-
-            const pos = findTopLeftFreePositionRect();
-            const card = createRectCard(pos.x, pos.y);
-            state.rectCards.push(card);
-            state.selectedRectCardIndex = state.rectCards.length - 1;
-            // Scroll to the newly placed card
-            const newCorners = getRectCardCorners(card);
-            scrollToRectCard(card, newCorners);
-        } else {
-            // Determine card size from width/height/dpi inputs if available
-            const dpi = parseFloat(dom.dpiInput.value) || 300;
-            const targetSizes = dom.getTargetSizes ? dom.getTargetSizes() : [];
-            let w, h;
-
-            if (targetSizes.length > 0) {
-                const firstSize = targetSizes[0];
-                w = (firstSize.w * dpi) / 25.4;
-                h = (firstSize.h * dpi) / 25.4;
-            } else {
-                w = Math.min(dom.sourceCanvas.width * 0.2, dom.sourceCanvas.width * 0.4);
-                if (w < 100) w = 100;
-                h = w * 1.5;
-            }
-
-            const pos = findTopLeftFreePositionFreeform(w, h);
-            const pts = [
-                { x: pos.x - w/2, y: pos.y - h/2 },
-                { x: pos.x + w/2, y: pos.y - h/2 },
-                { x: pos.x + w/2, y: pos.y + h/2 },
-                { x: pos.x - w/2, y: pos.y + h/2 },
-            ];
-
-            state.detectedCards.push(pts);
-            // Select TL corner and scroll to it
-            state.selectedPoint = pts[0];
-            scrollToCorner(pts[0], 0);
-        }
-
-        saveCurrentToDatabase();
-        updateButtonStates();
-        redraw();
-        dom.canvas.focus({ preventScroll: true });
-    });
 
     // ── Styles (freeform only) ───────────────────────────────────────────────
     dom.lineColor.addEventListener("input", redraw);
@@ -735,8 +695,6 @@ export function bindEvents() {
             const code = e.code;
             if (key === 'o' || key === 'о' || code === 'KeyO') { dom.fileInput.click(); e.preventDefault(); return; }
             if (key === 'a' || key === 'ф' || code === 'KeyA') { if (!dom.processButton.disabled) dom.processButton.click(); e.preventDefault(); return; }
-            if (key === 'n' || key === 'т' || code === 'KeyN') { if (!dom.addManualButton.disabled) dom.addManualButton.click(); e.preventDefault(); return; }
-            if (key === 'd' || key === 'в' || code === 'KeyD') { if (!dom.deleteButton.disabled) dom.deleteButton.click(); e.preventDefault(); return; }
             if (key === 's' || key === 'і' || key === 'ы' || code === 'KeyS') { if (!dom.downloadButton.disabled) dom.downloadButton.click(); e.preventDefault(); return; }
             if (key === 'z' || key === 'я' || code === 'KeyZ') {
                 dom.zoomCheckbox.checked = !dom.zoomCheckbox.checked;
@@ -771,6 +729,15 @@ export function bindEvents() {
 
         // ── Freeform keyboard ──
         handleFreeformKeyDown(e);
+    });
+
+    window.addEventListener("keyup", (e) => {
+        if (e.code === 'Slash') {
+            if (isRotatingCard) {
+                isRotatingCard = false;
+                saveCurrentToDatabase();
+            }
+        }
     });
 
     // ── Warn before leaving with unsaved changes ──
@@ -917,7 +884,10 @@ async function handleRectMouseDown(pos, e) {
             await showAlert("Please set Width and Height (px) for Rectangle mode first.");
             return;
         }
-        const card = createRectCard(pos.x, pos.y);
+        const angle = state.selectedRectCardIndex >= 0 && state.rectCards[state.selectedRectCardIndex] 
+            ? state.rectCards[state.selectedRectCardIndex].angle 
+            : 0;
+        const card = createRectCard(pos.x, pos.y, angle);
         state.rectCards.push(card);
         state.selectedRectCardIndex = state.rectCards.length - 1;
         // Start dragging immediately so the user can reposition it
@@ -1119,14 +1089,23 @@ function handleRectKeyDown(e) {
 
     // Rotation: / (English) or . (Ukrainian physical key).
     // e.code === 'Slash' covers both layouts on that physical key.
-    // Guard against keyboard auto-repeat — each press is one deliberate step.
     if (e.code === 'Slash') {
         e.preventDefault();
-        if (e.repeat) return;                         // ignore auto-repeat
-        const delta = e.shiftKey ? -0.05 : 0.05;     // 0.05\u00B0 per press
+        if (e.repeat) return; // ignore auto-repeat, we handle it smoothly
+        
+        const delta = e.shiftKey ? -0.05 : 0.05;
+        // immediate first step
         rotateRectCard(card, delta);
-        saveCurrentToDatabase();
         redraw();
+        
+        isRotatingCard = true;
+        rotationDelta = delta;
+        rotationTargetCard = card;
+        
+        // start continuous rotation after a small delay
+        setTimeout(() => {
+            if (isRotatingCard) requestAnimationFrame(rotationLoop);
+        }, 200);
         return;
     }
 

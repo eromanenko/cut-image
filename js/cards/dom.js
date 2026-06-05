@@ -4,8 +4,6 @@ export function initDom() {
     dom.fileInput = document.getElementById("ceFileInput");
     dom.prefixInput = document.getElementById("cePrefixInput");
     dom.processButton = document.getElementById("ceProcessButton");
-    dom.addManualButton = document.getElementById("ceAddManualButton");
-    dom.deleteButton = document.getElementById("ceDeleteButton");
     dom.downloadButton = document.getElementById("ceDownloadButton");
     dom.saveCoordsButton = document.getElementById("ceSaveCoordsButton");
     dom.viewCoordsButton = document.getElementById("ceViewCoordsButton");
@@ -13,7 +11,7 @@ export function initDom() {
     dom.loadCoordsInput = document.getElementById("ceLoadCoordsInput");
     dom.viewCoordsCount = document.getElementById("ceViewCoordsCount");
     dom.canvas = document.getElementById("ceCanvas");
-    dom.ctx = dom.canvas.getContext("2d");
+    dom.ctx = dom.canvas.getContext("2d", { willReadFrequently: true });
 
     dom.pdfControls = document.getElementById("cePdfControls");
     dom.prevPageBtn = document.getElementById("cePrevPageBtn");
@@ -27,7 +25,7 @@ export function initDom() {
     dom.zoomCheckbox = document.getElementById("ceZoomCheckbox");
     dom.zoomContainer = document.getElementById("ceZoomContainer");
     dom.zoomCanvas = document.getElementById("ceZoomCanvas");
-    dom.zoomCtx = dom.zoomCanvas.getContext("2d");
+    dom.zoomCtx = dom.zoomCanvas.getContext("2d", { willReadFrequently: true });
     dom.zoomTitle = document.getElementById("ceZoomTitle");
     dom.zoomResizer = document.getElementById("ceZoomResizer");
 
@@ -37,7 +35,7 @@ export function initDom() {
     dom.dpiInput = document.getElementById("ceDpiInput");
 
     dom.sourceCanvas = document.createElement("canvas");
-    dom.sourceCtx = dom.sourceCanvas.getContext("2d");
+    dom.sourceCtx = dom.sourceCanvas.getContext("2d", { willReadFrequently: true });
 
     // Mode toggle
     dom.freeformModeBtn = document.getElementById("ceFreeformModeBtn");

@@ -1,6 +1,6 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
-import { hexToRgb, sortDetectedCards, getRenderScale } from './utils.js';
+import { hexToRgb, sortDetectedCards, getRenderScale, orderPoints } from './utils.js';
 import { getRectCardCorners, getRectCardCenter, sortRectCards } from './rect-mode.js';
 
 // ---------------------------------------------------------------------------
@@ -278,7 +278,7 @@ export function updateZoomWindow() {
     }
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Freeform zoom (unchanged logic) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// -- Freeform zoom (unchanged logic) ----------------------------------------
 
 function updateZoomWindowFreeform() {
     if (!state.selectedPoint) {
@@ -331,7 +331,7 @@ function updateZoomWindowFreeform() {
 
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Rect-mode zoom: 4-quadrant (one quadrant per corner) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// -- Rect-mode zoom: 4-quadrant (one quadrant per corner) -------------------
 
 function updateZoomWindowRect() {
     if (state.selectedRectCardIndex === -1) {
@@ -341,9 +341,12 @@ function updateZoomWindowRect() {
 
     dom.zoomContainer.style.display = 'block';
 
-    const card    = state.rectCards[state.selectedRectCardIndex];
-    const corners = getRectCardCorners(card);    // [TL, TR, BR, BL]
-    const total   = state.rectCards.length;
+    const card = state.rectCards[state.selectedRectCardIndex];
+    const total = state.rectCards.length;
+    let corners = getRectCardCorners(card);
+    
+    // Sort corners visually so the zoom window quadrants match the visual orientation
+    corners = orderPoints(corners);
 
     if (dom.zoomTitle) {
         dom.zoomTitle.textContent =
@@ -363,10 +366,10 @@ function updateZoomWindowRect() {
     const srcH = qh / zf;
 
     // Quadrant offsets on the zoom canvas: [TL, TR, BR, BL]
-    //   TL corner Ã¢â€ â€™ top-left  quadrant  (0,  0 )
-    //   TR corner Ã¢â€ â€™ top-right quadrant  (qw, 0 )
-    //   BR corner Ã¢â€ â€™ bot-right quadrant  (qw, qh)
-    //   BL corner Ã¢â€ â€™ bot-left  quadrant  (0,  qh)
+    //   TL corner -> top-left  quadrant  (0,  0 )
+    //   TR corner -> top-right quadrant  (qw, 0 )
+    //   BR corner -> bot-right quadrant  (qw, qh)
+    //   BL corner -> bot-left  quadrant  (0,  qh)
     const quadOffsets = [
         { dx: 0,  dy: 0  },   // TL
         { dx: qw, dy: 0  },   // TR
@@ -374,12 +377,12 @@ function updateZoomWindowRect() {
         { dx: 0,  dy: qh },   // BL
     ];
 
-    // Each card corner appears near the OUTER corner of its quadrant Ã¢â‚¬â€
+    // Each card corner appears near the OUTER corner of its quadrant -
     // card edges converge inward toward the center dividers.
-    //   TL Ã¢â€ â€™ (margin, margin)           upper-left  in TL quadrant
-    //   TR Ã¢â€ â€™ (qw-margin, margin)        upper-right in TR quadrant
-    //   BR Ã¢â€ â€™ (qw-margin, qh-margin)     lower-right in BR quadrant
-    //   BL Ã¢â€ â€™ (margin, qh-margin)        lower-left  in BL quadrant
+    //   TL -> (margin, margin)           upper-left  in TL quadrant
+    //   TR -> (qw-margin, margin)        upper-right in TR quadrant
+    //   BR -> (qw-margin, qh-margin)     lower-right in BR quadrant
+    //   BL -> (margin, qh-margin)        lower-left  in BL quadrant
     const margin = 15;
     const crosshairPositions = [
         { cx: margin,        cy: margin        },   // TL
@@ -404,7 +407,7 @@ function updateZoomWindowRect() {
 
         // Corner label near the outer corner of each quadrant
         const labels = ['TL', 'TR', 'BR', 'BL'];
-        dom.zoomCtx.font         = FONT_ZOOM_LABEL;
+        dom.zoomCtx.font         = 'bold 12px Arial';
         dom.zoomCtx.fillStyle    = 'rgba(0,0,180,0.65)';
         dom.zoomCtx.textAlign    = (i === 1 || i === 2) ? 'right' : 'left';
         dom.zoomCtx.textBaseline = (i < 2) ? 'top' : 'bottom';

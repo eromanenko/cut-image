@@ -21,8 +21,8 @@ export const state = {
 
     isCvReady: window.openCvReady === true,
 
-    zoomLevel: 3,
-    rectZoomLevel: 3,       // separate zoom for rect-mode 4-quadrant view
+    zoomLevel: 1,
+    rectZoomLevel: 1,       // separate zoom for rect-mode 4-quadrant view
 
     // -----------------------------------------------------------------------
     // Rectangle Mode

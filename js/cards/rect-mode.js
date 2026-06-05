@@ -72,14 +72,14 @@ export function getRectCardCorners(card) {
 /**
  * Create a new rect-mode card whose *center* sits at (cx, cy).
  */
-export function createRectCard(cx, cy) {
+export function createRectCard(cx, cy, angle = 0) {
     const W = state.rectWidth;
     const H = state.rectHeight;
     const S = state.rectSkew;
     return {
         x: cx - W / 2,
         y: cy - S / 2 - H / 2,
-        angle: 0,
+        angle: angle,
     };
 }
 
@@ -147,12 +147,27 @@ export function fitRectCardToDetected(corners4pts) {
     // Angle from the top edge TL→TR
     const tl = corners4pts[0];
     const tr = corners4pts[1];
-    const angle = Math.atan2(tr.y - tl.y, tr.x - tl.x) * 180 / Math.PI;
+    const bl = corners4pts[3];
+    
+    let angle = Math.atan2(tr.y - tl.y, tr.x - tl.x) * 180 / Math.PI;
 
-    // Build a card centered at (cx, cy) with this angle.
     const W = state.rectWidth;
     const H = state.rectHeight;
     const S = state.rectSkew;
+
+    // Check if we need to rotate by 90 degrees due to orientation mismatch
+    // (e.g. card on image is landscape, but user set W < H portrait)
+    const distW = Math.hypot(tr.x - tl.x, tr.y - tl.y);
+    const distH = Math.hypot(bl.x - tl.x, bl.y - tl.y);
+    
+    // We consider it landscape if width > height
+    const detectedIsLandscape = distW > distH;
+    const rectIsLandscape = W > H;
+    
+    if (detectedIsLandscape !== rectIsLandscape) {
+        // Rotate by 90 degrees to align the rect bounding box with the detected quad
+        angle += 90;
+    }
 
     const card = { x: cx - W / 2, y: cy - S / 2 - H / 2, angle };
     // Compensate so center of the *new* card lands exactly at (cx, cy)
