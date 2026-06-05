@@ -11,7 +11,7 @@ export function initDom() {
     dom.loadCoordsInput = document.getElementById("ceLoadCoordsInput");
     dom.viewCoordsCount = document.getElementById("ceViewCoordsCount");
     dom.canvas = document.getElementById("ceCanvas");
-    dom.ctx = dom.canvas.getContext("2d", { willReadFrequently: true });
+    dom.ctx = dom.canvas.getContext("2d");
 
     dom.pdfControls = document.getElementById("cePdfControls");
     dom.prevPageBtn = document.getElementById("cePrevPageBtn");
@@ -25,13 +25,12 @@ export function initDom() {
     dom.zoomCheckbox = document.getElementById("ceZoomCheckbox");
     dom.zoomContainer = document.getElementById("ceZoomContainer");
     dom.zoomCanvas = document.getElementById("ceZoomCanvas");
-    dom.zoomCtx = dom.zoomCanvas.getContext("2d", { willReadFrequently: true });
+    dom.zoomCtx = dom.zoomCanvas.getContext("2d");
     dom.zoomTitle = document.getElementById("ceZoomTitle");
     dom.zoomResizer = document.getElementById("ceZoomResizer");
 
     dom.sizeListContainer = document.getElementById("ceSizeListContainer");
     dom.addSizeBtn = document.getElementById("ceAddSizeBtn");
-    dom.forceSizeCheckbox = document.getElementById("ceForceSizeCheckbox");
     dom.dpiInput = document.getElementById("ceDpiInput");
 
     dom.sourceCanvas = document.createElement("canvas");
@@ -77,6 +76,16 @@ export function initDom() {
     dom.iniStatsCancelX = document.getElementById("ceIniStatsCancelX");
     dom.iniStatsLoadMoreBtn = document.getElementById("ceIniStatsLoadMoreBtn");
     dom.iniStatsLoadMoreInput = document.getElementById("ceIniStatsLoadMoreInput");
+
+    // Settings Modal
+    dom.settingsModal = document.getElementById("ceSettingsModal");
+    dom.settingsCancelX = document.getElementById("ceSettingsCancelX");
+    dom.settingsOkBtn = document.getElementById("ceSettingsOkBtn");
+    dom.settingsSummaryRow = document.getElementById("ceSettingsSummaryRow");
+    dom.settingsSummaryText = document.getElementById("ceSettingsSummaryText");
+    dom.settingsBtn = document.getElementById("ceSettingsBtn");
+    dom.shareDataCheckbox = document.getElementById("ceShareDataCheckbox");
+    dom.settingsResetBtn = document.getElementById("ceSettingsResetBtn");
 }
 
 export function getTargetSizes() {

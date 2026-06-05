@@ -309,6 +309,12 @@ function updateZoomWindowFreeform() {
             : 'Zoom Preview';
         titleText += ` [${state.zoomLevel}x]`;
         dom.zoomTitle.textContent = titleText;
+
+        if (cardIndex !== -1 && cardIndex === state.detectedCards.length - 1) {
+            dom.zoomTitle.classList.add('is-last-card');
+        } else {
+            dom.zoomTitle.classList.remove('is-last-card');
+        }
     }
 
     let crosshairX = zoomWidth  / 2;
@@ -351,6 +357,12 @@ function updateZoomWindowRect() {
     if (dom.zoomTitle) {
         dom.zoomTitle.textContent =
             `Zoom: card ${state.selectedRectCardIndex + 1}/${total} [${state.rectZoomLevel}x]  (+/-)`;
+            
+        if (state.selectedRectCardIndex === total - 1 && total > 0) {
+            dom.zoomTitle.classList.add('is-last-card');
+        } else {
+            dom.zoomTitle.classList.remove('is-last-card');
+        }
     }
 
     const ZW = dom.zoomCanvas.width;

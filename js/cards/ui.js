@@ -1,4 +1,4 @@
-import { dom } from './dom.js';
+import { dom, getTargetSizes } from './dom.js';
 import { state } from './state.js';
 import { redraw } from './renderer.js';
 import { showAlert, showConfirm } from '../dialogs.js';
@@ -46,6 +46,93 @@ export function updateButtonStates() {
     }
 }
 
+const SETTINGS_KEY = 'ce_user_settings';
+const DEFAULT_SETTINGS = {
+    shareData: true,
+    lineColor: '#007bff',
+    lineOpacity: '0.75'
+};
+
+export function loadSettingsFromStorage() {
+    const saved = localStorage.getItem(SETTINGS_KEY);
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            if (dom.shareDataCheckbox) dom.shareDataCheckbox.checked = data.shareData !== false;
+            if (dom.lineColor && data.lineColor) dom.lineColor.value = data.lineColor;
+            if (dom.lineOpacity && data.lineOpacity) {
+                dom.lineOpacity.value = data.lineOpacity;
+                if (dom.lineOpacityVal) dom.lineOpacityVal.textContent = data.lineOpacity;
+            }
+            if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'block';
+        } catch (e) {
+            console.error("Error parsing settings", e);
+        }
+    } else {
+        if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'none';
+    }
+}
+
+export function saveSettingsToStorage() {
+    if (!dom.shareDataCheckbox || !dom.lineColor || !dom.lineOpacity) return;
+    
+    const settings = {
+        shareData: dom.shareDataCheckbox.checked,
+        lineColor: dom.lineColor.value,
+        lineOpacity: dom.lineOpacity.value
+    };
+    
+    const isDefault = settings.shareData === DEFAULT_SETTINGS.shareData &&
+                      settings.lineColor === DEFAULT_SETTINGS.lineColor &&
+                      settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity;
+                      
+    if (!isDefault) {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'block';
+    } else {
+        localStorage.removeItem(SETTINGS_KEY);
+        if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'none';
+    }
+}
+
+export function resetSettingsToDefault() {
+    localStorage.removeItem(SETTINGS_KEY);
+    if (dom.shareDataCheckbox) dom.shareDataCheckbox.checked = DEFAULT_SETTINGS.shareData;
+    if (dom.lineColor) dom.lineColor.value = DEFAULT_SETTINGS.lineColor;
+    if (dom.lineOpacity) {
+        dom.lineOpacity.value = DEFAULT_SETTINGS.lineOpacity;
+        if (dom.lineOpacityVal) dom.lineOpacityVal.textContent = DEFAULT_SETTINGS.lineOpacity;
+    }
+    if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'none';
+}
+
+export function updateSettingsSummary() {
+    if (!dom.settingsSummaryText) return;
+    const sizes = getTargetSizes();
+    const dpi = dom.dpiInput ? dom.dpiInput.value : '300';
+    const dpiNum = parseInt(dpi) || 300;
+    const isAiSharing = dom.shareDataCheckbox && dom.shareDataCheckbox.checked;
+    
+    let text = "";
+    if (sizes.length === 0) {
+        text = "Sizes not set";
+    } else {
+        text = sizes.map(s => {
+            const pxW = Math.round((s.w * dpiNum) / 25.4);
+            const pxH = Math.round((s.h * dpiNum) / 25.4);
+            return `${s.w}x${s.h}mm (${pxW}x${pxH}px)`;
+        }).join(' | ');
+    }
+    
+    text += ` | DPI ${dpi}`;
+    
+    if (isAiSharing) {
+        text += ` | AI sharing`;
+    }
+    
+    dom.settingsSummaryText.textContent = text;
+}
+
 export function applyModeUI(mode) {
     const isRect = mode === 'rect';
 
@@ -56,6 +143,7 @@ export function applyModeUI(mode) {
     // Show/hide toolbar rows
     if (dom.freeformStylingRow)    dom.freeformStylingRow.style.display    = isRect ? 'none' : '';
     if (dom.freeformDimensionsRow) dom.freeformDimensionsRow.style.display = isRect ? 'none' : '';
+    if (dom.settingsSummaryRow)    dom.settingsSummaryRow.style.display    = isRect ? 'none' : 'flex';
     if (dom.rectControls)          dom.rectControls.style.display          = isRect ? ''     : 'none';
 
     // Swap instruction text

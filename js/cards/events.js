@@ -4,7 +4,7 @@ import { redraw, updateZoomWindow } from './renderer.js';
 import { handleAutoDetect } from './cv-detector.js';
 import { exportCards } from './export.js';
 import { handleFileUpload, renderPdfPageForPreview } from './file-loader.js';
-import { updateButtonStates, scrollToCorner, scrollToRectCard, applyModeUI, showIniStatsModal, pulseViewCoordsButton } from './ui.js';
+import { updateButtonStates, scrollToCorner, scrollToRectCard, applyModeUI, showIniStatsModal, pulseViewCoordsButton, updateSettingsSummary, loadSettingsFromStorage, saveSettingsToStorage, resetSettingsToDefault } from './ui.js';
 import { showAlert, showConfirm } from '../dialogs.js';
 import { getMousePos, findPointNear, findCardContaining } from './utils.js';
 import {
@@ -222,12 +222,15 @@ function rectCardOverlapsExisting(candidate) {
 
 export async function deleteSelectedCard() {
     if (!state.selectedPoint) return;
-    const proceed = await showConfirm("Are you sure you want to delete this card?");
-    if (!proceed) return;
     const index = state.detectedCards.findIndex(card => card.includes(state.selectedPoint));
     if (index !== -1) {
         state.detectedCards.splice(index, 1);
-        state.selectedPoint = null;
+        if (state.detectedCards.length > 0) {
+            const nextIndex = Math.min(index, state.detectedCards.length - 1);
+            state.selectedPoint = state.detectedCards[nextIndex][0];
+        } else {
+            state.selectedPoint = null;
+        }
         saveCurrentToDatabase();
         updateButtonStates();
         redraw();
@@ -240,8 +243,6 @@ export async function deleteSelectedCard() {
 
 async function deleteSelectedRectCard() {
     if (state.selectedRectCardIndex === -1) return;
-    const proceed = await showConfirm("Are you sure you want to delete this card?");
-    if (!proceed) return;
     state.rectCards.splice(state.selectedRectCardIndex, 1);
     state.selectedRectCardIndex = state.rectCards.length > 0
         ? Math.min(state.selectedRectCardIndex, state.rectCards.length - 1)
@@ -480,10 +481,37 @@ export function bindEvents() {
                 dom.canvas.focus({ preventScroll: true });
             };
             reader.readAsText(file);
-            // clear value so it can be selected again
             e.target.value = '';
         });
     }
+
+    // ── Settings Modal ──────────────────────────────────────────────────────
+    if (dom.settingsBtn) {
+        dom.settingsBtn.addEventListener('click', () => {
+            dom.settingsModal.style.display = 'flex';
+        });
+    }
+    const closeSettingsModal = () => {
+        dom.settingsModal.style.display = 'none';
+        saveSettingsToStorage();
+        updateSettingsSummary();
+        redraw();
+        dom.canvas.focus({ preventScroll: true });
+    };
+    if (dom.settingsCancelX) dom.settingsCancelX.addEventListener('click', closeSettingsModal);
+    if (dom.settingsOkBtn) dom.settingsOkBtn.addEventListener('click', closeSettingsModal);
+    
+    if (dom.settingsResetBtn) {
+        dom.settingsResetBtn.addEventListener('click', () => {
+            resetSettingsToDefault();
+            updateSettingsSummary();
+            redraw();
+        });
+    }
+    
+    // Initial update
+    loadSettingsFromStorage();
+    updateSettingsSummary();
 
     // Mode toggle
     dom.freeformModeBtn.addEventListener('click', () => { switchMode('freeform'); dom.canvas.focus({ preventScroll: true }); });

@@ -19,6 +19,20 @@ export function initCalculator() {
     dom.calcPxH.addEventListener('input', () => updateFromPx('H'));
     dom.calcDpi.addEventListener('input', () => updateFromMm('both'));
 
+    // Load custom sizes from localStorage
+    try {
+        const stored = localStorage.getItem('ce_custom_sizes');
+        if (stored && dom.calcPreset) {
+            const customSizes = JSON.parse(stored);
+            customSizes.forEach(size => {
+                const opt = document.createElement('option');
+                opt.value = `${size.w},${size.h}`;
+                opt.textContent = `Custom ${size.w}x${size.h} mm`;
+                dom.calcPreset.appendChild(opt);
+            });
+        }
+    } catch (e) { console.error('Error loading custom sizes', e); }
+
     if (dom.calcPreset) {
         dom.calcPreset.addEventListener('change', () => {
             const val = dom.calcPreset.value;
@@ -152,6 +166,45 @@ function updateFromPx(axis) {
 function applyCalculator() {
     const dpi = parseFloat(dom.calcDpi.value);
     if (!isNaN(dpi)) dom.dpiInput.value = dpi;
+
+    let mmW = parseFloat(dom.calcMmW.value);
+    let mmH = parseFloat(dom.calcMmH.value);
+
+    // Calculate mm if missing but px is present
+    if (isNaN(mmW) || isNaN(mmH)) {
+        const pxW = parseFloat(dom.calcPxW.value);
+        const pxH = parseFloat(dom.calcPxH.value);
+        if (!isNaN(pxW) && !isNaN(dpi)) mmW = parseFloat((pxW * 25.4 / dpi).toFixed(2));
+        if (!isNaN(pxH) && !isNaN(dpi)) mmH = parseFloat((pxH * 25.4 / dpi).toFixed(2));
+    }
+
+    if (!isNaN(mmW) && !isNaN(mmH) && dom.calcPreset) {
+        const wStr = parseFloat(mmW.toFixed(2)).toString();
+        const hStr = parseFloat(mmH.toFixed(2)).toString();
+        const valStr = `${wStr},${hStr}`;
+        
+        let exists = false;
+        for (let i = 0; i < dom.calcPreset.options.length; i++) {
+            if (dom.calcPreset.options[i].value === valStr) {
+                exists = true;
+                break;
+            }
+        }
+        
+        if (!exists && wStr > 0 && hStr > 0) {
+            const opt = document.createElement('option');
+            opt.value = valStr;
+            opt.textContent = `Custom ${wStr}x${hStr} mm`;
+            dom.calcPreset.appendChild(opt);
+            
+            try {
+                const stored = localStorage.getItem('ce_custom_sizes');
+                const customSizes = stored ? JSON.parse(stored) : [];
+                customSizes.push({ w: wStr, h: hStr });
+                localStorage.setItem('ce_custom_sizes', JSON.stringify(customSizes));
+            } catch (e) { console.error('Error saving custom size', e); }
+        }
+    }
 
     if (state.editMode === 'rect') {
         const pxW = parseInt(dom.calcPxW.value);

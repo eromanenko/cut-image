@@ -8,63 +8,43 @@ import { showAlert } from '../dialogs.js';
 import { sendTelemetryData } from './telemetry.js';
 
 export async function exportCards() {
-    const isRect     = state.editMode === 'rect';
-    const cardCount  = isRect ? state.rectCards.length : state.detectedCards.length;
+    const isRect = state.editMode === 'rect';
+    const cardCount = isRect ? state.rectCards.length : state.detectedCards.length;
 
     if (cardCount === 0) return;
 
     // Send telemetry in the background if the user agreed
     sendTelemetryData();
 
-    dom.downloadButton.disabled    = true;
+    dom.downloadButton.disabled = true;
     dom.downloadButton.textContent = "Processing Archive...";
     const prefix = dom.prefixInput.value;
     const dpi = parseFloat(dom.dpiInput.value) || 300;
 
     try {
-        const zip    = new JSZip();
-        let srcMat   = cv.imread(dom.sourceCanvas);
+        const zip = new JSZip();
+        let srcMat = cv.imread(dom.sourceCanvas);
 
         for (let i = 0; i < cardCount; i++) {
             let card4pts; // [TL, TR, BR, BL]
             let outW, outH;
 
             if (isRect) {
-                const rc   = state.rectCards[i];
-                card4pts   = getRectCardCorners(rc);
-                outW       = state.rectWidth;
-                outH       = state.rectHeight;
+                const rc = state.rectCards[i];
+                card4pts = getRectCardCorners(rc);
+                outW = state.rectWidth;
+                outH = state.rectHeight;
             } else {
                 card4pts = state.detectedCards[i];
                 // Compute output size from the card's actual edge lengths
-                let widthA  = Math.hypot(card4pts[2].x - card4pts[3].x, card4pts[2].y - card4pts[3].y);
-                let widthB  = Math.hypot(card4pts[1].x - card4pts[0].x, card4pts[1].y - card4pts[0].y);
+                let widthA = Math.hypot(card4pts[2].x - card4pts[3].x, card4pts[2].y - card4pts[3].y);
+                let widthB = Math.hypot(card4pts[1].x - card4pts[0].x, card4pts[1].y - card4pts[0].y);
                 let heightA = Math.hypot(card4pts[1].x - card4pts[2].x, card4pts[1].y - card4pts[2].y);
                 let heightB = Math.hypot(card4pts[0].x - card4pts[3].x, card4pts[0].y - card4pts[3].y);
-                outW = Math.round(Math.max(widthA,  widthB));
+                outW = Math.round(Math.max(widthA, widthB));
                 outH = Math.round(Math.max(heightA, heightB));
 
-                if (dom.forceSizeCheckbox && dom.forceSizeCheckbox.checked) {
-                    const targetSizes = dom.getTargetSizes ? dom.getTargetSizes() : [];
-                    if (targetSizes.length > 0) {
-                        let bestMatch = null;
-                        let minDiff = Infinity;
-                        for (const size of targetSizes) {
-                            const sizePxW = (size.w * dpi) / 25.4;
-                            const sizePxH = (size.h * dpi) / 25.4;
-                            
-                            const diffReg = Math.abs(outW - sizePxW) + Math.abs(outH - sizePxH);
-                            if (diffReg < minDiff) { minDiff = diffReg; bestMatch = { w: sizePxW, h: sizePxH }; }
-                            
-                            const diffRot = Math.abs(outW - sizePxH) + Math.abs(outH - sizePxW);
-                            if (diffRot < minDiff) { minDiff = diffRot; bestMatch = { w: sizePxH, h: sizePxW }; }
-                        }
-                        if (bestMatch) {
-                            outW = Math.round(bestMatch.w);
-                            outH = Math.round(bestMatch.h);
-                        }
-                    }
-                }
+
             }
 
             let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
@@ -75,14 +55,14 @@ export async function exportCards() {
             ]);
 
             let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                0,        0,
+                0, 0,
                 outW - 1, 0,
                 outW - 1, outH - 1,
-                0,        outH - 1,
+                0, outH - 1,
             ]);
 
-            let M     = cv.getPerspectiveTransform(srcTri, dstTri);
-            let dst   = new cv.Mat();
+            let M = cv.getPerspectiveTransform(srcTri, dstTri);
+            let dst = new cv.Mat();
             let dsize = new cv.Size(outW, outH);
 
             cv.warpPerspective(srcMat, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
@@ -92,9 +72,9 @@ export async function exportCards() {
 
             srcTri.delete(); dstTri.delete(); M.delete(); dst.delete();
 
-            let blob     = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+            let blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
             blob = await injectPngDpi(blob, dpi);
-            
+
             const padIndex = String(i + 1).padStart(2, '0');
             zip.file(`${prefix}${padIndex}.png`, blob);
         }
@@ -107,9 +87,9 @@ export async function exportCards() {
         }
 
         const content = await zip.generateAsync({ type: "blob" });
-        const a       = document.createElement("a");
-        a.href        = URL.createObjectURL(content);
-        a.download    = state.originalFileName + "_cards.zip";
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(content);
+        a.download = state.originalFileName + "_cards.zip";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

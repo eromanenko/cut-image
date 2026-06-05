@@ -69,7 +69,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.0.0</span>
+            <span class="app-version">v5.1.0</span>
         </div>
 
         <div class="tabs">
@@ -194,8 +194,8 @@
                 <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
                 <button id="ceDownloadButton" disabled title="Download Cards (S)">Download</button>
                 <div class="input-container" style="margin-left: 8px;">
-                    <input type="checkbox" id="ceShareDataCheckbox" checked>
-                    <label for="ceShareDataCheckbox" title="Share anonymous data to improve AI accuracy">Share data for AI</label>
+                    <input type="checkbox" id="ceZoomCheckbox" checked>
+                    <label for="ceZoomCheckbox" title="Toggle Zoom Window (Z)">Zoom Window</label>
                 </div>
                 <div class="mode-toggle">
                     <button id="ceSaveCoordsButton" class="mode-btn" disabled title="Save Coordinates to INI">
@@ -237,8 +237,9 @@
                                 and drag</b> the red corners to adjust borders. You can also <b>drag the whole card</b>
                             by clicking inside it.<br><br>
                             <b>Auto-Detect:</b> Specify exact <b>Width and Height (mm)</b> below for highly accurate
-                            detection. Use <b>+ Add Size</b> to specify <b>multiple sizes</b> and detect different cards at once. Use <b>🎯 Get Size</b> to auto-fill dimensions from the currently selected card.<br><br>
-                            <b>Exporting:</b> If <b>Force export to these exact sizes</b> is checked, extracted cards will be scaled exactly to the dimensions you specified (ensuring consistent print sizes). If unchecked, cards preserve their original scanned proportions.<br><br>
+                            detection. Use <b>+ Add Size</b> to specify <b>multiple sizes</b> and detect different cards
+                            at once. Use <b>🎯 Get Size</b> to auto-fill dimensions from the currently selected
+                            card.<br><br>
                             <b>Navigation:</b> Use <b>/</b> key to cycle through corners. <b>Enter</b> jumps between
                             cards. <b>Arrow Keys</b> (+ Ctrl for ×10 step, + Shift to move opposite corner too).<br><br>
                             <b>Zoom Window:</b> <b>+</b> / <b>-</b> to adjust magnification. <b>Z</b> toggles zoom.
@@ -262,79 +263,17 @@
                 style="color:red; font-weight:bold; font-size: 13px; text-align: center; margin-bottom: 10px;">Loading
                 Computer Vision libraries (OpenCV)... Please wait.</div>
 
-            <!-- Styling Controls (Freeform only) -->
-            <div class="controls hide-on-stuck" id="ceFreeformStylingRow">
-                <div class="input-container">
-                    Line Color: <input type="color" id="ceLineColor" value="#007bff"
-                        title="Change drawn line color (C)" style="cursor: pointer; height: calc(var(--control-height) - 10px);">
-                    <button type="button" class="fixed-color-btn" data-color="#000000"
-                        style="background-color: #000000;" title="Black"></button>
-                    <button type="button" class="fixed-color-btn" data-color="#ffffff"
-                        style="background-color: #ffffff;" title="White"></button>
-                    <button type="button" class="fixed-color-btn" data-color="#808080"
-                        style="background-color: #808080;" title="Gray"></button>
-                    <button type="button" class="fixed-color-btn" data-color="#00ff00"
-                        style="background-color: #00ff00;" title="Light Green"></button>
-                    <button type="button" class="fixed-color-btn" data-color="#0000ff"
-                        style="background-color: #0000ff;" title="Blue"></button>
-                    <button type="button" class="fixed-color-btn" data-color="#ff0000"
-                        style="background-color: #ff0000;" title="Red"></button>
-                </div>
-                <div class="input-container">
-                    Line Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.75"
-                        style="margin-left: 5px; cursor: pointer;" title="Change line opacity">
-                    <span id="ceLineOpacityVal" style="display:inline-block; width: 4ch;">0.75</span>
-                </div>
-                <div class="input-container">
-                    <input type="checkbox" id="ceZoomCheckbox" checked>
-                    <label for="ceZoomCheckbox" title="Toggle Zoom Window (Z)">Zoom Window</label>
-                </div>
-            </div>
-
-            <!-- Dimensions Controls (Freeform only) -->
-            <div class="controls hide-on-stuck" id="ceFreeformDimensionsRow" style="align-items: flex-start;">
-                <div id="ceSizeListContainer" style="display: flex; flex-direction: column; gap: 8px;">
-                    <div class="ce-size-row" style="display: flex; align-items: center; gap: 10px;">
-                        <div class="input-container">
-                            <label>Width (mm):</label>
-                            <input type="number" class="ceWidthInput input-narrow-md" min="0" step="0.1">
-                        </div>
-                        <div class="input-container">
-                            <label>Height (mm):</label>
-                            <input type="number" class="ceHeightInput input-narrow-md" min="0" step="0.1">
-                        </div>
-                        <button class="ce-calc-btn ceFreeformCalcBtn" title="Open Pixel Calculator">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                                <line x1="8" y1="6" x2="16" y2="6"></line>
-                                <line x1="16" y1="14" x2="16" y2="14"></line>
-                                <line x1="16" y1="18" x2="16" y2="18"></line>
-                                <line x1="12" y1="14" x2="12" y2="14"></line>
-                                <line x1="12" y1="18" x2="12" y2="18"></line>
-                                <line x1="8" y1="14" x2="8" y2="14"></line>
-                                <line x1="8" y1="18" x2="8" y2="18"></line>
-                            </svg>
-                        </button>
-                        <button class="ceGetSizeBtn" disabled title="Get size from the current selected card">🎯 Get Size</button>
-                        <button class="ceRemoveSizeBtn icon-btn" style="display: none;" title="Remove size">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                    </div>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <button id="ceAddSizeBtn" title="Add another target size" style="padding: 4px 8px; font-weight: bold;">+ Add Size</button>
-                        <div class="input-container">
-                            <label for="ceDpiInput">DPI:</label>
-                            <input type="number" id="ceDpiInput" value="300" min="72" step="1" class="input-narrow-md">
-                        </div>
-                    </div>
-                    <div class="input-container">
-                        <input type="checkbox" id="ceForceSizeCheckbox" checked>
-                        <label for="ceForceSizeCheckbox" title="If checked, the final exported image will be exactly this size. If unchecked, it will be cropped to original proportions.">Force export to these exact sizes</label>
-                    </div>
-                </div>
+            <!-- Settings Summary Row (Freeform only) -->
+            <div class="controls hide-on-stuck" id="ceSettingsSummaryRow" style="justify-content: center; gap: 8px;">
+                <span id="ceSettingsSummaryText" style="font-size: 12px; font-weight: 400; color: #888;">Sizes not set |
+                    DPI 300</span>
+                <button id="ceSettingsBtn" class="icon-btn" title="Open Settings"
+                    style="font-size: 16px; background: none; border: none; box-shadow: none; cursor: pointer; padding: 0; height: auto; display: flex; align-items: center; color: var(--text-muted);">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
             </div>
 
             <!-- Rect-mode Controls (Rectangle mode only) -->
@@ -477,12 +416,16 @@
                 <!-- FFT controls -->
                 <span id="dsFftControls" class="ds-method-controls">
                     <div class="input-container">
-                        <label for="dsFftThreshold" title="Lower threshold detects more peaks (more blurring)">Peak Threshold:</label>
-                        <input type="number" id="dsFftThreshold" value="0.5" min="0.05" max="1.0" step="0.05" class="input-narrow-sm">
+                        <label for="dsFftThreshold" title="Lower threshold detects more peaks (more blurring)">Peak
+                            Threshold:</label>
+                        <input type="number" id="dsFftThreshold" value="0.5" min="0.05" max="1.0" step="0.05"
+                            class="input-narrow-sm">
                     </div>
                     <div class="input-container">
-                        <label for="dsFftRadius" title="Radius of the notch filter applied to each peak">Notch Radius:</label>
-                        <input type="number" id="dsFftRadius" value="5" min="1" max="25" step="1" class="input-narrow-sm">
+                        <label for="dsFftRadius" title="Radius of the notch filter applied to each peak">Notch
+                            Radius:</label>
+                        <input type="number" id="dsFftRadius" value="5" min="1" max="25" step="1"
+                            class="input-narrow-sm">
                     </div>
                 </span>
             </div>
@@ -502,7 +445,8 @@
                 <span class="ce-modal-close" id="ceIniStatsCancelX">&times;</span>
             </div>
             <div class="ce-modal-body" style="max-height: 60vh; overflow-y: auto; text-align: left;">
-                <p id="ceIniStatsTitle" style="margin-top: 0; margin-bottom: 10px; font-weight: bold;">Cuts found for the following files:
+                <p id="ceIniStatsTitle" style="margin-top: 0; margin-bottom: 10px; font-weight: bold;">Cuts found for
+                    the following files:
                 </p>
                 <ul id="ceIniStatsList" style="list-style: none; padding: 0; margin: 0;">
                     <!-- Items injected here -->
@@ -612,8 +556,8 @@
                                     class="input-narrow-sm"></label>
                         </span>
                         <span id="dsTuneFftControls" class="ds-method-controls">
-                            <label>Threshold: <input type="number" id="dsTuneFftThreshold" min="0.05" max="1.0" step="0.05"
-                                    class="input-narrow-sm"></label>
+                            <label>Threshold: <input type="number" id="dsTuneFftThreshold" min="0.05" max="1.0"
+                                    step="0.05" class="input-narrow-sm"></label>
                             <label>Radius: <input type="number" id="dsTuneFftRadius" min="1" max="25" step="1"
                                     class="input-narrow-sm"></label>
                         </span>
@@ -627,6 +571,129 @@
             <div class="ce-modal-footer">
                 <button id="dsTuneCancelBtn" class="btn-secondary">Cancel</button>
                 <button id="dsTuneApplyBtn" class="btn-primary">Apply</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="ceSettingsModal" class="ce-modal" style="display: none; z-index: 9999;">
+        <div class="ce-modal-content">
+            <div class="ce-modal-header">
+                <h3>Settings</h3>
+                <span class="ce-modal-close" id="ceSettingsCancelX">&times;</span>
+            </div>
+            <div class="ce-modal-body">
+
+                <div class="ce-calc-row">
+                    <div class="ce-calc-group" id="ceFreeformStylingRow" style="gap: 10px;">
+                        <label>Line Style</label>
+                        <div class="input-container" style="justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                Color: <input type="color" id="ceLineColor" value="#007bff"
+                                    title="Change drawn line color (C)"
+                                    style="cursor: pointer; height: calc(var(--control-height) - 10px); padding: 0; width: 30px;">
+                                <button type="button" class="fixed-color-btn" data-color="#000000"
+                                    style="background-color: #000000;" title="Black"></button>
+                                <button type="button" class="fixed-color-btn" data-color="#ffffff"
+                                    style="background-color: #ffffff;" title="White"></button>
+                                <button type="button" class="fixed-color-btn" data-color="#808080"
+                                    style="background-color: #808080;" title="Gray"></button>
+                                <button type="button" class="fixed-color-btn" data-color="#00ff00"
+                                    style="background-color: #00ff00;" title="Light Green"></button>
+                                <button type="button" class="fixed-color-btn" data-color="#0000ff"
+                                    style="background-color: #0000ff;" title="Blue"></button>
+                                <button type="button" class="fixed-color-btn" data-color="#ff0000"
+                                    style="background-color: #ff0000;" title="Red"></button>
+                            </div>
+                        </div>
+                        <div class="input-container" style="justify-content: flex-start;">
+                            Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.75"
+                                style="margin-left: 5px; cursor: pointer; flex: 1;" title="Change line opacity">
+                            <span id="ceLineOpacityVal"
+                                style="display:inline-block; width: 4ch; text-align: right;">0.75</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ce-calc-row" id="ceFreeformDimensionsRow">
+                    <div class="ce-calc-group" style="gap: 10px;">
+                        <label>Target Sizes for Auto-Detect</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="input-container">
+                                <label for="ceDpiInput"
+                                    style="text-transform: none; font-size: 13px; color: var(--text); font-weight: normal; margin-bottom: 0;">DPI:</label>
+                                <input type="number" id="ceDpiInput" value="300" min="72" step="1"
+                                    class="input-narrow-sm" style="width: 90px;">
+                            </div>
+                            <button id="ceAddSizeBtn" title="Add another target size"
+                                style="padding: 0 12px; height: var(--control-height);">+ Add Size</button>
+                        </div>
+                        <div id="ceSizeListContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                            <div class="ce-size-row" style="display: flex; align-items: center; gap: 6px;">
+                                <div class="input-container">
+                                    <label
+                                        style="text-transform: none; font-size: 13px; color: var(--text); font-weight: normal; margin-bottom: 0;">W:</label>
+                                    <input type="number" class="ceWidthInput input-narrow-sm" min="0" step="0.1">
+                                </div>
+                                <div class="input-container">
+                                    <label
+                                        style="text-transform: none; font-size: 13px; color: var(--text); font-weight: normal; margin-bottom: 0;">H:</label>
+                                    <input type="number" class="ceHeightInput input-narrow-sm" min="0" step="0.1">
+                                </div>
+                                <button class="ce-calc-btn ceFreeformCalcBtn" title="Open Pixel Calculator">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                                        <line x1="16" y1="14" x2="16" y2="14"></line>
+                                        <line x1="16" y1="18" x2="16" y2="18"></line>
+                                        <line x1="12" y1="14" x2="12" y2="14"></line>
+                                        <line x1="12" y1="18" x2="12" y2="18"></line>
+                                        <line x1="8" y1="14" x2="8" y2="14"></line>
+                                        <line x1="8" y1="18" x2="8" y2="18"></line>
+                                    </svg>
+                                </button>
+                                <button class="ceGetSizeBtn" disabled title="Get size from the current selected card"
+                                    style="font-size: 11px; padding: 0 6px;">🎯 Get</button>
+                                <button class="ceRemoveSizeBtn icon-btn" style="display: none; padding: 0; width: 24px;"
+                                    title="Remove size">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path
+                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ce-calc-row"
+                    style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
+                    <div class="ce-calc-group">
+                        <label>Data Sharing</label>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <input type="checkbox" id="ceShareDataCheckbox" checked
+                                style="margin: 0; accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer;">
+                            <label for="ceShareDataCheckbox"
+                                style="text-transform: none; font-size: 13px; color: var(--text); font-weight: 500; margin-bottom: 0; cursor: pointer;">Share
+                                data for AI</label>
+                        </div>
+                        <p
+                            style="font-size: 11.5px; color: var(--text-muted); margin: 6px 0 0 0; line-height: 1.3; text-transform: none;">
+                            This data is collected anonymously and helps us train AI models to improve the accuracy of automatic card detection.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+            <div class="ce-modal-footer">
+                <button id="ceSettingsResetBtn" class="btn-secondary"
+                    style="display: none; margin-right: auto;">Reset</button>
+                <button id="ceSettingsOkBtn" class="btn-primary">OK</button>
             </div>
         </div>
     </div>

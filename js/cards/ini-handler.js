@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { redraw } from './renderer.js';
 import { dom } from './dom.js';
+import { applyModeUI } from './ui.js';
 
 export function getCurrentFileKey() {
     if (!state.currentFileName) return null;
@@ -59,19 +60,12 @@ export function loadCurrentFromDatabase() {
     }
 
     // Update UI toggle
-    if (dom.toggleFreeformBtn && dom.toggleRectBtn) {
-        if (state.editMode === 'freeform') {
-            dom.toggleFreeformBtn.classList.add('is-active');
-            dom.toggleRectBtn.classList.remove('is-active');
-            dom.rectModeControls.style.display = 'none';
-        } else {
-            dom.toggleRectBtn.classList.add('is-active');
-            dom.toggleFreeformBtn.classList.remove('is-active');
-            dom.rectModeControls.style.display = 'flex';
-            if (dom.rectWidthInput) dom.rectWidthInput.value = state.rectWidth;
-            if (dom.rectHeightInput) dom.rectHeightInput.value = state.rectHeight;
-            if (dom.rectSkewInput) dom.rectSkewInput.value = state.rectSkew;
-        }
+    applyModeUI(state.editMode);
+    
+    if (state.editMode === 'rect') {
+        if (dom.rectWidthPx) dom.rectWidthPx.value = state.rectWidth;
+        if (dom.rectHeightPx) dom.rectHeightPx.value = state.rectHeight;
+        if (dom.rectSkewPx) dom.rectSkewPx.value = state.rectSkew;
     }
 
     redraw();

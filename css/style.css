@@ -514,6 +514,11 @@ canvas {
     user-select: none;
     letter-spacing: 0.03em;
     text-transform: uppercase;
+    transition: background-color 0.2s ease;
+}
+
+.zoom-window-header.is-last-card {
+    background: #F59E0B; /* Amber/Orange color to stand out */
 }
 
 .zoom-window-resizer {
