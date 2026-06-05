@@ -69,12 +69,13 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.1.0</span>
+            <span class="app-version">v5.2.0</span>
         </div>
 
         <div class="tabs">
             <button class="tab-btn active" data-tab="cards">Card Extraction</button>
             <button class="tab-btn" data-tab="grid">Grid Slicing</button>
+            <button class="tab-btn" data-tab="pdfextract">PDF Extract</button>
             <button class="tab-btn" data-tab="descreen">Descreen [BETA]</button>
         </div>
     </header>
@@ -160,6 +161,78 @@
             <div class="filename-display" id="gridFileName"></div>
             <!-- Added tabindex="0" to allow the canvas to receive keyboard focus -->
             <canvas id="canvas" tabindex="0"></canvas>
+        </div>
+    </div>
+
+    <!-- Tab: PDF Image Extractor -->
+    <div id="tab-pdfextract" class="tab-content">
+        <div class="sticky-controls">
+            <div class="controls">
+                <label for="peFileInput" class="file-btn" title="Open PDF File">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </label>
+                <input type="file" id="peFileInput" accept="application/pdf" class="hidden-file-input">
+                <input type="text" id="pePrefixInput" placeholder="Prefix (e.g. card_)" class="input-wide">
+                <button id="peSelectAllBtn" disabled>Select All</button>
+                <button id="peUnselectAllBtn" disabled>Unselect All</button>
+                <button id="peDownloadBtn" disabled>Download</button>
+
+                <!-- Info Tooltip -->
+                <div class="info-tooltip">
+                    <div class="info-icon">i</div>
+                    <div class="tooltip-content">
+                        <b>PDF Image Extractor</b> pulls out all embedded raster images from a PDF
+                        document — the original bitmaps, not rendered screenshots.<br><br>
+                        <b>Usage:</b> Open or drag-and-drop a PDF file. The tool scans every page and
+                        displays all found images in a gallery. Select the ones you need and click
+                        <b>Download</b> to save them as a ZIP archive.<br><br>
+                        <b>Tip:</b> This works best with PDFs created from layout software (InDesign,
+                        Illustrator, etc.) where each card or image is a separately embedded bitmap.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dropzone (visible when no file loaded) -->
+        <div id="peDropzone" class="pe-dropzone">
+            <div class="pe-dropzone-content">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.4;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+                <h3 style="margin: 12px 0 6px; font-weight: 600;">PDF Image Extractor</h3>
+                <p style="color: var(--text-muted); max-width: 420px; line-height: 1.5; font-size: 13px;">
+                    Extract embedded raster images from PDF files.
+                    Drop a PDF here or click the folder icon above to open one.
+                </p>
+                <div style="display: flex; gap: 24px; margin-top: 16px; color: var(--text-muted); font-size: 12px;">
+                    <span>1. Upload PDF</span>
+                    <span>→</span>
+                    <span>2. Select images</span>
+                    <span>→</span>
+                    <span>3. Download ZIP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery (hidden until images extracted) -->
+        <div id="peGalleryContainer" class="pe-gallery-container" style="display: none;">
+            <div class="pe-gallery-status">
+                <span id="peFileName" class="filename-display"></span>
+                <span id="peStatusText" style="font-size: 12px; color: var(--text-muted);"></span>
+            </div>
+            <div id="peGallery" class="pe-gallery"></div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="peLoading" style="display: none; text-align: center; padding: 60px 20px;">
+            <div style="font-size: 14px; color: var(--text-muted);">Extracting images from PDF…</div>
         </div>
     </div>
 
@@ -702,6 +775,7 @@
     <script type="module" src="js/grid/index.js"></script>
     <script type="module" src="js/cards/index.js"></script>
     <script type="module" src="js/descreen/index.js"></script>
+    <script type="module" src="js/pdf-extract/pdf-extract.js"></script>
 </body>
 
 </html>
