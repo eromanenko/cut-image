@@ -49,7 +49,7 @@ export function redraw() {
         }
     }
 
-    if (state.isMouseOverCanvas && !state.isDragging && !state.hoverLine) {
+    if (state.isMouseOverCanvas && !state.isDragging && !state.hoverLine && state.gridMode !== 'grid') {
         dom.ctx.beginPath();
         if (state.isShiftPressed) {
             dom.ctx.moveTo(state.currentMousePos.x, 0);

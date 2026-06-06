@@ -3,6 +3,7 @@ export const state = {
     cutRegions: [],
     isImageLoaded: false,
     originalFileName: "archive",
+    gridMode: 'free', // 'free' or 'grid'
 
     gridCols: 0,
     gridRows: 0,

@@ -5,14 +5,17 @@ import { injectPngDpi } from './png-modifier.js';
 // ── Cut region calculation ─────────────────────────────────────────────────
 
 export function calculateCutRegions() {
+    // In grid mode, cutRegions are set directly by recalcGrid
+    if (state.gridMode === 'grid') return;
+
     state.cutRegions = [];
     let index = 1;
 
     const hasVerticalLines = state.lines.some(l => l.x !== null);
     const hasHorizontalLines = state.lines.some(l => l.y !== null);
 
-    const dpi = parseFloat(dom.dpiInput.value) || 300;
-    const minSizeMm = parseFloat(dom.minSizeInput.value) || 0;
+    const dpi = parseFloat((state.gridMode === 'grid' ? dom.gridDpiInput : dom.dpiInput).value) || 300;
+    const minSizeMm = state.gridMode === 'grid' ? 0 : (parseFloat(dom.minSizeInput.value) || 0);
     const minSizePx = (minSizeMm / 25.4) * dpi;
 
     const sortedX = [];
@@ -51,7 +54,8 @@ export function calculateCutRegions() {
                 if (!hasVerticalLines) isEdgeX = false;
                 if (!hasHorizontalLines) isEdgeY = false;
 
-                if (dom.skipEdgesCheckbox.checked && (isEdgeX || isEdgeY)) {
+                const skipEdges = state.gridMode === 'grid' || dom.skipEdgesCheckbox.checked;
+                if (skipEdges && (isEdgeX || isEdgeY)) {
                     lastX = x;
                     colIdx++;
                     continue;
@@ -174,7 +178,7 @@ export async function generateAndDownloadZip() {
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
     const prefix = dom.prefixInput.value;
-    const dpi = parseFloat(dom.dpiInput.value) || 300;
+    const dpi = parseFloat((state.gridMode === 'grid' ? dom.gridDpiInput : dom.dpiInput).value) || 300;
 
     if (state.isPdf && state.pdfDoc) {
         const allPages = dom.allPagesCheckbox.checked;

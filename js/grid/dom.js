@@ -24,4 +24,19 @@ export function initDom() {
 
     dom.sourceCanvas = document.createElement("canvas");
     dom.sourceCtx = dom.sourceCanvas.getContext("2d");
+
+    // Grid mode toggle
+    dom.gridFreeMode = document.getElementById("gridFreeMode");
+    dom.gridGridMode = document.getElementById("gridGridMode");
+    dom.gridFreeControls = document.getElementById("gridFreeControls");
+    dom.gridGridControls = document.getElementById("gridGridControls");
+
+    // Grid mode inputs
+    dom.gridCardW = document.getElementById("gridCardW");
+    dom.gridCardH = document.getElementById("gridCardH");
+    dom.gridGapX = document.getElementById("gridGapX");
+    dom.gridGapY = document.getElementById("gridGapY");
+    dom.gridMarginL = document.getElementById("gridMarginL");
+    dom.gridMarginT = document.getElementById("gridMarginT");
+    dom.gridDpiInput = document.getElementById("gridDpiInput");
 }

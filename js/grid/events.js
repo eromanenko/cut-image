@@ -1,6 +1,6 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
-import { updateDownloadButtonText, resetLines } from './ui.js';
+import { updateDownloadButtonText, resetLines, switchGridMode, recalcGrid } from './ui.js';
 import { getMousePos, findLineNear } from './utils.js';
 import { redraw } from './renderer.js';
 import { autoDetectCutMarks } from './detect.js';
@@ -20,6 +20,23 @@ export function bindEvents() {
     dom.dpiInput.addEventListener('change', () => {
         if (state.isPdf && state.pdfDoc) {
             const requestedDpi = parseInt(dom.dpiInput.value) || 300;
+            state.PDF_SCALE = requestedDpi / 72;
+            renderPdfPageForPreview(state.currentPreviewPage);
+        }
+    });
+
+    // Grid mode toggle
+    dom.gridFreeMode.addEventListener('click', () => { switchGridMode('free'); dom.canvas.focus({ preventScroll: true }); });
+    dom.gridGridMode.addEventListener('click', () => { switchGridMode('grid'); dom.canvas.focus({ preventScroll: true }); });
+
+    // Grid mode inputs — recalculate on any change
+    const gridInputs = [dom.gridCardW, dom.gridCardH, dom.gridGapX, dom.gridGapY, dom.gridMarginL, dom.gridMarginT];
+    gridInputs.forEach(input => {
+        input.addEventListener('input', recalcGrid);
+    });
+    dom.gridDpiInput.addEventListener('change', () => {
+        if (state.isPdf && state.pdfDoc) {
+            const requestedDpi = parseInt(dom.gridDpiInput.value) || 300;
             state.PDF_SCALE = requestedDpi / 72;
             renderPdfPageForPreview(state.currentPreviewPage);
         }
@@ -49,6 +66,8 @@ export function bindEvents() {
         const pos = getMousePos(e);
         state.startMousePos = pos;
         state.hasMoved = false;
+        
+        if (state.gridMode === 'grid') return; // no line interaction in grid mode
         
         const hitLine = findLineNear(pos.x, pos.y);
         if (hitLine) {
@@ -118,6 +137,7 @@ export function bindEvents() {
     dom.canvas.addEventListener("click", (e) => {
         if (!state.isImageLoaded) return;
         if (state.hasMoved) return; 
+        if (state.gridMode === 'grid') return; // no manual lines in grid mode
         
         const pos = getMousePos(e);
         const hitLine = findLineNear(pos.x, pos.y);
@@ -172,7 +192,7 @@ export function bindEvents() {
             }
         }
 
-        if (!state.isImageLoaded || !state.selectedLine) return;
+        if (!state.isImageLoaded || !state.selectedLine || state.gridMode === 'grid') return;
         
         if (e.target.tagName === 'INPUT') return;
 
