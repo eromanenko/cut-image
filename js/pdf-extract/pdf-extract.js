@@ -67,6 +67,10 @@ async function handlePdfFile(file) {
     dom.unselectAllBtn.disabled = true;
     dom.downloadBtn.disabled = true;
 
+    // Set prefix to filename without extension
+    const baseName = file.name.replace(/\.[^.]+$/, '');
+    dom.prefixInput.value = baseName + '_';
+
     // Cleanup previous
     cleanup();
 
@@ -105,59 +109,142 @@ async function handlePdfFile(file) {
 }
 
 async function extractImagesFromPage(page, pageNum) {
+    // Force pdf.js to fully process the page by rendering it off-screen.
+    // This ensures all image objects are decoded and available via page.objs.
+    const viewport = page.getViewport({ scale: 0.1 }); // tiny render just to trigger decoding
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = viewport.width;
+    tmpCanvas.height = viewport.height;
+    const tmpCtx = tmpCanvas.getContext('2d');
+    try {
+        await page.render({ canvasContext: tmpCtx, viewport }).promise;
+    } catch (e) {
+        console.warn(`Render failed for page ${pageNum}, trying extraction anyway`, e);
+    }
+
     const opList = await page.getOperatorList();
+    const seenNames = new Set(); // avoid duplicates
 
     for (let i = 0; i < opList.fnArray.length; i++) {
         const fn = opList.fnArray[i];
         const args = opList.argsArray[i];
 
+        // Named image XObjects
         if (fn === pdfjsLib.OPS.paintImageXObject || fn === pdfjsLib.OPS.paintJpegImageXObject) {
             const imgName = args[0];
-            let imgData;
+            if (seenNames.has(imgName)) continue;
+            seenNames.add(imgName);
 
-            try {
-                imgData = await new Promise((resolve, reject) => {
-                    page.objs.get(imgName, (data) => {
-                        if (data) resolve(data);
-                        else reject(new Error('No data for ' + imgName));
-                    });
-                });
-            } catch (e) {
-                // Try commonObjs as fallback
-                try {
-                    imgData = await new Promise((resolve, reject) => {
-                        page.commonObjs.get(imgName, (data) => {
-                            if (data) resolve(data);
-                            else reject(new Error('No data in commonObjs for ' + imgName));
-                        });
-                    });
-                } catch (e2) {
-                    console.warn(`Could not get image ${imgName} from page ${pageNum}`, e2);
-                    continue;
-                }
-            }
+            const imgData = await getImageObj(page, imgName);
+            if (!imgData) continue;
 
-            const blob = await imageDataToBlob(imgData);
-            if (!blob) continue;
-
-            // Skip very small images (likely icons, masks, etc.)
-            const w = imgData.width || 0;
-            const h = imgData.height || 0;
-            if (w < 20 || h < 20) continue;
-
-            const objectUrl = URL.createObjectURL(blob);
-            const imgIndex = extractedImages.filter(img => img.page === pageNum).length + 1;
-
-            extractedImages.push({
-                blob,
-                width: w,
-                height: h,
-                page: pageNum,
-                index: imgIndex,
-                objectUrl,
-                selected: true
-            });
+            await pushExtractedImage(imgData, pageNum);
         }
+
+        // Inline images (data embedded directly in content stream)
+        if (fn === pdfjsLib.OPS.paintInlineImageXObject || fn === pdfjsLib.OPS.paintInlineImageXObjectGroup) {
+            const imgData = args[0];
+            if (!imgData || !imgData.width || !imgData.height) continue;
+            await pushExtractedImage(imgData, pageNum);
+        }
+    }
+}
+
+/**
+ * Retrieve an image object from page.objs (or commonObjs) with a timeout.
+ */
+function getImageObj(page, name) {
+    return new Promise((resolve) => {
+        let resolved = false;
+        const timer = setTimeout(() => {
+            if (!resolved) { resolved = true; resolve(null); }
+        }, 3000);
+
+        const tryGet = (store) => {
+            try {
+                store.get(name, (data) => {
+                    if (!resolved && data) {
+                        resolved = true;
+                        clearTimeout(timer);
+                        resolve(data);
+                    }
+                });
+            } catch (e) { /* ignore */ }
+        };
+
+        tryGet(page.objs);
+        tryGet(page.commonObjs);
+    });
+}
+
+/**
+ * Convert imgData to blob and push to extractedImages if valid.
+ * Skips mask-like images (uniform gray rectangles).
+ */
+async function pushExtractedImage(imgData, pageNum) {
+    const w = imgData.width || (imgData.bitmap ? imgData.bitmap.width : 0);
+    const h = imgData.height || (imgData.bitmap ? imgData.bitmap.height : 0);
+    if (w < 20 || h < 20) return;
+
+    const blob = await imageDataToBlob(imgData);
+    if (!blob) return;
+
+    // Check if the image is a mask (uniform single-color image)
+    if (await isUniformImage(blob)) return;
+
+    const imgIndex = extractedImages.filter(img => img.page === pageNum).length + 1;
+    const objectUrl = URL.createObjectURL(blob);
+
+    extractedImages.push({
+        blob,
+        width: w,
+        height: h,
+        page: pageNum,
+        index: imgIndex,
+        objectUrl,
+        selected: true
+    });
+}
+
+/**
+ * Detect mask/alpha images by sampling pixels and checking variance.
+ * Returns true if the image appears to be a uniform single-color rectangle.
+ */
+async function isUniformImage(blob) {
+    try {
+        const bmp = await createImageBitmap(blob);
+        const sampleSize = 8;
+        const canvas = document.createElement('canvas');
+        canvas.width = sampleSize;
+        canvas.height = sampleSize;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bmp, 0, 0, sampleSize, sampleSize);
+        bmp.close();
+
+        const data = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
+
+        // Calculate variance across all sampled pixels
+        let sumR = 0, sumG = 0, sumB = 0;
+        const n = sampleSize * sampleSize;
+        for (let i = 0; i < data.length; i += 4) {
+            sumR += data[i];
+            sumG += data[i + 1];
+            sumB += data[i + 2];
+        }
+        const avgR = sumR / n, avgG = sumG / n, avgB = sumB / n;
+
+        let variance = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            variance += (data[i] - avgR) ** 2;
+            variance += (data[i + 1] - avgG) ** 2;
+            variance += (data[i + 2] - avgB) ** 2;
+        }
+        variance /= (n * 3);
+
+        // Very low variance = uniform color = likely a mask
+        return variance < 50;
+    } catch (e) {
+        return false;
     }
 }
 
