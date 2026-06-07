@@ -3,6 +3,7 @@ export const dom = {};
 export function initDom() {
     dom.fileInput = document.getElementById("ceFileInput");
     dom.prefixInput = document.getElementById("cePrefixInput");
+    dom.drawShapeBtn = document.getElementById("ceDrawShapeBtn");
     dom.processButton = document.getElementById("ceProcessButton");
     dom.downloadButton = document.getElementById("ceDownloadButton");
     dom.saveCoordsButton = document.getElementById("ceSaveCoordsButton");

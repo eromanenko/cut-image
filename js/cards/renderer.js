@@ -72,7 +72,7 @@ function redrawFreeformMode() {
 
         dom.ctx.beginPath();
         dom.ctx.moveTo(card[0].x, card[0].y);
-        for (let j = 1; j < 4; j++) {
+        for (let j = 1; j < card.length; j++) {
             dom.ctx.lineTo(card[j].x, card[j].y);
         }
         dom.ctx.closePath();
@@ -87,7 +87,7 @@ function redrawFreeformMode() {
         dom.ctx.fillStyle = `rgba(${colorRgb.r}, ${colorRgb.g}, ${colorRgb.b}, ${opacity * 0.2})`;
         dom.ctx.fill();
 
-        for (let j = 0; j < 4; j++) {
+        for (let j = 0; j < card.length; j++) {
             const pt = card[j];
             const radius = 10 * scale;
             const crossSize = 4 * scale;
@@ -132,8 +132,8 @@ function redrawFreeformMode() {
             dom.ctx.textAlign = "center";
             dom.ctx.textBaseline = "middle";
 
-            let cx = card.reduce((sum, p) => sum + p.x, 0) / 4;
-            let cy = card.reduce((sum, p) => sum + p.y, 0) / 4;
+            let cx = card.reduce((sum, p) => sum + p.x, 0) / card.length;
+            let cy = card.reduce((sum, p) => sum + p.y, 0) / card.length;
 
             const drawLabel = (ctx, text, x, y, color = "#007bff") => {
                 const metrics = ctx.measureText(text);
@@ -156,10 +156,10 @@ function redrawFreeformMode() {
                 ctx.fillText(text, x, y);
             };
 
-            for (let k = 0; k < 4; k++) {
+            for (let k = 0; k < card.length; k++) {
                 const pt = card[k];
-                const ptNext = card[(k + 1) % 4];
-                const ptPrev = card[(k + 3) % 4];
+                const ptNext = card[(k + 1) % card.length];
+                const ptPrev = card[(k + card.length - 1) % card.length];
 
                 const dist = Math.round(Math.hypot(ptNext.x - pt.x, ptNext.y - pt.y));
                 const mx = (pt.x + ptNext.x) / 2;
@@ -193,6 +193,44 @@ function redrawFreeformMode() {
 
             dom.ctx.textAlign = "start";
             dom.ctx.textBaseline = "alphabetic";
+        }
+    }
+
+    if (state.isDrawingPolygon && state.draftPolygon.length > 0) {
+        const colorRgb = hexToRgb(dom.lineColor.value);
+        const opacity = dom.lineOpacity.value;
+
+        dom.ctx.beginPath();
+        dom.ctx.moveTo(state.draftPolygon[0].x, state.draftPolygon[0].y);
+        for (let j = 1; j < state.draftPolygon.length; j++) {
+            dom.ctx.lineTo(state.draftPolygon[j].x, state.draftPolygon[j].y);
+        }
+        
+        dom.ctx.lineWidth = 1.5 * scale;
+        dom.ctx.strokeStyle = `rgba(${colorRgb.r}, ${colorRgb.g}, ${colorRgb.b}, ${opacity})`;
+        dom.ctx.stroke();
+
+        // Line to cursor
+        dom.ctx.beginPath();
+        dom.ctx.moveTo(state.draftPolygon[state.draftPolygon.length - 1].x, state.draftPolygon[state.draftPolygon.length - 1].y);
+        dom.ctx.lineTo(state.currentMousePos.x, state.currentMousePos.y);
+        dom.ctx.setLineDash([5 * scale, 5 * scale]);
+        dom.ctx.stroke();
+        dom.ctx.setLineDash([]); // reset
+
+        // Draw vertices
+        for (let j = 0; j < state.draftPolygon.length; j++) {
+            const pt = state.draftPolygon[j];
+            const radius = 5 * scale;
+            
+            const isFirst = j === 0;
+            dom.ctx.beginPath();
+            dom.ctx.arc(pt.x, pt.y, isFirst ? radius * 1.5 : radius, 0, 2 * Math.PI);
+            dom.ctx.fillStyle = isFirst ? 'rgba(0, 200, 0, 0.7)' : `rgba(${colorRgb.r}, ${colorRgb.g}, ${colorRgb.b}, 0.7)`;
+            dom.ctx.fill();
+            dom.ctx.strokeStyle = "white";
+            dom.ctx.lineWidth = 1.5 * scale;
+            dom.ctx.stroke();
         }
     }
 }

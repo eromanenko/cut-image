@@ -31,7 +31,8 @@ function handleFreeformKeyDown(e) {
                 const cardIdx = state.detectedCards.findIndex(c => c.includes(state.selectedPoint));
                 if (cardIdx !== -1) {
                     const cornerIdx = state.detectedCards[cardIdx].indexOf(state.selectedPoint);
-                    state.selectedPoint = state.detectedCards[cardIdx][(cornerIdx + 3) % 4];
+                    const len = state.detectedCards[cardIdx].length;
+                    state.selectedPoint = state.detectedCards[cardIdx][(cornerIdx + len - 1) % len];
                 }
             }
         } else {
@@ -41,7 +42,8 @@ function handleFreeformKeyDown(e) {
                 const cardIdx = state.detectedCards.findIndex(c => c.includes(state.selectedPoint));
                 if (cardIdx !== -1) {
                     const cornerIdx = state.detectedCards[cardIdx].indexOf(state.selectedPoint);
-                    state.selectedPoint = state.detectedCards[cardIdx][(cornerIdx + 1) % 4];
+                    const len = state.detectedCards[cardIdx].length;
+                    state.selectedPoint = state.detectedCards[cardIdx][(cornerIdx + 1) % len];
                 }
             }
         }
@@ -122,15 +124,17 @@ function handleFreeformKeyDown(e) {
             const cardIndex = state.detectedCards.findIndex(card => card.includes(state.selectedPoint));
             if (cardIndex !== -1) {
                 const card       = state.detectedCards[cardIndex];
-                const pointIndex = card.indexOf(state.selectedPoint);
+                if (card.length === 4) {
+                    const pointIndex = card.indexOf(state.selectedPoint);
 
-                if (actualDx !== 0) {
-                    const partnerXIndex = 3 - pointIndex;
-                    card[partnerXIndex].x = Math.max(-pad.x, Math.min(imgW + pad.x, card[partnerXIndex].x + actualDx));
-                }
-                if (actualDy !== 0) {
-                    const partnerYIndex = pointIndex ^ 1;
-                    card[partnerYIndex].y = Math.max(-pad.y, Math.min(imgH + pad.y, card[partnerYIndex].y + actualDy));
+                    if (actualDx !== 0) {
+                        const partnerXIndex = 3 - pointIndex;
+                        card[partnerXIndex].x = Math.max(-pad.x, Math.min(imgW + pad.x, card[partnerXIndex].x + actualDx));
+                    }
+                    if (actualDy !== 0) {
+                        const partnerYIndex = pointIndex ^ 1;
+                        card[partnerYIndex].y = Math.max(-pad.y, Math.min(imgH + pad.y, card[partnerYIndex].y + actualDy));
+                    }
                 }
             }
         }
@@ -221,6 +225,32 @@ export function handleGlobalKeyDown(e) {
     if (e.target.tagName === 'INPUT') return;
     const tabCards = document.getElementById("tab-cards");
     if (tabCards && !tabCards.classList.contains("active")) return;
+
+    if (state.isDrawingPolygon) {
+        if (e.key === "Escape") {
+            state.isDrawingPolygon = false;
+            state.draftPolygon = [];
+            if (dom.drawShapeBtn) dom.drawShapeBtn.classList.remove('active');
+            dom.canvas.style.cursor = 'crosshair';
+            redraw();
+            e.preventDefault();
+            return;
+        }
+        if (e.key === "Enter") {
+            if (state.draftPolygon.length >= 3) {
+                state.detectedCards.push([...state.draftPolygon]);
+                saveCurrentToDatabase();
+                updateButtonStates();
+            }
+            state.isDrawingPolygon = false;
+            state.draftPolygon = [];
+            if (dom.drawShapeBtn) dom.drawShapeBtn.classList.remove('active');
+            dom.canvas.style.cursor = 'crosshair';
+            redraw();
+            e.preventDefault();
+            return;
+        }
+    }
 
     // Global shortcuts (both modes)
     if (!e.ctrlKey && !e.metaKey && !e.altKey) {

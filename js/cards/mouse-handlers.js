@@ -47,6 +47,29 @@ function createFreeformCardAt(cx, cy) {
 }
 
 function handleFreeformMouseDown(pos) {
+    if (state.isDrawingPolygon) {
+        if (state.draftPolygon.length > 0) {
+            const firstPt = state.draftPolygon[0];
+            const dist = Math.hypot(pos.x - firstPt.x, pos.y - firstPt.y);
+            // If clicked near the first point, close the polygon
+            if (dist < 20) {
+                if (state.draftPolygon.length >= 3) {
+                    state.detectedCards.push([...state.draftPolygon]);
+                    saveCurrentToDatabase();
+                    updateButtonStates();
+                }
+                state.isDrawingPolygon = false;
+                state.draftPolygon = [];
+                if (dom.drawShapeBtn) dom.drawShapeBtn.classList.remove('active');
+                redraw();
+                return;
+            }
+        }
+        state.draftPolygon.push({ x: pos.x, y: pos.y });
+        redraw();
+        return;
+    }
+
     const hitPoint = findPointNear(pos.x, pos.y);
 
     if (hitPoint) {
@@ -74,6 +97,12 @@ function handleFreeformMouseDown(pos) {
 }
 
 function handleFreeformMouseMove(pos, e) {
+    if (state.isDrawingPolygon) {
+        state.currentMousePos = { x: pos.x, y: pos.y };
+        redraw();
+        return;
+    }
+
     if (state.isDraggingPoint && state.draggedPoint) {
         updateAutoScrollMousePos(e.clientX, e.clientY);
         const pad = getPadding();

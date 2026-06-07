@@ -26,51 +26,85 @@ export async function exportCards() {
         let srcMat = cv.imread(dom.sourceCanvas);
 
         for (let i = 0; i < cardCount; i++) {
-            let card4pts; // [TL, TR, BR, BL]
-            let outW, outH;
-
-            if (isRect) {
-                const rc = state.rectCards[i];
-                card4pts = getRectCardCorners(rc);
-                outW = state.rectWidth;
-                outH = state.rectHeight;
-            } else {
-                card4pts = state.detectedCards[i];
-                // Compute output size from the card's actual edge lengths
-                let widthA = Math.hypot(card4pts[2].x - card4pts[3].x, card4pts[2].y - card4pts[3].y);
-                let widthB = Math.hypot(card4pts[1].x - card4pts[0].x, card4pts[1].y - card4pts[0].y);
-                let heightA = Math.hypot(card4pts[1].x - card4pts[2].x, card4pts[1].y - card4pts[2].y);
-                let heightB = Math.hypot(card4pts[0].x - card4pts[3].x, card4pts[0].y - card4pts[3].y);
-                outW = Math.round(Math.max(widthA, widthB));
-                outH = Math.round(Math.max(heightA, heightB));
-
-
-            }
-
-            let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                card4pts[0].x, card4pts[0].y,
-                card4pts[1].x, card4pts[1].y,
-                card4pts[2].x, card4pts[2].y,
-                card4pts[3].x, card4pts[3].y,
-            ]);
-
-            let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                0, 0,
-                outW - 1, 0,
-                outW - 1, outH - 1,
-                0, outH - 1,
-            ]);
-
-            let M = cv.getPerspectiveTransform(srcTri, dstTri);
-            let dst = new cv.Mat();
-            let dsize = new cv.Size(outW, outH);
-
-            cv.warpPerspective(srcMat, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
-
+            let pts = isRect ? getRectCardCorners(state.rectCards[i]) : state.detectedCards[i];
             const tempCanvas = document.createElement('canvas');
-            cv.imshow(tempCanvas, dst);
 
-            srcTri.delete(); dstTri.delete(); M.delete(); dst.delete();
+            if (pts.length === 4) {
+                let outW, outH;
+                if (isRect) {
+                    outW = state.rectWidth;
+                    outH = state.rectHeight;
+                } else {
+                    let widthA = Math.hypot(pts[2].x - pts[3].x, pts[2].y - pts[3].y);
+                    let widthB = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+                    let heightA = Math.hypot(pts[1].x - pts[2].x, pts[1].y - pts[2].y);
+                    let heightB = Math.hypot(pts[0].x - pts[3].x, pts[0].y - pts[3].y);
+                    outW = Math.round(Math.max(widthA, widthB));
+                    outH = Math.round(Math.max(heightA, heightB));
+                }
+
+                let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                    pts[0].x, pts[0].y,
+                    pts[1].x, pts[1].y,
+                    pts[2].x, pts[2].y,
+                    pts[3].x, pts[3].y,
+                ]);
+
+                let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                    0, 0,
+                    outW - 1, 0,
+                    outW - 1, outH - 1,
+                    0, outH - 1,
+                ]);
+
+                let M = cv.getPerspectiveTransform(srcTri, dstTri);
+                let dst = new cv.Mat();
+                let dsize = new cv.Size(outW, outH);
+
+                cv.warpPerspective(srcMat, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
+                cv.imshow(tempCanvas, dst);
+
+                srcTri.delete(); dstTri.delete(); M.delete(); dst.delete();
+            } else {
+                // For N-sided polygons, find bounding box and mask
+                let minX = Infinity, minY = Infinity;
+                let maxX = -Infinity, maxY = -Infinity;
+                for (const p of pts) {
+                    minX = Math.min(minX, p.x);
+                    minY = Math.min(minY, p.y);
+                    maxX = Math.max(maxX, p.x);
+                    maxY = Math.max(maxY, p.y);
+                }
+
+                // Keep within image bounds
+                minX = Math.max(0, Math.floor(minX));
+                minY = Math.max(0, Math.floor(minY));
+                maxX = Math.min(dom.sourceCanvas.width, Math.ceil(maxX));
+                maxY = Math.min(dom.sourceCanvas.height, Math.ceil(maxY));
+
+                const outW = maxX - minX;
+                const outH = maxY - minY;
+
+                tempCanvas.width = outW;
+                tempCanvas.height = outH;
+                const tCtx = tempCanvas.getContext('2d');
+
+                // Create clipping mask
+                tCtx.beginPath();
+                tCtx.moveTo(pts[0].x - minX, pts[0].y - minY);
+                for (let j = 1; j < pts.length; j++) {
+                    tCtx.lineTo(pts[j].x - minX, pts[j].y - minY);
+                }
+                tCtx.closePath();
+                tCtx.clip();
+
+                // Draw image portion
+                tCtx.drawImage(
+                    dom.sourceCanvas,
+                    minX, minY, outW, outH,
+                    0, 0, outW, outH
+                );
+            }
 
             let blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
             blob = await injectPngDpi(blob, dpi);

@@ -12,6 +12,10 @@ export function updateButtonStates() {
         dom.saveCoordsButton.disabled = Object.keys(state.coordsDatabase || {}).length === 0 && !state.isImageLoaded;
     }
 
+    if (dom.drawShapeBtn) {
+        dom.drawShapeBtn.disabled = !state.isImageLoaded;
+    }
+
     if (dom.viewCoordsCount) {
         let fileCount = 0;
         if (state.coordsDatabase) {
@@ -155,6 +159,7 @@ export function applyModeUI(mode) {
     // Swap instruction text
     if (dom.instrFreeform) dom.instrFreeform.style.display = isRect ? 'none' : '';
     if (dom.instrRect)     dom.instrRect.style.display     = isRect ? ''     : 'none';
+    if (dom.drawShapeBtn)  dom.drawShapeBtn.style.display  = isRect ? 'none' : '';
 }
 
 export function pulseViewCoordsButton() {

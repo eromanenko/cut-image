@@ -69,7 +69,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.4.0</span>
+            <span class="app-version">v5.5.0</span>
         </div>
 
         <div class="tabs">
@@ -314,6 +314,17 @@
                 <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf"
                     class="hidden-file-input">
                 <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
+                <button id="ceDrawShapeBtn" class="icon-btn" disabled title="Draw custom polygon shape (Esc to cancel)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M5 14L8.5 7L15 8L19 16L12 21Z" stroke-dasharray="3 3"></path>
+                        <circle cx="5" cy="14" r="1.5" fill="currentColor"></circle>
+                        <circle cx="8.5" cy="7" r="1.5" fill="currentColor"></circle>
+                        <circle cx="15" cy="8" r="1.5" fill="currentColor"></circle>
+                        <circle cx="19" cy="16" r="1.5" fill="currentColor"></circle>
+                        <circle cx="12" cy="21" r="1.5" fill="currentColor"></circle>
+                    </svg>
+                </button>
                 <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
                 <button id="ceDownloadButton" disabled title="Download Cards (S)">Download</button>
                 <div class="input-container" style="margin-left: 8px;">

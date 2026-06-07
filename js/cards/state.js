@@ -25,6 +25,13 @@ export const state = {
     rectZoomLevel: 1,       // separate zoom for rect-mode 4-quadrant view
 
     // -----------------------------------------------------------------------
+    // Polygon Drawing Mode (Freeform)
+    // -----------------------------------------------------------------------
+    isDrawingPolygon: false,
+    draftPolygon: [],
+    currentMousePos: { x: 0, y: 0 },
+
+    // -----------------------------------------------------------------------
     // Rectangle Mode
     // -----------------------------------------------------------------------
     editMode: 'freeform',          // 'freeform' | 'rect'
@@ -67,6 +74,10 @@ export function resetState() {
     state.draggedCard = null;
     state.dragStartX = 0;
     state.dragStartY = 0;
+
+    state.isDrawingPolygon = false;
+    state.draftPolygon = [];
+    state.currentMousePos = { x: 0, y: 0 };
 
     // Rect mode — keep editMode & global dims, but clear cards
     state.rectCards = [];

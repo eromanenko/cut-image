@@ -25,6 +25,20 @@ function syncRectDimensions() {
 export function bindEvents() {
     initCalculator();
 
+    if (dom.drawShapeBtn) {
+        dom.drawShapeBtn.addEventListener('click', () => {
+            state.isDrawingPolygon = !state.isDrawingPolygon;
+            if (state.isDrawingPolygon) {
+                state.draftPolygon = [];
+                dom.drawShapeBtn.classList.add('active');
+                dom.canvas.style.cursor = 'crosshair';
+            } else {
+                dom.drawShapeBtn.classList.remove('active');
+            }
+            dom.canvas.focus({ preventScroll: true });
+        });
+    }
+
     dom.processButton.addEventListener('click', handleAutoDetect);
     dom.downloadButton.addEventListener('click', () => { exportCards(); dom.canvas.focus({ preventScroll: true }); });
     dom.fileInput.addEventListener('change', handleFileUpload);

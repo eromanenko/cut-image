@@ -254,22 +254,36 @@ button:disabled {
    File Button (folder icon)
    ============================================================ */
 .ce-calc-btn,
-.file-btn {
+.file-btn,
+.icon-btn {
     padding: 0 !important;
     width: var(--control-height) !important;
     flex-shrink: 0;
 }
 
 .file-btn svg,
-.ce-calc-btn svg {
+.ce-calc-btn svg,
+.icon-btn svg {
     width: 16px;
     height: 16px;
     color: var(--text-muted);
 }
 
 .file-btn:hover svg,
-.ce-calc-btn:hover svg {
+.ce-calc-btn:hover svg,
+.icon-btn:hover:not(:disabled) svg {
     color: var(--accent);
+}
+
+.icon-btn.active {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 1px 3px rgba(13,148,136,0.25);
+}
+
+.icon-btn.active svg {
+    color: white;
 }
 
 .hidden-file-input {
