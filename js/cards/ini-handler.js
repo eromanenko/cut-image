@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { redraw } from './renderer.js';
 import { dom } from './dom.js';
 import { applyModeUI } from './ui.js';
+import { getRectCardCorners } from './rect-mode.js';
 
 export function getCurrentFileKey() {
     if (!state.currentFileName) return null;
@@ -68,8 +69,56 @@ export function loadCurrentFromDatabase() {
         if (dom.rectSkewPx) dom.rectSkewPx.value = state.rectSkew;
     }
 
+    autoAdjustPadding();
     redraw();
     return true;
+}
+
+/**
+ * Automatically set padding if any loaded card point falls outside the image.
+ * Scans all freeform card points for negative coords or coords beyond image bounds.
+ * Adds a small margin (20px) so the points aren't right at the edge.
+ */
+function autoAdjustPadding() {
+    if (!dom.paddingX || !dom.paddingY) return;
+
+    const imgW = dom.sourceCanvas.width;
+    const imgH = dom.sourceCanvas.height;
+    if (imgW === 0 || imgH === 0) return;
+
+    let minX = 0, minY = 0, maxX = imgW, maxY = imgH;
+
+    // Scan freeform cards
+    for (const card of state.detectedCards) {
+        for (const pt of card) {
+            if (pt.x < minX) minX = pt.x;
+            if (pt.y < minY) minY = pt.y;
+            if (pt.x > maxX) maxX = pt.x;
+            if (pt.y > maxY) maxY = pt.y;
+        }
+    }
+
+    // Scan rect-mode cards (compute corners)
+    if (state.editMode === 'rect' && state.rectCards.length > 0) {
+        for (const rc of state.rectCards) {
+            const corners = getRectCardCorners(rc);
+            for (const pt of corners) {
+                if (pt.x < minX) minX = pt.x;
+                if (pt.y < minY) minY = pt.y;
+                if (pt.x > maxX) maxX = pt.x;
+                if (pt.y > maxY) maxY = pt.y;
+            }
+        }
+    }
+
+    const MARGIN = 20;
+    const needPadX = Math.max(Math.ceil(-minX), Math.ceil(maxX - imgW));
+    const needPadY = Math.max(Math.ceil(-minY), Math.ceil(maxY - imgH));
+
+    if (needPadX > 0 || needPadY > 0) {
+        dom.paddingX.value = needPadX + MARGIN;
+        dom.paddingY.value = needPadY + MARGIN;
+    }
 }
 
 export function serializeDatabaseToIni() {

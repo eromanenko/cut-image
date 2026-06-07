@@ -1,6 +1,6 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
-import { hexToRgb, sortDetectedCards, getRenderScale, orderPoints } from './utils.js';
+import { hexToRgb, sortDetectedCards, getRenderScale, orderPoints, getPadding } from './utils.js';
 import { getRectCardCorners, getRectCardCenter, sortRectCards } from './rect-mode.js';
 
 // ---------------------------------------------------------------------------
@@ -17,13 +17,44 @@ import { getRectCardCorners, getRectCardCenter, sortRectCards } from './rect-mod
 export function redraw() {
     if (!state.isImageLoaded) return;
 
-    dom.ctx.drawImage(dom.sourceCanvas, 0, 0);
+    const pad = getPadding();
+
+    // Resize canvas to image + padding
+    const newW = dom.sourceCanvas.width + pad.x * 2;
+    const newH = dom.sourceCanvas.height + pad.y * 2;
+    if (dom.canvas.width !== newW || dom.canvas.height !== newH) {
+        dom.canvas.width = newW;
+        dom.canvas.height = newH;
+    }
+
+    // Fill padding area with light checkerboard pattern
+    if (pad.x > 0 || pad.y > 0) {
+        const patC = document.createElement('canvas');
+        patC.width = 20; patC.height = 20;
+        const patCtx = patC.getContext('2d');
+        patCtx.fillStyle = '#f0f0f0';
+        patCtx.fillRect(0, 0, 20, 20);
+        patCtx.fillStyle = '#e0e0e0';
+        patCtx.fillRect(0, 0, 10, 10);
+        patCtx.fillRect(10, 10, 10, 10);
+        dom.ctx.fillStyle = dom.ctx.createPattern(patC, 'repeat');
+        dom.ctx.fillRect(0, 0, dom.canvas.width, dom.canvas.height);
+    }
+
+    // Draw image at padding offset
+    dom.ctx.drawImage(dom.sourceCanvas, pad.x, pad.y);
+
+    // All subsequent drawing uses pad offset via ctx.translate
+    dom.ctx.save();
+    dom.ctx.translate(pad.x, pad.y);
 
     if (state.editMode === 'rect') {
         redrawRectMode();
     } else {
         redrawFreeformMode();
     }
+
+    dom.ctx.restore();
 
     updateZoomWindow();
 }
@@ -326,8 +357,9 @@ function updateZoomWindowFreeform() {
     else if (cornerIndex === 2) { crosshairX = zoomWidth - margin; crosshairY = zoomHeight - margin; }
     else if (cornerIndex === 3) { crosshairX = margin;            crosshairY = zoomHeight - margin; }
 
-    const sx = Math.round(state.selectedPoint.x - (crosshairX / zoomFactor));
-    const sy = Math.round(state.selectedPoint.y - (crosshairY / zoomFactor));
+    const pad = getPadding();
+    const sx = Math.round(state.selectedPoint.x + pad.x - (crosshairX / zoomFactor));
+    const sy = Math.round(state.selectedPoint.y + pad.y - (crosshairY / zoomFactor));
 
     dom.zoomCtx.fillStyle = '#f8f9fa';
     dom.zoomCtx.fillRect(0, 0, zoomWidth, zoomHeight);
@@ -410,8 +442,9 @@ function updateZoomWindowRect() {
         const off = quadOffsets[i];
         const ch  = crosshairPositions[i];
 
-        const sx = Math.round(pt.x - ch.cx / zf);
-        const sy = Math.round(pt.y - ch.cy / zf);
+        const padOffset = getPadding();
+        const sx = Math.round(pt.x + padOffset.x - ch.cx / zf);
+        const sy = Math.round(pt.y + padOffset.y - ch.cy / zf);
 
         dom.zoomCtx.drawImage(dom.canvas, sx, sy, srcW, srcH, off.dx, off.dy, qw, qh);
 

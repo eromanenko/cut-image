@@ -86,6 +86,10 @@ export function initDom() {
     dom.settingsBtn = document.getElementById("ceSettingsBtn");
     dom.shareDataCheckbox = document.getElementById("ceShareDataCheckbox");
     dom.settingsResetBtn = document.getElementById("ceSettingsResetBtn");
+
+    // Padding inputs (not persisted)
+    dom.paddingX = document.getElementById("cePaddingX");
+    dom.paddingY = document.getElementById("cePaddingY");
 }
 
 export function getTargetSizes() {

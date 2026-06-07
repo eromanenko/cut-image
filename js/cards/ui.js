@@ -130,6 +130,12 @@ export function updateSettingsSummary() {
         text += ` | AI sharing`;
     }
     
+    const padX = parseInt(dom.paddingX?.value) || 0;
+    const padY = parseInt(dom.paddingY?.value) || 0;
+    if (padX > 0 || padY > 0) {
+        text += ` | Pad ${padX}×${padY}`;
+    }
+    
     dom.settingsSummaryText.textContent = text;
 }
 

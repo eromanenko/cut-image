@@ -13,13 +13,25 @@ export function getRenderScale() {
     return dom.canvas.width / dom.canvas.clientWidth;
 }
 
+/**
+ * Get current canvas padding (px). Reads from DOM inputs.
+ * Returns image-pixel coordinates offset.
+ */
+export function getPadding() {
+    const px = parseInt(dom.paddingX?.value) || 0;
+    const py = parseInt(dom.paddingY?.value) || 0;
+    return { x: px, y: py };
+}
+
 export function getMousePos(event) {
     const rect = dom.canvas.getBoundingClientRect();
     const scaleX = dom.canvas.width / rect.width;
     const scaleY = dom.canvas.height / rect.height;
+    const pad = getPadding();
+    // Return image-relative coordinates (subtracting padding offset)
     return {
-        x: (event.clientX - rect.left) * scaleX,
-        y: (event.clientY - rect.top) * scaleY
+        x: (event.clientX - rect.left) * scaleX - pad.x,
+        y: (event.clientY - rect.top) * scaleY - pad.y
     };
 }
 

@@ -6,7 +6,7 @@ import { exportCards } from './export.js';
 import { handleFileUpload, renderPdfPageForPreview } from './file-loader.js';
 import { updateButtonStates, scrollToCorner, scrollToRectCard, applyModeUI, showIniStatsModal, pulseViewCoordsButton, updateSettingsSummary, loadSettingsFromStorage, saveSettingsToStorage, resetSettingsToDefault } from './ui.js';
 import { showAlert, showConfirm } from '../dialogs.js';
-import { getMousePos, findPointNear, findCardContaining } from './utils.js';
+import { getMousePos, findPointNear, findCardContaining, getPadding } from './utils.js';
 import {
     getRectCardCorners,
     createRectCard,
@@ -857,8 +857,11 @@ function handleFreeformMouseMove(pos, e) {
     if (state.isDraggingPoint && state.draggedPoint) {
         lastMouseClientX = e.clientX;
         lastMouseClientY = e.clientY;
-        state.draggedPoint.x = Math.max(0, Math.min(dom.canvas.width,  pos.x));
-        state.draggedPoint.y = Math.max(0, Math.min(dom.canvas.height, pos.y));
+        const pad = getPadding();
+        const imgW = dom.sourceCanvas.width;
+        const imgH = dom.sourceCanvas.height;
+        state.draggedPoint.x = Math.max(-pad.x, Math.min(imgW + pad.x, pos.x));
+        state.draggedPoint.y = Math.max(-pad.y, Math.min(imgH + pad.y, pos.y));
         dom.canvas.style.cursor = 'grabbing';
         startAutoScroll();
         redraw();
@@ -868,8 +871,11 @@ function handleFreeformMouseMove(pos, e) {
         const dx = pos.x - state.dragStartX;
         const dy = pos.y - state.dragStartY;
         for (const pt of state.draggedCard) {
-            pt.x = Math.max(0, Math.min(dom.canvas.width,  pt.x + dx));
-            pt.y = Math.max(0, Math.min(dom.canvas.height, pt.y + dy));
+            const pad = getPadding();
+            const imgW = dom.sourceCanvas.width;
+            const imgH = dom.sourceCanvas.height;
+            pt.x = Math.max(-pad.x, Math.min(imgW + pad.x, pt.x + dx));
+            pt.y = Math.max(-pad.y, Math.min(imgH + pad.y, pt.y + dy));
         }
         state.dragStartX = pos.x;
         state.dragStartY = pos.y;
@@ -1051,8 +1057,11 @@ function handleFreeformKeyDown(e) {
         const oldX = state.selectedPoint.x;
         const oldY = state.selectedPoint.y;
 
-        state.selectedPoint.x = Math.max(0, Math.min(dom.canvas.width,  state.selectedPoint.x + dx));
-        state.selectedPoint.y = Math.max(0, Math.min(dom.canvas.height, state.selectedPoint.y + dy));
+        const pad = getPadding();
+        const imgW = dom.sourceCanvas.width;
+        const imgH = dom.sourceCanvas.height;
+        state.selectedPoint.x = Math.max(-pad.x, Math.min(imgW + pad.x, state.selectedPoint.x + dx));
+        state.selectedPoint.y = Math.max(-pad.y, Math.min(imgH + pad.y, state.selectedPoint.y + dy));
 
         const actualDx = state.selectedPoint.x - oldX;
         const actualDy = state.selectedPoint.y - oldY;
@@ -1065,11 +1074,11 @@ function handleFreeformKeyDown(e) {
 
                 if (actualDx !== 0) {
                     const partnerXIndex = 3 - pointIndex;
-                    card[partnerXIndex].x = Math.max(0, Math.min(dom.canvas.width, card[partnerXIndex].x + actualDx));
+                    card[partnerXIndex].x = Math.max(-pad.x, Math.min(imgW + pad.x, card[partnerXIndex].x + actualDx));
                 }
                 if (actualDy !== 0) {
                     const partnerYIndex = pointIndex ^ 1;
-                    card[partnerYIndex].y = Math.max(0, Math.min(dom.canvas.height, card[partnerYIndex].y + actualDy));
+                    card[partnerYIndex].y = Math.max(-pad.y, Math.min(imgH + pad.y, card[partnerYIndex].y + actualDy));
                 }
             }
         }

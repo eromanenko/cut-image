@@ -65,7 +65,7 @@ export async function exportCards() {
             let dst = new cv.Mat();
             let dsize = new cv.Size(outW, outH);
 
-            cv.warpPerspective(srcMat, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+            cv.warpPerspective(srcMat, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
 
             const tempCanvas = document.createElement('canvas');
             cv.imshow(tempCanvas, dst);
