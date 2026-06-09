@@ -1,0 +1,202 @@
+/* ============================================================
+   Header
+   ============================================================ */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding: 0 4px;
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    height: 48px;
+}
+
+.app-title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.app-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+}
+
+.app-version {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-subtle);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 1px 7px;
+    letter-spacing: 0;
+}
+
+/* ============================================================
+   Tabs
+   ============================================================ */
+.tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    height: 100%;
+}
+
+.tab-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 0 16px;
+    height: 100%;
+    font-family: var(--font-ui);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    position: relative;
+    top: 1px;
+    /* aligns border-bottom with header border */
+}
+
+button.tab-btn:hover,
+button.tab-btn:hover:not(:disabled) {
+    background: transparent;
+    color: var(--text);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ============================================================
+   Sticky Controls
+   ============================================================ */
+.sticky-controls {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--bg);
+    padding-bottom: 12px;
+    box-shadow: none;
+    transition: box-shadow 0.2s, padding-bottom 0.3s ease;
+}
+
+.sticky-controls.stuck {
+    box-shadow: var(--shadow);
+    padding-bottom: 4px;
+}
+
+.sticky-controls.stuck>.controls:first-child {
+    margin-bottom: 0;
+}
+
+.hide-on-stuck {
+    max-height: 150px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+}
+
+.sticky-controls.stuck .hide-on-stuck {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    pointer-events: none;
+}
+
+/* ============================================================
+   Controls Row
+   Info Tooltips
+   ============================================================ */
+.info-tooltip {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.info-icon {
+    width: 22px;
+    height: 22px;
+    background-color: var(--surface-2);
+    color: var(--text-muted);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: help;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.info-icon:hover {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent-hover);
+}
+
+.tooltip-content {
+    visibility: hidden;
+    width: 440px;
+    background-color: var(--surface);
+    color: var(--text);
+    text-align: left;
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    position: absolute;
+    z-index: 1001;
+    top: 130%;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    font-size: 12.5px;
+    line-height: 1.6;
+    pointer-events: none;
+    text-wrap: wrap;
+}
+
+.info-tooltip:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tooltip-content::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    right: 6px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: transparent transparent var(--surface) transparent;
+}
+
+.pdf-controls {
+    margin-bottom: 20px;
+    align-items: center;
+}

@@ -1,0 +1,397 @@
+/* ============================================================
+   Controls Row
+   ============================================================ */
+.controls {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    transition: margin-bottom 0.3s ease;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+button,
+input[type="file"]::file-selector-button,
+.file-btn {
+    background-color: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    height: var(--control-height);
+    padding: 0 13px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    vertical-align: middle;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+}
+
+button:hover:not(:disabled),
+input[type="file"]::file-selector-button:hover,
+.file-btn:hover {
+    background-color: var(--surface-2);
+    border-color: #CBD5E1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    box-shadow: none;
+}
+
+/* Primary action button (Download, Auto-Detect) */
+#downloadButton,
+#autoDetectButton,
+#ceProcessButton,
+#ceDownloadButton,
+#dsProcessBtn,
+#dsDownloadBtn {
+    background-color: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 1px 3px rgba(13, 148, 136, 0.25);
+}
+
+#downloadButton:hover:not(:disabled),
+#autoDetectButton:hover:not(:disabled),
+#ceProcessButton:hover:not(:disabled),
+#ceDownloadButton:hover:not(:disabled),
+#dsProcessBtn:hover:not(:disabled),
+#dsDownloadBtn:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
+}
+
+/* ============================================================
+   File Button (folder icon)
+   ============================================================ */
+.ce-calc-btn,
+.file-btn,
+.icon-btn {
+    padding: 0 !important;
+    width: var(--control-height) !important;
+    flex-shrink: 0;
+}
+
+.file-btn svg,
+.ce-calc-btn svg,
+.icon-btn svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
+
+.file-btn:hover svg,
+.ce-calc-btn:hover svg,
+.icon-btn:hover:not(:disabled) svg {
+    color: var(--accent);
+}
+
+.icon-btn.active {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 1px 3px rgba(13, 148, 136, 0.25);
+}
+
+.icon-btn.active svg {
+    color: white;
+}
+
+.hidden-file-input {
+    display: none !important;
+}
+
+/* ============================================================
+   Inputs
+   ============================================================ */
+.input-container {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    padding: 0 10px;
+    height: var(--control-height);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    box-sizing: border-box;
+    gap: 6px;
+    box-shadow: var(--shadow-sm);
+    color: var(--text-muted);
+}
+
+.input-container:has(input[type="checkbox"]) {
+    cursor: pointer;
+    user-select: none;
+    padding-left: 8px;
+}
+
+.input-container input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--accent);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+.input-container label {
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.input-container:has(input[type="text"]),
+.input-container:has(input[type="number"]),
+.input-container:has(select) {
+    padding-right: 0;
+}
+
+.controls input[type="text"],
+.controls input[type="number"],
+.controls select {
+    height: var(--control-height);
+    padding: 0 8px;
+    border: none;
+    border-left: 1px solid var(--border);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    box-sizing: border-box;
+    vertical-align: middle;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+}
+
+.controls input[type="text"] {
+    font-family: var(--font-ui);
+}
+
+.controls input[type="text"]:focus,
+.controls input[type="number"]:focus,
+.controls select:focus {
+    border-color: var(--border-focus);
+    outline: none;
+}
+
+.controls input[type="text"]:focus~*,
+.controls input[type="number"]:focus~* {
+    border-color: var(--border-focus);
+}
+
+.input-container:has(input:focus),
+.input-container:has(select:focus) {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.12);
+}
+
+/* Input width helpers */
+.input-narrow-sm {
+    width: 50px;
+}
+
+.input-narrow-md {
+    width: 62px;
+}
+
+.input-narrow-lg {
+    width: 80px;
+}
+
+.input-wide {
+    width: 140px;
+}
+
+/* ============================================================
+   PDF Nav Buttons
+   ============================================================ */
+.pdf-nav-btn {
+    background-color: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+
+.pdf-nav-btn:hover:not(:disabled) {
+    background-color: var(--surface-2);
+    color: var(--text);
+}
+
+/* ============================================================
+   Mode Toggle (Freeform / Rectangle)
+   ============================================================ */
+.mode-toggle {
+    display: inline-flex;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.mode-btn {
+    background-color: var(--surface);
+    color: var(--text-muted);
+    border: none;
+    border-radius: 0;
+    padding: 0 9px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--control-height);
+    box-sizing: border-box;
+    box-shadow: none;
+}
+
+.mode-btn:hover:not(:disabled) {
+    background-color: var(--surface-2);
+    color: var(--text);
+    border-color: transparent;
+}
+
+.mode-btn.active {
+    background-color: var(--accent);
+    color: #fff;
+}
+
+.mode-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ============================================================
+   Fixed Color Buttons (color picker swatches)
+   ============================================================ */
+.fixed-color-btn {
+    width: 12px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    padding: 0;
+    margin-left: 3px;
+    cursor: pointer;
+    box-shadow: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+    flex-shrink: 0;
+}
+
+.fixed-color-btn:hover:not(:disabled) {
+    transform: scale(1.2);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+    border-color: transparent;
+}
+
+/* ============================================================
+/* ============================================================
+   Descreen Method Controls
+   ============================================================ */
+.ds-method-controls {
+    display: none;
+    align-items: center;
+    gap: 10px;
+}
+
+[data-method="fft"] #dsFftControls,
+[data-method="bilateral"] #dsBilateralControls,
+[data-method="gaussian"] #dsGaussianControls,
+[data-method="median"] #dsMedianControls,
+[data-method="fft"] #dsTuneFftControls,
+[data-method="bilateral"] #dsTuneBiControls,
+[data-method="gaussian"] #dsTuneGaussControls,
+[data-method="median"] #dsTuneMedianControls {
+    display: inline-flex;
+}
+
+@keyframes highlight-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7);
+    }
+
+    50% {
+        transform: scale(1.15);
+        box-shadow: 0 0 0 8px rgba(13, 148, 136, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(13, 148, 136, 0);
+    }
+}
+
+.highlight-pulse {
+    animation: highlight-pulse 0.8s ease-out;
+    background-color: var(--accent-light) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent-text) !important;
+    z-index: 1000;
+}
+/* ============================================================
+   Extracted Component Styles
+   ============================================================ */
+.opencv-status {
+    color: red;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.page-indicator {
+    line-height: var(--control-height);
+    font-weight: bold;
+    width: 120px;
+}
+.ce-view-coords-count {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.zoom-checkbox-container {
+    margin-left: 8px;
+}
+
+.settings-summary-row {
+    justify-content: center;
+    gap: 8px;
+}
+
+.settings-summary-text {
+    font-size: 12px;
+    font-weight: 400;
+    color: #888;
+}
+
+.settings-btn-bare {
+    font-size: 16px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+    padding: 0;
+    height: auto;
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+}
+.color-swatch-btn {
+    cursor: pointer;
+    height: calc(var(--control-height) - 10px);
+    padding: 0;
+    width: 30px;
+}

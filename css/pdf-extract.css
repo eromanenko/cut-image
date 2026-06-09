@@ -1,0 +1,143 @@
+
+/* ============================================================
+   PDF Extract — Dropzone
+   ============================================================ */
+.pe-dropzone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 340px;
+    margin: 20px auto;
+    max-width: 600px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+}
+
+.pe-dropzone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.pe-dropzone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+    pointer-events: none;
+}
+
+/* ============================================================
+   PDF Extract — Gallery
+   ============================================================ */
+.pe-gallery-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 0 40px;
+}
+
+.pe-gallery-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px;
+    margin-bottom: 8px;
+}
+
+.pe-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.pe-gallery-item {
+    position: relative;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pe-gallery-item:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+}
+
+.pe-gallery-item.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+.pe-gallery-item .pe-thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: var(--surface-2);
+    display: block;
+}
+
+.pe-gallery-item .pe-checkbox {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    z-index: 2;
+}
+
+.pe-gallery-item .pe-info {
+    padding: 6px 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+}
+.pe-dropzone-icon {
+    opacity: 0.4;
+}
+
+.pe-dropzone-title {
+    margin: 12px 0 6px;
+    font-weight: 600;
+}
+
+.pe-dropzone-desc {
+    color: var(--text-muted);
+    max-width: 420px;
+    line-height: 1.5;
+    font-size: 13px;
+}
+
+.pe-dropzone-steps {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.pe-status-text {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.pe-loading-container {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.pe-loading-text {
+    font-size: 14px;
+    color: var(--text-muted);
+}

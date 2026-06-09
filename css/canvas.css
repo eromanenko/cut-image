@@ -1,0 +1,97 @@
+/* ============================================================
+   Canvas Container
+   ============================================================ */
+.canvas-container {
+    position: relative;
+    display: inline-block;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    margin-top: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    max-width: 100%;
+}
+
+.filename-display {
+    position: absolute;
+    top: -22px;
+    right: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-subtle);
+    font-weight: 400;
+    max-width: 80%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
+canvas {
+    display: block;
+    cursor: crosshair;
+    outline: none;
+    user-select: none;
+    touch-action: none;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   Draggable Zoom Window
+   ============================================================ */
+.zoom-window {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    min-width: 150px;
+    min-height: 150px;
+}
+
+.zoom-window-header {
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    padding: 4px 8px;
+    text-align: center;
+    cursor: move;
+    user-select: none;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease;
+}
+
+.zoom-window-header.is-last-card {
+    background: #F59E0B;
+    /* Amber/Orange color to stand out */
+}
+
+.zoom-window-resizer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 14px;
+    height: 14px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, var(--accent) 50%);
+    z-index: 10000;
+    opacity: 0.6;
+}
+
+.zoom-window-resizer:hover {
+    opacity: 1;
+}
+
+/* ============================================================
+   Extracted Component Styles
+   ============================================================ */
+.full-canvas { display: block; max-width: 100%; height: auto; }

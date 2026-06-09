@@ -7,7 +7,7 @@ export function updateButtonStates() {
     const isRect = state.editMode === 'rect';
 
     dom.processButton.disabled = !(state.isCvReady && state.isImageLoaded);
-    
+
     if (dom.saveCoordsButton) {
         dom.saveCoordsButton.disabled = Object.keys(state.coordsDatabase || {}).length === 0 && !state.isImageLoaded;
     }
@@ -54,7 +54,7 @@ const SETTINGS_KEY = 'ce_user_settings';
 const DEFAULT_SETTINGS = {
     shareData: true,
     lineColor: '#007bff',
-    lineOpacity: '0.75'
+    lineOpacity: '0.50'
 };
 
 export function loadSettingsFromStorage() {
@@ -79,17 +79,17 @@ export function loadSettingsFromStorage() {
 
 export function saveSettingsToStorage() {
     if (!dom.shareDataCheckbox || !dom.lineColor || !dom.lineOpacity) return;
-    
+
     const settings = {
         shareData: dom.shareDataCheckbox.checked,
         lineColor: dom.lineColor.value,
         lineOpacity: dom.lineOpacity.value
     };
-    
+
     const isDefault = settings.shareData === DEFAULT_SETTINGS.shareData &&
-                      settings.lineColor === DEFAULT_SETTINGS.lineColor &&
-                      settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity;
-                      
+        settings.lineColor === DEFAULT_SETTINGS.lineColor &&
+        settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity;
+
     if (!isDefault) {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'block';
@@ -116,7 +116,7 @@ export function updateSettingsSummary() {
     const dpi = dom.dpiInput ? dom.dpiInput.value : '300';
     const dpiNum = parseInt(dpi) || 300;
     const isAiSharing = dom.shareDataCheckbox && dom.shareDataCheckbox.checked;
-    
+
     let text = "";
     if (sizes.length === 0) {
         text = "Sizes not set";
@@ -127,19 +127,19 @@ export function updateSettingsSummary() {
             return `${s.w}x${s.h}mm (${pxW}x${pxH}px)`;
         }).join(' | ');
     }
-    
+
     text += ` | DPI ${dpi}`;
-    
+
     if (isAiSharing) {
         text += ` | AI sharing`;
     }
-    
+
     const padX = parseInt(dom.paddingX?.value) || 0;
     const padY = parseInt(dom.paddingY?.value) || 0;
     if (padX > 0 || padY > 0) {
-        text += ` | Pad ${padX}×${padY}`;
+        text += ` | Pad ${padY}×${padX}px`;
     }
-    
+
     dom.settingsSummaryText.textContent = text;
 }
 
@@ -151,15 +151,15 @@ export function applyModeUI(mode) {
     dom.rectModeBtn.classList.toggle('active', isRect);
 
     // Show/hide toolbar rows
-    if (dom.freeformStylingRow)    dom.freeformStylingRow.style.display    = isRect ? 'none' : '';
+    if (dom.freeformStylingRow) dom.freeformStylingRow.style.display = isRect ? 'none' : '';
     if (dom.freeformDimensionsRow) dom.freeformDimensionsRow.style.display = isRect ? 'none' : '';
-    if (dom.settingsSummaryRow)    dom.settingsSummaryRow.style.display    = isRect ? 'none' : 'flex';
-    if (dom.rectControls)          dom.rectControls.style.display          = isRect ? ''     : 'none';
+    if (dom.settingsSummaryRow) dom.settingsSummaryRow.style.display = isRect ? 'none' : 'flex';
+    if (dom.rectControls) dom.rectControls.style.display = isRect ? '' : 'none';
 
     // Swap instruction text
     if (dom.instrFreeform) dom.instrFreeform.style.display = isRect ? 'none' : '';
-    if (dom.instrRect)     dom.instrRect.style.display     = isRect ? ''     : 'none';
-    if (dom.drawShapeBtn)  dom.drawShapeBtn.style.display  = isRect ? 'none' : '';
+    if (dom.instrRect) dom.instrRect.style.display = isRect ? '' : 'none';
+    if (dom.drawShapeBtn) dom.drawShapeBtn.style.display = isRect ? 'none' : '';
 }
 
 export function pulseViewCoordsButton() {
@@ -167,7 +167,7 @@ export function pulseViewCoordsButton() {
         dom.viewCoordsButton.classList.remove('highlight-pulse');
         void dom.viewCoordsButton.offsetWidth; // Trigger reflow
         dom.viewCoordsButton.classList.add('highlight-pulse');
-        
+
         setTimeout(() => {
             if (dom.viewCoordsButton) {
                 dom.viewCoordsButton.classList.remove('highlight-pulse');
@@ -225,12 +225,12 @@ export function scrollToRectCard(card, corners) {
     const scaleX = rect.width / dom.canvas.width;
     const scaleY = rect.height / dom.canvas.height;
     const vpX = rect.left + cx * scaleX;
-    const vpY = rect.top  + cy * scaleY;
+    const vpY = rect.top + cy * scaleY;
     const stickyEl = dom.canvas.closest('.tab-content')?.querySelector('.sticky-controls');
     const stickyH = stickyEl ? stickyEl.getBoundingClientRect().height : 0;
     window.scrollTo({
-        left: window.scrollX + vpX - window.innerWidth  / 2,
-        top:  window.scrollY + vpY - (stickyH + (window.innerHeight - stickyH) / 2),
+        left: window.scrollX + vpX - window.innerWidth / 2,
+        top: window.scrollY + vpY - (stickyH + (window.innerHeight - stickyH) / 2),
         behavior: 'smooth',
     });
 }
@@ -245,14 +245,14 @@ export async function showIniStatsModal(db) {
     }
 
     dom.iniStatsList.innerHTML = '';
-    
+
     let hasEntries = false;
     let fileCount = 0;
     for (const [key, record] of Object.entries(db)) {
         let count = 0;
         let iconSvg = '';
         let modeTitle = '';
-        
+
         if (record.editMode === 'freeform') {
             count = record.cards ? record.cards.length : 0;
             modeTitle = 'Free form';
@@ -267,7 +267,7 @@ export async function showIniStatsModal(db) {
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             </svg>`;
         }
-        
+
         if (count > 0) {
             hasEntries = true;
             fileCount++;
@@ -276,7 +276,7 @@ export async function showIniStatsModal(db) {
             li.style.borderBottom = '1px solid #eee';
             li.style.display = 'flex';
             li.style.alignItems = 'center';
-            
+
             const iconSpan = document.createElement('span');
             iconSpan.innerHTML = iconSvg;
             iconSpan.title = modeTitle;
@@ -284,19 +284,19 @@ export async function showIniStatsModal(db) {
             iconSpan.style.display = 'inline-flex';
             iconSpan.style.alignItems = 'center';
             iconSpan.style.color = '#555';
-            
+
             const nameSpan = document.createElement('span');
             nameSpan.style.fontWeight = 'bold';
             nameSpan.style.wordBreak = 'break-word';
             nameSpan.style.flexGrow = '1';
             nameSpan.textContent = key;
-            
+
             const countSpan = document.createElement('span');
             countSpan.style.color = '#555';
             countSpan.style.marginLeft = '15px';
             countSpan.style.whiteSpace = 'nowrap';
             countSpan.textContent = `${count} card${count !== 1 ? 's' : ''}`;
-            
+
             li.style.cursor = 'pointer';
             li.title = "Click to apply this layout to the current image";
             li.onmouseover = () => li.style.backgroundColor = '#f0f0f0';
@@ -304,19 +304,19 @@ export async function showIniStatsModal(db) {
 
             li.addEventListener('click', async (e) => {
                 if (e.target.closest('.delete-record-btn')) return;
-                
+
                 if (!state.isImageLoaded) return;
-                
+
                 const currentDpi = parseInt(dom.dpiInput.value) || 300;
                 const recordDpi = record.dpi || 300;
-                
+
                 if (currentDpi !== recordDpi) {
                     const proceed = await showConfirm(`Warning: The loaded layout was saved with ${recordDpi} DPI, but the current image is set to ${currentDpi} DPI. The coordinates might not match exactly. Continue?`);
                     if (!proceed) {
                         return;
                     }
                 }
-                
+
                 const totalCards = state.editMode === 'freeform' ? state.detectedCards.length : state.rectCards.length;
                 if (totalCards > 0) {
                     const replace = await showConfirm(`You already have ${totalCards} card${totalCards !== 1 ? 's' : ''} on the current image. Loading this layout will replace them. Continue?`);
@@ -324,10 +324,10 @@ export async function showIniStatsModal(db) {
                         return;
                     }
                 }
-                
+
                 state.editMode = record.editMode || 'freeform';
                 if (record.dpi && dom.dpiInput) dom.dpiInput.value = record.dpi;
-                
+
                 if (state.editMode === 'freeform') {
                     state.detectedCards = JSON.parse(JSON.stringify(record.cards || []));
                     state.rectCards = [];
@@ -338,7 +338,7 @@ export async function showIniStatsModal(db) {
                     state.rectSkew = record.rectSkew || 0;
                     state.detectedCards = [];
                 }
-                
+
                 if (dom.freeformModeBtn && dom.rectModeBtn) {
                     applyModeUI(state.editMode);
                 }
@@ -347,16 +347,16 @@ export async function showIniStatsModal(db) {
                     if (dom.rectHeightPx) dom.rectHeightPx.value = state.rectHeight;
                     if (dom.rectSkewPx) dom.rectSkewPx.value = state.rectSkew;
                 }
-                
+
                 state.hasUnsavedChanges = true;
                 state.selectedPoint = null;
                 state.hoveredPoint = null;
                 state.selectedRectCardIndex = -1;
                 state.hoveredRectCardIndex = -1;
-                
+
                 updateButtonStates();
                 redraw();
-                
+
                 dom.iniStatsModal.style.display = 'none';
                 pulseViewCoordsButton();
                 dom.canvas.focus({ preventScroll: true });
@@ -372,7 +372,7 @@ export async function showIniStatsModal(db) {
             deleteBtn.style.padding = '4px 8px';
             deleteBtn.innerHTML = '&#x2715;'; // HTML entity for multiplication X
             deleteBtn.title = "Delete layout";
-            
+
             deleteBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const proceed = await showConfirm(`Are you sure you want to delete the layout for '${key}'?`);
@@ -409,7 +409,7 @@ export async function showIniStatsModal(db) {
     }
 
     dom.iniStatsModal.style.display = 'flex';
-    
+
     if (iniStatsKeydownHandler) {
         document.removeEventListener('keydown', iniStatsKeydownHandler);
     }

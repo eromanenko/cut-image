@@ -62,14 +62,20 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/canvas.css">
+    <link rel="stylesheet" href="css/pdf-extract.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/utilities.css">
 </head>
 
 <body>
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.5.0</span>
+            <span class="app-version">v5.5.1</span>
         </div>
 
         <div class="tabs">
@@ -84,6 +90,14 @@
     <div id="tab-grid" class="tab-content">
         <div class="sticky-controls">
             <div class="controls">
+                <label for="fileInput" class="file-btn" title="Open File (O)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </label>
+                <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf" class="hidden-file-input">
+
                 <div class="mode-toggle">
                     <button id="gridFreeMode" class="mode-btn active" title="Free mode">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -102,17 +116,11 @@
                         </svg>
                     </button>
                 </div>
-                <label for="fileInput" class="file-btn" title="Open File (O)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                </label>
-                <input type="file" id="fileInput" accept="image/*,.tif,.tiff,application/pdf" class="hidden-file-input">
-                <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
+
                 <button id="autoDetectButton" disabled>Auto-Detect</button>
-                <button id="downloadButton" disabled>Download</button>
                 <button id="resetButton" disabled>Reset Lines</button>
+                <input type="text" id="prefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
+                <button id="downloadButton" disabled>Download</button>
 
                 <!-- Info Tooltip -->
                 <div class="info-tooltip">
@@ -188,10 +196,9 @@
             </div>
 
             <!-- Additional controls for PDF navigation -->
-            <div class="controls" id="pdfControls" style="display: none; margin-bottom: 20px; align-items: center;">
+            <div class="controls pdf-controls" id="pdfControls" style="display: none;">
                 <button id="prevPageBtn" class="pdf-nav-btn" disabled>← Previous</button>
-                <span id="pageIndicator"
-                    style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
+                <span id="pageIndicator" class="page-indicator">Page 1 / 1</span>
                 <button id="nextPageBtn" class="pdf-nav-btn" disabled>Next →</button>
                 <div class="input-container">
                     <input type="checkbox" id="allPagesCheckbox" checked>
@@ -225,9 +232,9 @@
                     </svg>
                 </label>
                 <input type="file" id="peFileInput" accept="application/pdf" class="hidden-file-input">
-                <input type="text" id="pePrefixInput" placeholder="Prefix (e.g. card_)" class="input-wide">
                 <button id="peSelectAllBtn" disabled>Select All</button>
                 <button id="peUnselectAllBtn" disabled>Unselect All</button>
+                <input type="text" id="pePrefixInput" placeholder="Prefix (e.g. card_)" class="input-wide">
                 <button id="peDownloadBtn" disabled>Download</button>
 
                 <!-- Info Tooltip -->
@@ -250,18 +257,18 @@
         <div id="peDropzone" class="pe-dropzone">
             <div class="pe-dropzone-content">
                 <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"
-                    stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.4;">
+                    stroke-linecap="round" stroke-linejoin="round" class="pe-dropzone-icon">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                     <line x1="12" y1="18" x2="12" y2="12"></line>
                     <line x1="9" y1="15" x2="15" y2="15"></line>
                 </svg>
-                <h3 style="margin: 12px 0 6px; font-weight: 600;">PDF Image Extractor</h3>
-                <p style="color: var(--text-muted); max-width: 420px; line-height: 1.5; font-size: 13px;">
+                <h3 class="pe-dropzone-title">PDF Image Extractor</h3>
+                <p class="pe-dropzone-desc">
                     Extract embedded raster images from PDF files.
                     Drop a PDF here or click the folder icon above to open one.
                 </p>
-                <div style="display: flex; gap: 24px; margin-top: 16px; color: var(--text-muted); font-size: 12px;">
+                <div class="pe-dropzone-steps">
                     <span>1. Upload PDF</span>
                     <span>→</span>
                     <span>2. Select images</span>
@@ -275,14 +282,14 @@
         <div id="peGalleryContainer" class="pe-gallery-container" style="display: none;">
             <div class="pe-gallery-status">
                 <span id="peFileName" class="filename-display"></span>
-                <span id="peStatusText" style="font-size: 12px; color: var(--text-muted);"></span>
+                <span id="peStatusText" class="pe-status-text"></span>
             </div>
             <div id="peGallery" class="pe-gallery"></div>
         </div>
 
         <!-- Loading indicator -->
-        <div id="peLoading" style="display: none; text-align: center; padding: 60px 20px;">
-            <div style="font-size: 14px; color: var(--text-muted);">Extracting images from PDF…</div>
+        <div id="peLoading" class="pe-loading-container" style="display: none;">
+            <div class="pe-loading-text">Extracting images from PDF…</div>
         </div>
     </div>
 
@@ -290,6 +297,38 @@
     <div id="tab-cards" class="tab-content active">
         <div class="sticky-controls">
             <div class="controls">
+                <label for="ceFileInput" class="file-btn" title="Open File (O)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </label>
+                <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf"
+                    class="hidden-file-input">
+
+                <div class="mode-toggle">
+                    <button id="ceSaveCoordsButton" class="mode-btn" disabled title="Save Coordinates to INI">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                    </button>
+                    <button id="ceViewCoordsButton" class="mode-btn" title="View Current Layouts">
+                        <span id="ceViewCoordsCount" class="ce-view-coords-count">0</span>
+                    </button>
+                    <button id="ceLoadCoordsButton" class="mode-btn" title="Load Coordinates from INI">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </button>
+                </div>
+                <input type="file" id="ceLoadCoordsInput" accept=".ini" style="display: none;">
+
                 <div class="mode-toggle" id="ceModeToggle">
                     <button id="ceFreeformModeBtn" class="mode-btn active" title="Free form">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -305,15 +344,7 @@
                         </svg>
                     </button>
                 </div>
-                <label for="ceFileInput" class="file-btn" title="Open File (O)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                </label>
-                <input type="file" id="ceFileInput" accept="image/*,.tif,.tiff,application/pdf"
-                    class="hidden-file-input">
-                <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
+
                 <button id="ceDrawShapeBtn" class="icon-btn" disabled title="Draw custom polygon shape (Esc to cancel)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                         stroke-linejoin="round">
@@ -325,34 +356,17 @@
                         <circle cx="12" cy="21" r="1.5" fill="currentColor"></circle>
                     </svg>
                 </button>
+
                 <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
-                <button id="ceDownloadButton" disabled title="Download Cards (S)">Download</button>
-                <div class="input-container" style="margin-left: 8px;">
+
+                <div class="input-container zoom-checkbox-container">
                     <input type="checkbox" id="ceZoomCheckbox" checked>
                     <label for="ceZoomCheckbox" title="Toggle Zoom Window (Z)">Zoom Window</label>
                 </div>
-                <div class="mode-toggle">
-                    <button id="ceSaveCoordsButton" class="mode-btn" disabled title="Save Coordinates to INI">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                            <polyline points="7 3 7 8 15 8"></polyline>
-                        </svg>
-                    </button>
-                    <button id="ceViewCoordsButton" class="mode-btn" title="View Current Layouts">
-                        <span id="ceViewCoordsCount" style="font-weight:bold; font-size:16px;">0</span>
-                    </button>
-                    <button id="ceLoadCoordsButton" class="mode-btn" title="Load Coordinates from INI">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                    </button>
-                </div>
-                <input type="file" id="ceLoadCoordsInput" accept=".ini" style="display: none;">
+
+                <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
+
+                <button id="ceDownloadButton" disabled title="Download Cards (S)">Download</button>
 
                 <!-- Info Tooltip -->
                 <div class="info-tooltip">
@@ -367,16 +381,15 @@
                         and
                         restored when re-opening a file.<br><br>
                         <span id="ceInstrFreeform">
-                            <b>Instruction:</b> Upload a scanned image or <b>PDF document</b> containing cards. <b>Click
-                                and drag</b> the red corners to adjust borders. You can also <b>drag the whole card</b>
-                            by clicking inside it.<br><br>
-                            <b>Auto-Detect:</b> Specify exact <b>Width and Height (mm)</b> below for highly accurate
-                            detection. Use <b>+ Add Size</b> to specify <b>multiple sizes</b> and detect different cards
-                            at once. Use <b>🎯 Get Size</b> to auto-fill dimensions from the currently selected
-                            card.<br><br>
-                            <b>Navigation:</b> Use <b>/</b> key to cycle through corners. <b>Enter</b> jumps between
-                            cards. <b>Arrow Keys</b> (+ Ctrl for ×10 step, + Shift to move opposite corner too).<br><br>
-                            <b>Zoom Window:</b> <b>+</b> / <b>-</b> to adjust magnification. <b>Z</b> toggles zoom.
+                            <b>Instruction:</b> Upload a scanned image or PDF. <b>Click and drag</b> the red corners to
+                            adjust borders, or drag the whole card from the center.<br><br>
+                            <b>Draw Shape:</b> Click the <b>Lasso icon</b> to manually draw custom polygons. Click to
+                            add points, press <b>Enter</b> to close the shape, or <b>Esc</b> to cancel.<br><br>
+                            <b>Auto-Detect:</b> Open <b>Settings (gear icon)</b> to specify expected card sizes in mm
+                            for highly accurate detection.<br><br>
+                            <b>Navigation:</b> <b>Tab</b> cycles through corners. <b>Enter</b> jumps between cards.
+                            <b>Arrow Keys</b> move points (Ctrl = 10px steps).<br><br>
+                            <b>Zoom Window:</b> <b>+</b> / <b>-</b> adjusts magnification. <b>Z</b> toggles zoom window.
                         </span>
                         <span id="ceInstrRect" style="display:none;">
                             <b>Rectangle Mode:</b> All cards are identical parallelograms defined by global
@@ -393,16 +406,14 @@
                     </div>
                 </div>
             </div>
-            <div id="opencvStatus"
-                style="color:red; font-weight:bold; font-size: 13px; text-align: center; margin-bottom: 10px;">Loading
+            <div id="opencvStatus" class="opencv-status">Loading
                 Computer Vision libraries (OpenCV)... Please wait.</div>
 
             <!-- Settings Summary Row (Freeform only) -->
-            <div class="controls hide-on-stuck" id="ceSettingsSummaryRow" style="justify-content: center; gap: 8px;">
-                <span id="ceSettingsSummaryText" style="font-size: 12px; font-weight: 400; color: #888;">Sizes not set |
+            <div class="controls hide-on-stuck settings-summary-row" id="ceSettingsSummaryRow">
+                <span id="ceSettingsSummaryText" class="settings-summary-text">Sizes not set |
                     DPI 300</span>
-                <button id="ceSettingsBtn" class="icon-btn" title="Open Settings"
-                    style="font-size: 16px; background: none; border: none; box-shadow: none; cursor: pointer; padding: 0; height: auto; display: flex; align-items: center; color: var(--text-muted);">
+                <button id="ceSettingsBtn" class="icon-btn settings-btn-bare" title="Open Settings">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="3"></circle>
@@ -453,10 +464,9 @@
             </div>
 
             <!-- Additional controls for PDF navigation -->
-            <div class="controls" id="cePdfControls" style="display: none; margin-bottom: 20px; align-items: center;">
+            <div class="controls pdf-controls" id="cePdfControls" style="display: none;">
                 <button id="cePrevPageBtn" class="pdf-nav-btn" disabled>← Prev Page</button>
-                <span id="cePageIndicator"
-                    style="line-height: var(--control-height); font-weight: bold; width: 120px;">Page 1 / 1</span>
+                <span id="cePageIndicator" class="page-indicator">Page 1 / 1</span>
                 <button id="ceNextPageBtn" class="pdf-nav-btn" disabled>Next Page →</button>
                 <!-- Checkbox disabled for auto extractor for now, auto-extract works per page initially -->
             </div>
@@ -504,8 +514,7 @@
                     </div>
                 </div>
             </div>
-            <div id="dsOpencvStatus"
-                style="color:red; font-weight:bold; font-size: 13px; text-align: center; margin-bottom: 10px;">Loading
+            <div id="dsOpencvStatus" class="opencv-status">Loading
                 Computer Vision libraries (OpenCV)... Please wait.</div>
 
             <!-- Filter settings -->
@@ -570,22 +579,22 @@
 
         <div id="dsCanvasContainer" class="canvas-container" style="display: none;">
             <div class="filename-display" id="dsFileName"></div>
-            <canvas id="dsCanvas" style="display: block; max-width: 100%; height: auto;"></canvas>
+            <canvas id="dsCanvas" class="full-canvas"></canvas>
         </div>
     </div>
 
     <!-- INI Stats Modal -->
     <div id="ceIniStatsModal" class="ce-modal" style="display: none;">
-        <div class="ce-modal-content" style="max-width: 500px; width: 90%;">
+        <div class="ce-modal-content">
             <div class="ce-modal-header">
                 <h3>Loaded Saved Layouts</h3>
                 <span class="ce-modal-close" id="ceIniStatsCancelX">&times;</span>
             </div>
-            <div class="ce-modal-body" style="max-height: 60vh; overflow-y: auto; text-align: left;">
-                <p id="ceIniStatsTitle" style="margin-top: 0; margin-bottom: 10px; font-weight: bold;">Cuts found for
+            <div class="ce-modal-body">
+                <p id="ceIniStatsTitle" class="ce-ini-stats-title">Cuts found for
                     the following files:
                 </p>
-                <ul id="ceIniStatsList" style="list-style: none; padding: 0; margin: 0;">
+                <ul id="ceIniStatsList" class="ce-ini-stats-list">
                     <!-- Items injected here -->
                 </ul>
             </div>
@@ -653,16 +662,15 @@
 
     <!-- Descreen Tune Modal -->
     <div id="dsTuneModal" class="ce-modal" style="display: none;">
-        <div class="ce-modal-content" style="max-width: 600px; width: 90%;">
+        <div class="ce-modal-content">
             <div class="ce-modal-header">
                 <h3>Tune Filter Parameters</h3>
                 <span class="ce-modal-close" id="dsTuneCancelX">&times;</span>
             </div>
-            <div class="ce-modal-body" style="text-align: center;">
-                <p style="font-size: 13px; margin-bottom: 10px; color: #555;">Drag image to pan. Preview updates
+            <div class="ce-modal-body">
+                <p class="ds-tune-hint">Drag image to pan. Preview updates
                     automatically.</p>
-                <div
-                    style="margin-bottom: 15px; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                <div class="ds-tune-panel">
                     <div class="input-container">
                         <label for="dsTuneMethod">Method:</label>
                         <select id="dsTuneMethod" style="padding: 3px;">
@@ -700,8 +708,7 @@
                         </span>
                     </div>
                 </div>
-                <div id="dsTuneCanvasContainer"
-                    style="display: inline-block; position: relative; border: 2px solid #ddd; border-radius: 4px; cursor: grab; overflow: hidden; max-width: 100%; max-height: 400px;">
+                <div id="dsTuneCanvasContainer" class="ds-tune-canvas-container">
                     <canvas id="dsTuneCanvas" style="display: block;"></canvas>
                 </div>
             </div>
@@ -723,13 +730,11 @@
             <div class="ce-modal-body">
 
                 <div class="ce-calc-row">
-                    <div class="ce-calc-group" id="ceFreeformStylingRow" style="gap: 10px;">
+                    <div class="ce-calc-group" id="ceFreeformStylingRow">
                         <label>Line Style</label>
-                        <div class="input-container" style="justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                Color: <input type="color" id="ceLineColor" value="#007bff"
-                                    title="Change drawn line color (C)"
-                                    style="cursor: pointer; height: calc(var(--control-height) - 10px); padding: 0; width: 30px;">
+                        <div class="input-container justify-space-between">
+                            <div class="flex-row align-center gap-5">
+                                Color: <input type="color" id="ceLineColor" value="#ff0000" class="color-swatch-btn">
                                 <button type="button" class="fixed-color-btn" data-color="#000000"
                                     style="background-color: #000000;" title="Black"></button>
                                 <button type="button" class="fixed-color-btn" data-color="#ffffff"
@@ -745,44 +750,41 @@
                             </div>
                         </div>
                         <div class="input-container" style="justify-content: flex-start;">
-                            Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.75"
+                            Opacity: <input type="range" id="ceLineOpacity" min="0" max="1" step="0.05" value="0.50"
                                 style="margin-left: 5px; cursor: pointer; flex: 1;" title="Change line opacity">
                             <span id="ceLineOpacityVal"
-                                style="display:inline-block; width: 4ch; text-align: right;">0.75</span>
+                                style="display:inline-block; width: 4ch; text-align: right;">0.50</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="ce-calc-row">
-                    <div class="ce-calc-group" style="gap: 10px;">
+                    <div class="ce-calc-group">
                         <label>Canvas Padding</label>
-                        <p
-                            style="font-size: 11.5px; color: var(--text-muted); margin: 0 0 6px 0; line-height: 1.3; text-transform: none;">
-                            Extends the canvas beyond the image edges, allowing corner points to be placed outside the
-                            image.
+                        <div class="muted-small">
+                            Extends the canvas beyond the image edges (px), allowing corner points to be placed outside
+                            the image.
                             Useful when a card is partially cropped by the scan edge. Resets on page reload.
-                        </p>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="input-container">
-                                <label for="cePaddingX"
-                                    style="text-transform: none; font-size: 13px; color: var(--text); font-weight: normal; margin-bottom: 0;">Padding
-                                    X (px):</label>
-                                <input type="number" id="cePaddingX" value="0" min="0" max="2000" step="10"
-                                    class="input-narrow-sm" style="width: 70px;">
-                            </div>
-                            <div class="input-container">
+                        </div>
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 12px;">
+                            <div class="input-container" title="Padding Y (Top/Bottom)">
                                 <label for="cePaddingY"
-                                    style="text-transform: none; font-size: 13px; color: var(--text); font-weight: normal; margin-bottom: 0;">Padding
-                                    Y (px):</label>
-                                <input type="number" id="cePaddingY" value="0" min="0" max="2000" step="10"
-                                    class="input-narrow-sm" style="width: 70px;">
+                                    style="text-transform: none; font-size: 16px; color: var(--text); font-weight: normal; margin-bottom: 0;">↕</label>
+                                <input type="number" id="cePaddingY" placeholder="px" value="0" min="0" max="2000"
+                                    step="10" class="input-narrow-sm" style="width: 70px;">
+                            </div>
+                            <div class="input-container" title="Padding X (Left/Right)">
+                                <label for="cePaddingX"
+                                    style="text-transform: none; font-size: 16px; color: var(--text); font-weight: normal; margin-bottom: 0;">↔</label>
+                                <input type="number" id="cePaddingX" placeholder="px" value="0" min="0" max="2000"
+                                    step="10" class="input-narrow-sm" style="width: 70px;">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="ce-calc-row" id="ceFreeformDimensionsRow">
-                    <div class="ce-calc-group" style="gap: 10px;">
+                    <div class="ce-calc-group">
                         <label>Target Sizes for Auto-Detect</label>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div class="input-container">
@@ -799,12 +801,14 @@
                                 <div class="input-container">
                                     <label
                                         style="text-transform: none; font-size: 13px; color: var(--text); font-weight: normal; margin-bottom: 0;">W:</label>
-                                    <input type="number" class="ceWidthInput input-narrow-sm" min="0" step="0.1">
+                                    <input type="number" class="ceWidthInput input-narrow-sm" placeholder="mm" min="0"
+                                        step="0.1">
                                 </div>
                                 <div class="input-container">
                                     <label
                                         style="text-transform: none; font-size: 13px; color: var(--text); font-weight: normal; margin-bottom: 0;">H:</label>
-                                    <input type="number" class="ceHeightInput input-narrow-sm" min="0" step="0.1">
+                                    <input type="number" class="ceHeightInput input-narrow-sm" placeholder="mm" min="0"
+                                        step="0.1">
                                 </div>
                                 <button class="ce-calc-btn ceFreeformCalcBtn" title="Open Pixel Calculator">
                                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
@@ -836,10 +840,13 @@
                     </div>
                 </div>
 
-                <div class="ce-calc-row"
-                    style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
+                <div class="ce-calc-row">
                     <div class="ce-calc-group">
                         <label>Data Sharing</label>
+                        <div class="muted-small">
+                            This data is collected anonymously and helps us train AI models to improve the accuracy of
+                            automatic card detection.
+                        </div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                             <input type="checkbox" id="ceShareDataCheckbox" checked
                                 style="margin: 0; accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer;">
@@ -847,11 +854,6 @@
                                 style="text-transform: none; font-size: 13px; color: var(--text); font-weight: 500; margin-bottom: 0; cursor: pointer;">Share
                                 data for AI</label>
                         </div>
-                        <p
-                            style="font-size: 11.5px; color: var(--text-muted); margin: 6px 0 0 0; line-height: 1.3; text-transform: none;">
-                            This data is collected anonymously and helps us train AI models to improve the accuracy of
-                            automatic card detection.
-                        </p>
                     </div>
                 </div>
 

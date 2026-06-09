@@ -1,0 +1,201 @@
+/* ============================================================
+   Modals
+   ============================================================ */
+.ce-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(2px);
+}
+
+.ce-modal-content {
+    background-color: var(--surface);
+    padding: 0;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    width: 400px;
+    overflow: hidden;
+    animation: ce-modal-fadein 0.18s ease-out;
+}
+
+@keyframes ce-modal-fadein {
+    from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.ce-modal-header {
+    background-color: var(--surface-2);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ce-modal-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.ce-modal-close {
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    color: var(--text-subtle);
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+}
+
+.ce-modal-close:hover {
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.ce-modal-body {
+    padding: 16px;
+}
+
+.ce-modal-footer {
+    padding: 12px 16px;
+    background-color: var(--surface-2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.ce-modal-footer button {
+    padding: 0 16px;
+    font-size: 13px;
+    height: 32px;
+}
+
+/* ============================================================
+   Modal Buttons
+   ============================================================ */
+.btn-primary {
+    background-color: var(--accent) !important;
+    color: white !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 1px 3px rgba(13, 148, 136, 0.25) !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-hover) !important;
+    border-color: var(--accent-hover) !important;
+}
+
+.btn-secondary {
+    background-color: var(--surface) !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border) !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--surface-2) !important;
+    color: var(--text) !important;
+}
+
+/* ============================================================
+   Pixel Calculator (Modal)
+   ============================================================ */
+.ce-calc-row {
+    display: flex;
+    gap: 12px;
+}
+
+.ce-calc-row:not(:first-child) {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.ce-calc-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px
+}
+
+.ce-calc-group label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ce-calc-group input:not([type="color"]):not([type="range"]):not([type="checkbox"]),
+.ce-calc-group select {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font-mono);
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ce-calc-group input:not([type="color"]):not([type="range"]):not([type="checkbox"]):focus,
+.ce-calc-group select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.12);
+}
+
+.ds-tune-hint {
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.ds-tune-panel {
+    margin-bottom: 15px;
+    text-align: left;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.ds-tune-canvas-container {
+    display: inline-block;
+    position: relative;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    cursor: grab;
+    overflow: hidden;
+    max-width: 100%;
+    max-height: 400px;
+}
+#ceIniStatsModal .ce-modal-content { max-width: 500px; width: 90%; }
+#ceIniStatsModal .ce-modal-body { max-height: 60vh; overflow-y: auto; text-align: left; }
+.ce-ini-stats-title { margin-top: 0; margin-bottom: 10px; font-weight: bold; }
+.ce-ini-stats-list { list-style: none; padding: 0; margin: 0; }
+
+#dsTuneModal .ce-modal-content { max-width: 600px; width: 90%; }
+#dsTuneModal .ce-modal-body { text-align: center; }
