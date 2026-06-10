@@ -153,6 +153,7 @@ export function bindEvents() {
             state.PDF_SCALE = requestedDpi / 72;
             renderPdfPageForPreview(state.currentPreviewPage);
         }
+        updateSettingsSummary();
     });
 
     dom.sizeListContainer.addEventListener("click", async (e) => {

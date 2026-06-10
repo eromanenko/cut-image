@@ -48,6 +48,13 @@ export function updateButtonStates() {
         const disableGetSize = state.detectedCards.length === 0;
         getSizeBtns.forEach(btn => btn.disabled = disableGetSize);
     }
+
+    if (dom.deleteSelectedBtn) {
+        const hasSelected = state.freeformCards.some(c => c.selected);
+        dom.deleteSelectedBtn.disabled = !hasSelected;
+    }
+
+    updateSettingsSummary();
 }
 
 const SETTINGS_KEY = 'ce_user_settings';
@@ -128,7 +135,9 @@ export function updateSettingsSummary() {
         }).join(' | ');
     }
 
-    text += ` | DPI ${dpi}`;
+    if (state.isImageLoaded) {
+        text += ` | DPI ${dpi}`;
+    }
 
     if (isAiSharing) {
         text += ` | AI sharing`;

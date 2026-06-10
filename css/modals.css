@@ -12,7 +12,6 @@
     justify-content: center;
     align-items: center;
     z-index: 10000;
-    backdrop-filter: blur(2px);
 }
 
 .ce-modal-content {
@@ -192,10 +191,35 @@
     max-width: 100%;
     max-height: 400px;
 }
-#ceIniStatsModal .ce-modal-content { max-width: 500px; width: 90%; }
-#ceIniStatsModal .ce-modal-body { max-height: 60vh; overflow-y: auto; text-align: left; }
-.ce-ini-stats-title { margin-top: 0; margin-bottom: 10px; font-weight: bold; }
-.ce-ini-stats-list { list-style: none; padding: 0; margin: 0; }
 
-#dsTuneModal .ce-modal-content { max-width: 600px; width: 90%; }
-#dsTuneModal .ce-modal-body { text-align: center; }
+#ceIniStatsModal .ce-modal-content {
+    max-width: 500px;
+    width: 90%;
+}
+
+#ceIniStatsModal .ce-modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.ce-ini-stats-title {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.ce-ini-stats-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#dsTuneModal .ce-modal-content {
+    max-width: 600px;
+    width: 90%;
+}
+
+#dsTuneModal .ce-modal-body {
+    text-align: center;
+}
