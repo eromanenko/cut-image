@@ -1,4 +1,4 @@
-import { dom } from './dom.js';
+import { dom, getTargetSizes } from './dom.js';
 import { state } from './state.js';
 import { orderPoints } from './utils.js';
 import { redraw } from './renderer.js';
@@ -44,7 +44,7 @@ export async function detectCards() {
         }
     } else {
         const dpi = parseFloat(dom.dpiInput.value) || 300;
-        const targetSizes = dom.getTargetSizes ? dom.getTargetSizes() : [];
+        const targetSizes = getTargetSizes();
         for (const size of targetSizes) {
             if (size.w > 0 && size.h > 0) {
                 const w = (size.w * dpi) / 25.4;

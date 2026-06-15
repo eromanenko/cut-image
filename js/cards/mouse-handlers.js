@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { dom } from './dom.js';
+import { dom, getTargetSizes } from './dom.js';
 import { redraw } from './renderer.js';
 import { getMousePos, findPointNear, findCardContaining, getPadding } from './utils.js';
 import { createRectCard, moveRectCard, pointInRectCard } from './rect-mode.js';
@@ -10,7 +10,7 @@ import { updateButtonStates } from './ui.js';
 
 function createFreeformCardAt(cx, cy) {
     const dpi  = parseFloat(dom.dpiInput.value) || 300;
-    const targetSizes = dom.getTargetSizes ? dom.getTargetSizes() : [];
+    const targetSizes = getTargetSizes();
     
     let w, h;
 
