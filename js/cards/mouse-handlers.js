@@ -14,11 +14,7 @@ function createFreeformCardAt(cx, cy) {
     
     let w, h;
 
-    if (targetSizes.length > 0) {
-        const firstSize = targetSizes[0];
-        w = (firstSize.w * dpi) / 25.4;
-        h = (firstSize.h * dpi) / 25.4;
-    } else if (state.selectedPoint) {
+    if (state.selectedPoint) {
         const selCard = state.detectedCards.find(c => c.includes(state.selectedPoint));
         if (selCard) {
             const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
@@ -29,6 +25,12 @@ function createFreeformCardAt(cx, cy) {
             w = (w1 + w2) / 2;
             h = (h1 + h2) / 2;
         }
+    }
+
+    if ((!w || !h) && targetSizes.length > 0) {
+        const firstSize = targetSizes[0];
+        w = (firstSize.w * dpi) / 25.4;
+        h = (firstSize.h * dpi) / 25.4;
     }
 
     if (!w || !h) {

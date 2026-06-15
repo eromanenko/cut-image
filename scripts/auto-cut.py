@@ -4,6 +4,7 @@ import configparser
 import cv2
 import numpy as np
 import math
+from PIL import Image, ImageOps
 
 def get_rect_card_corners(card, rectWidth, rectHeight, rectSkew):
     W = rectWidth
@@ -64,10 +65,26 @@ def main():
                 
             print(f"  Processing image: {img_path}")
             
-            # Read image with alpha channel
-            img = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
-            if img is None:
-                print(f"  Error loading image '{img_path}'.")
+            # Read image with PIL to handle EXIF rotation automatically
+            try:
+                pil_img = Image.open(img_path)
+                pil_img = ImageOps.exif_transpose(pil_img) # Fix orientation
+                
+                # Convert PIL image to OpenCV format
+                if pil_img.mode == 'RGBA':
+                    img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGBA2BGRA)
+                elif pil_img.mode == 'RGB':
+                    img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+                elif pil_img.mode == 'L':
+                    img = np.array(pil_img)
+                elif pil_img.mode == 'P':
+                    pil_img = pil_img.convert('RGBA')
+                    img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGBA2BGRA)
+                else:
+                    pil_img = pil_img.convert('RGB')
+                    img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+            except Exception as e:
+                print(f"  Error loading image '{img_path}': {e}")
                 continue
             
             # If image doesn't have an alpha channel, add one so we can have transparent backgrounds
