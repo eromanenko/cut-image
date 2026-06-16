@@ -44,7 +44,17 @@ def main():
     print("Auto-Cut Images Script")
     print("======================")
     
+    # Check current directory for .ini files
     ini_files = glob.glob("*.ini")
+    if not ini_files:
+        # If double-clicked on macOS, the working directory is the home directory.
+        # We fall back to the folder containing the executable/script.
+        import sys
+        exec_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        if exec_dir and exec_dir != os.getcwd():
+            os.chdir(exec_dir)
+            ini_files = glob.glob("*.ini")
+            
     if not ini_files:
         print("No .ini files found in current directory.")
         return
