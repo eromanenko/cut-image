@@ -161,7 +161,10 @@ button:disabled {
 
 .controls input[type="text"],
 .controls input[type="number"],
-.controls select {
+.controls select,
+.input-container input[type="text"],
+.input-container input[type="number"],
+.input-container select {
     height: var(--control-height);
     padding: 0 8px;
     border: none;
@@ -176,19 +179,25 @@ button:disabled {
     color: var(--text);
 }
 
-.controls input[type="text"] {
+.controls input[type="text"],
+.input-container input[type="text"] {
     font-family: var(--font-ui);
 }
 
 .controls input[type="text"]:focus,
 .controls input[type="number"]:focus,
-.controls select:focus {
+.controls select:focus,
+.input-container input[type="text"]:focus,
+.input-container input[type="number"]:focus,
+.input-container select:focus {
     border-color: var(--border-focus);
     outline: none;
 }
 
 .controls input[type="text"]:focus~*,
-.controls input[type="number"]:focus~* {
+.controls input[type="number"]:focus~*,
+.input-container input[type="text"]:focus~*,
+.input-container input[type="number"]:focus~* {
     border-color: var(--border-focus);
 }
 
@@ -362,6 +371,27 @@ button:disabled {
     font-size: 16px;
 }
 
+/* ============================================================
+   Extracted Component Styles
+   ============================================================ */
+.opencv-status {
+    color: red;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.page-indicator {
+    line-height: var(--control-height);
+    font-weight: bold;
+    width: 120px;
+}
+.ce-view-coords-count {
+    font-weight: bold;
+    font-size: 16px;
+}
+
 .zoom-checkbox-container {
     margin-left: 8px;
 }
@@ -389,9 +419,35 @@ button:disabled {
     align-items: center;
     color: var(--text-muted);
 }
+
 .color-swatch-btn {
     cursor: pointer;
     height: calc(var(--control-height) - 10px);
     padding: 0;
     width: 30px;
-}
+}
+
+/* ============================================================
+   Grid Layout Inputs
+   ============================================================ */
+.controls-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+}
+
+.row-label {
+    font-weight: 600;
+    margin-right: 4px;
+    color: var(--text);
+}

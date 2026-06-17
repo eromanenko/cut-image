@@ -34,6 +34,8 @@ export function initDom() {
     // Grid mode inputs
     dom.gridCardW = document.getElementById("gridCardW");
     dom.gridCardH = document.getElementById("gridCardH");
+    dom.gridCardsX = document.getElementById("gridCardsX");
+    dom.gridCardsY = document.getElementById("gridCardsY");
     dom.gridGapX = document.getElementById("gridGapX");
     dom.gridGapY = document.getElementById("gridGapY");
     dom.gridMarginL = document.getElementById("gridMarginL");

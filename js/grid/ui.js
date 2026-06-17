@@ -66,6 +66,8 @@ export function recalcGrid() {
     const cardW = parseInt(dom.gridCardW.value) || 0;
     const cardH = parseInt(dom.gridCardH.value) || 0;
     if (cardW <= 0 || cardH <= 0) {
+        if (cardW <= 0 && dom.gridCardsX) dom.gridCardsX.value = '';
+        if (cardH <= 0 && dom.gridCardsY) dom.gridCardsY.value = '';
         state.lines = [];
         state.cutRegions = [];
         dom.downloadButton.disabled = true;
@@ -80,15 +82,22 @@ export function recalcGrid() {
     const imgH = dom.sourceCanvas.height;
 
     // Calculate how many cards fit
-    const cols = Math.max(1, Math.floor((imgW + gapX) / (cardW + gapX)));
-    const rows = Math.max(1, Math.floor((imgH + gapY) / (cardH + gapY)));
+    let marginLStr = dom.gridMarginL.value;
+    let marginL = marginLStr !== '' ? parseInt(marginLStr) : null;
+    let availableW = marginL !== null ? imgW - marginL : imgW;
+    const cols = Math.max(1, Math.floor((availableW + gapX) / (cardW + gapX)));
+
+    let marginTStr = dom.gridMarginT.value;
+    let marginT = marginTStr !== '' ? parseInt(marginTStr) : null;
+    let availableH = marginT !== null ? imgH - marginT : imgH;
+    const rows = Math.max(1, Math.floor((availableH + gapY) / (cardH + gapY)));
+
+    if (dom.gridCardsX) dom.gridCardsX.value = cols;
+    if (dom.gridCardsY) dom.gridCardsY.value = rows;
 
     // Margins: auto-center if not specified
     const totalW = cols * cardW + Math.max(0, cols - 1) * gapX;
     const totalH = rows * cardH + Math.max(0, rows - 1) * gapY;
-
-    let marginL = dom.gridMarginL.value !== '' ? parseInt(dom.gridMarginL.value) : null;
-    let marginT = dom.gridMarginT.value !== '' ? parseInt(dom.gridMarginT.value) : null;
 
     if (marginL === null || isNaN(marginL)) {
         marginL = Math.round((imgW - totalW) / 2);

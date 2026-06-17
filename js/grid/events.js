@@ -34,6 +34,42 @@ export function bindEvents() {
     gridInputs.forEach(input => {
         input.addEventListener('input', recalcGrid);
     });
+
+    dom.gridCardsX.addEventListener('input', (e) => {
+        if (state.isImageLoaded && e.isTrusted) {
+            const imgW = dom.sourceCanvas.width;
+            let cols = parseInt(dom.gridCardsX.value) || 0;
+            let gapX = parseInt(dom.gridGapX.value) || 0;
+            let marginLStr = dom.gridMarginL.value;
+            let marginL = marginLStr !== '' ? parseInt(marginLStr) : null;
+            let availableW = marginL !== null ? imgW - marginL * 2 : imgW;
+            if (cols > 0) {
+                let cardW = Math.max(1, Math.floor((availableW - Math.max(0, cols - 1) * gapX) / cols));
+                dom.gridCardW.value = cardW;
+            } else {
+                dom.gridCardW.value = '';
+            }
+        }
+        recalcGrid();
+    });
+
+    dom.gridCardsY.addEventListener('input', (e) => {
+        if (state.isImageLoaded && e.isTrusted) {
+            const imgH = dom.sourceCanvas.height;
+            let rows = parseInt(dom.gridCardsY.value) || 0;
+            let gapY = parseInt(dom.gridGapY.value) || 0;
+            let marginTStr = dom.gridMarginT.value;
+            let marginT = marginTStr !== '' ? parseInt(marginTStr) : null;
+            let availableH = marginT !== null ? imgH - marginT * 2 : imgH;
+            if (rows > 0) {
+                let cardH = Math.max(1, Math.floor((availableH - Math.max(0, rows - 1) * gapY) / rows));
+                dom.gridCardH.value = cardH;
+            } else {
+                dom.gridCardH.value = '';
+            }
+        }
+        recalcGrid();
+    });
     dom.gridDpiInput.addEventListener('change', () => {
         if (state.isPdf && state.pdfDoc) {
             const requestedDpi = parseInt(dom.gridDpiInput.value) || 300;
