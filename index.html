@@ -82,7 +82,7 @@
             <button class="tab-btn active" data-tab="cards">Card Extraction</button>
             <button class="tab-btn" data-tab="grid">Grid Slicing</button>
             <button class="tab-btn" data-tab="pdfextract">PDF Extract</button>
-            <button class="tab-btn" data-tab="descreen">Descreen [BETA]</button>
+            <button class="tab-btn" data-tab="descreen">Descreen</button>
         </div>
     </header>
 
@@ -520,11 +520,9 @@
                 <div class="info-tooltip">
                     <div class="info-icon">i</div>
                     <div class="tooltip-content">
-                        <b style="color: #856404;">⚠️ EXPERIMENTAL (Early Development):</b> This tool uses basic OpenCV
-                        filters to attempt moiré removal. It heavily blurs images and may reduce text quality.
-                        <b>Advanced "AI-based" approaches are usually required for high quality descreening.</b><br><br>
-                        <b>Methods:</b> <b>Bilateral Filter</b> is often best for keeping edges sharp. <b>Gaussian Blur
-                            + Unsharp Mask</b> is a classic approach.
+                        <b>FFT Descreening:</b> This tool uses Fast Fourier Transform (FFT) with radial normalization and soft masking to professionally remove scan moiré without blurring sharp text.<br><br>
+                        <b>Usage:</b> Adjust the <b>Peak Threshold</b> to detect moiré patterns (lower values detect more peaks). Increase <b>Notch Radius</b> to remove wider interference patterns.<br><br>
+                        <b>Other Methods:</b> Bilateral, Gaussian, and Median filters are also available for basic smoothing.
                     </div>
                 </div>
             </div>
@@ -536,7 +534,7 @@
                 <div class="input-container">
                     <label>Method:</label>
                     <select id="dsFilterMethod">
-                        <option value="fft">FFT Descreen [Experimental]</option>
+                        <option value="fft">FFT Descreen</option>
                         <option value="bilateral">Bilateral Filter</option>
                         <option value="gaussian">Gaussian Blur + Unsharp</option>
                         <option value="median">Median Blur</option>
@@ -688,7 +686,7 @@
                     <div class="input-container">
                         <label for="dsTuneMethod">Method:</label>
                         <select id="dsTuneMethod" style="padding: 3px;">
-                            <option value="fft">FFT Descreen [Experimental]</option>
+                            <option value="fft">FFT Descreen</option>
                             <option value="bilateral">Bilateral Filter</option>
                             <option value="gaussian">Gaussian Blur + Unsharp</option>
                             <option value="median">Median Blur</option>

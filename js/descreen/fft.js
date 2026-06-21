@@ -4,31 +4,78 @@ export function applyFFTFilter(srcRgb, dst, threshold, radius) {
     
     let processedChannels = new cv.MatVector();
     
+    // Pad to optimal size first.
+    let m = cv.getOptimalDFTSize(srcRgb.rows);
+    let n = cv.getOptimalDFTSize(srcRgb.cols);
+    
+    // Precompute coefs and middle mask for this size
+    let {coefs, middle} = getCoefsAndMiddle(n, m, 4); // default middleRatio = 4
+    
     for (let i = 0; i < channels.size(); i++) {
         let channel = channels.get(i);
-        let processed = processFftChannel(channel, threshold, radius);
+        let processed = processFftChannel(channel, threshold, radius, coefs, middle, n, m);
         processedChannels.push_back(processed);
         channel.delete();
+        processed.delete();
     }
     
     cv.merge(processedChannels, dst);
     
     // cleanup
     channels.delete();
-    for (let i = 0; i < processedChannels.size(); i++) {
-        processedChannels.get(i).delete();
-    }
     processedChannels.delete();
 }
 
-function processFftChannel(src, threshold, radius) {
-    // 1. Pad to optimal size
-    let m = cv.getOptimalDFTSize(src.rows);
-    let n = cv.getOptimalDFTSize(src.cols);
+let coefsCache = null;
+let middleCache = null;
+let lastSize = {w: 0, h: 0, mid: 0};
+
+function getCoefsAndMiddle(w, h, middleRatio) {
+    if (coefsCache && lastSize.w === w && lastSize.h === h && lastSize.mid === middleRatio) {
+        return {coefs: coefsCache, middle: middleCache};
+    }
+    
+    if (coefsCache) coefsCache.delete();
+    if (middleCache) middleCache.delete();
+    
+    lastSize = {w, h, mid: middleRatio};
+    
+    coefsCache = new cv.Mat(h, w, cv.CV_32F);
+    middleCache = new cv.Mat(h, w, cv.CV_32F);
+    
+    let coefsData = coefsCache.data32F;
+    let middleData = middleCache.data32F;
+    
+    let cx = w / 2;
+    let cy = h / 2;
+    
+    let mid = middleRatio * 2;
+    let ew = w / mid;
+    let eh = h / mid;
+    let offset = (ew + eh) / 2 / (ew * eh);
+    
+    for (let r = 0; r < h; r++) {
+        for (let c = 0; c < w; c++) {
+            let dx = Math.abs(c - cx);
+            let dy = Math.abs(r - cy);
+            let energy = Math.pow(dx, 0.5) + Math.pow(dy, 0.5);
+            let val = Math.max(energy * energy, 0.01);
+            coefsData[r * w + c] = val;
+            
+            let xNorm = (c - cx) / ew;
+            let yNorm = (r - cy) / eh;
+            let isMiddle = (xNorm * xNorm + yNorm * yNorm - offset) <= 1 ? 1.0 : 0.0;
+            middleData[r * w + c] = 1.0 - isMiddle; // 1-middle (0 at center, 1 outside)
+        }
+    }
+    
+    return {coefs: coefsCache, middle: middleCache};
+}
+
+function processFftChannel(src, threshold, radius, coefs, middle, n, m) {
     let padded = new cv.Mat();
     cv.copyMakeBorder(src, padded, 0, m - src.rows, 0, n - src.cols, cv.BORDER_CONSTANT, new cv.Scalar(0,0,0,0));
     
-    // 2. Create complex image (real: padded, imaginary: zeros)
     let planes = new cv.MatVector();
     let complexI = new cv.Mat();
     let paddedF32 = new cv.Mat();
@@ -39,63 +86,64 @@ function processFftChannel(src, threshold, radius) {
     planes.push_back(zeros);
     cv.merge(planes, complexI);
     
-    // 3. DFT
     cv.dft(complexI, complexI, cv.DFT_COMPLEX_OUTPUT);
+    shiftDFT(complexI);
     
-    // 4. Compute magnitude
-    let magPlanes = new cv.MatVector();
-    cv.split(complexI, magPlanes);
+    let complexPlanes = new cv.MatVector();
+    cv.split(complexI, complexPlanes);
     let mag = new cv.Mat();
-    cv.magnitude(magPlanes.get(0), magPlanes.get(1), mag);
+    let re = complexPlanes.get(0);
+    let im = complexPlanes.get(1);
+    cv.magnitude(re, im, mag);
+    re.delete();
+    im.delete();
+    complexPlanes.delete();
     
-    // Add 1 to all to avoid log(0)
+    cv.multiply(mag, coefs, mag);
+    
     let ones = cv.Mat.ones(mag.rows, mag.cols, cv.CV_32F);
     cv.add(mag, ones, mag);
     cv.log(mag, mag);
     ones.delete();
     
-    // Shift quadrants (center low freq)
-    shiftDFT(complexI);
-    shiftDFT(mag);
+    let twenty = new cv.Mat(mag.rows, mag.cols, cv.CV_32F, new cv.Scalar(20));
+    cv.multiply(mag, twenty, mag);
+    twenty.delete();
     
-    // 5. Peak Detection & Masking
-    // Mask out the center (low frequencies/DC) BEFORE normalization so it doesn't skew the min/max
-    let cx = Math.floor(mag.cols / 2);
-    let cy = Math.floor(mag.rows / 2);
-    // Don't filter the center. 15% of the shortest dimension is a safe zone.
-    let centerMaskRadius = Math.max(30, Math.min(mag.cols, mag.rows) * 0.15); 
+    let threshMat = new cv.Mat();
+    let threshValue = threshold * 200;
+    cv.threshold(mag, threshMat, threshValue, 255, cv.THRESH_BINARY);
     
-    // Zero out the DC component area in the magnitude spectrum
-    cv.circle(mag, new cv.Point(cx, cy), centerMaskRadius, new cv.Scalar(0), -1);
+    cv.multiply(threshMat, middle, threshMat);
     
-    // Normalize magnitude to 0-1. Now the highest non-DC peak will be 1.0.
-    cv.normalize(mag, mag, 0, 1, cv.NORM_MINMAX); 
+    let actualRadius = Math.max(1, radius);
+    let ellipseSize = actualRadius * 2 + 1;
+    let ellipseElem = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(ellipseSize, ellipseSize));
+    cv.dilate(threshMat, threshMat, ellipseElem);
+    ellipseElem.delete();
     
-    let magData = mag.data32F;
-    let color = new cv.Scalar(0, 0, 0, 0);
+    let sigma = actualRadius / 3.0;
+    cv.GaussianBlur(threshMat, threshMat, new cv.Size(0,0), sigma, sigma, cv.BORDER_REPLICATE);
     
-    for (let r = 0; r < mag.rows; r++) {
-        for (let c = 0; c < mag.cols; c++) {
-            let dist = Math.sqrt(Math.pow(c - cx, 2) + Math.pow(r - cy, 2));
-            if (dist < centerMaskRadius) continue;
-            
-            let val = magData[r * mag.cols + c];
-            if (val >= threshold) {
-                // Apply notch mask at this peak
-                cv.circle(complexI, new cv.Point(c, r), radius, color, -1);
-            }
-        }
-    }
+    let maskF32 = new cv.Mat();
+    threshMat.convertTo(maskF32, cv.CV_32F, -1.0/255.0, 1.0);
     
-    // 6. Shift back
+    let maskVector = new cv.MatVector();
+    maskVector.push_back(maskF32);
+    maskVector.push_back(maskF32);
+    let maskComplex = new cv.Mat();
+    cv.merge(maskVector, maskComplex);
+    
+    cv.multiply(complexI, maskComplex, complexI);
+    
     shiftDFT(complexI);
     
-    // 7. Inverse DFT
     cv.dft(complexI, complexI, cv.DFT_INVERSE | cv.DFT_SCALE | cv.DFT_REAL_OUTPUT);
     
-    // 8. Crop and convert back
-    cv.split(complexI, planes);
-    let resultF32 = planes.get(0);
+    let outPlanes = new cv.MatVector();
+    cv.split(complexI, outPlanes);
+    let resultF32 = outPlanes.get(0);
+    
     let rect = new cv.Rect(0, 0, src.cols, src.rows);
     let cropped = resultF32.roi(rect);
     
@@ -104,7 +152,9 @@ function processFftChannel(src, threshold, radius) {
     
     // cleanup
     padded.delete(); paddedF32.delete(); zeros.delete(); planes.delete();
-    complexI.delete(); magPlanes.delete(); mag.delete(); cropped.delete();
+    complexI.delete(); mag.delete();
+    threshMat.delete(); maskF32.delete(); maskVector.delete(); maskComplex.delete();
+    outPlanes.delete(); resultF32.delete(); cropped.delete();
     
     return result8U;
 }
