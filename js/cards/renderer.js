@@ -390,10 +390,20 @@ function updateZoomWindowFreeform() {
     let crosshairY = zoomHeight / 2;
     const margin = 40;
 
-    if      (cornerIndex === 0) { crosshairX = margin;            crosshairY = margin; }
-    else if (cornerIndex === 1) { crosshairX = zoomWidth - margin; crosshairY = margin; }
-    else if (cornerIndex === 2) { crosshairX = zoomWidth - margin; crosshairY = zoomHeight - margin; }
-    else if (cornerIndex === 3) { crosshairX = margin;            crosshairY = zoomHeight - margin; }
+    if (cornerIndex !== -1 && cardIndex !== -1) {
+        const card = state.detectedCards[cardIndex];
+        const pt = state.selectedPoint;
+        const prev = card[(cornerIndex + card.length - 1) % card.length];
+        const next = card[(cornerIndex + 1) % card.length];
+
+        // Average direction of the two edges leaving this corner
+        const avgDx = ((next.x - pt.x) + (prev.x - pt.x)) / 2;
+        const avgDy = ((next.y - pt.y) + (prev.y - pt.y)) / 2;
+
+        // Place crosshair so edges extend inward into the zoom window
+        crosshairX = avgDx >= 0 ? margin : zoomWidth - margin;
+        crosshairY = avgDy >= 0 ? margin : zoomHeight - margin;
+    }
 
     const pad = getPadding();
     const sx = Math.round(state.selectedPoint.x + pad.x - (crosshairX / zoomFactor));
