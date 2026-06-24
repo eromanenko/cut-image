@@ -164,7 +164,12 @@ def main():
                     M = cv2.getPerspectiveTransform(src_pts, dst_pts)
                     dst = cv2.warpPerspective(img, M, (outW, outH), flags=cv2.INTER_LINEAR, borderValue=(255, 255, 255, 255))
                     
-                    cv2.imwrite(out_path, dst)
+                    is_success, buffer = cv2.imencode(".png", dst)
+                    if is_success:
+                        with open(out_path, "wb") as f:
+                            f.write(buffer.tobytes())
+                    else:
+                        print(f"  Error: Failed to encode image {out_filename}")
                     
                 else:
                     # Polygon cut
@@ -189,7 +194,12 @@ def main():
                     
                     cropped[:, :, 3] = mask
                     
-                    cv2.imwrite(out_path, cropped)
+                    is_success, buffer = cv2.imencode(".png", cropped)
+                    if is_success:
+                        with open(out_path, "wb") as f:
+                            f.write(buffer.tobytes())
+                    else:
+                        print(f"  Error: Failed to encode image {out_filename}")
                     
             print(f"  Saved {len(cards_raw)} images.")
             
