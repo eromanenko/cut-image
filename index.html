@@ -75,7 +75,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.6.0</span>
+            <span class="app-version">v5.7.0</span>
         </div>
 
         <div class="tabs">
@@ -181,7 +181,8 @@
                     </div>
                     <div class="input-container">
                         <label for="gridMarginL">Margin:</label>
-                        <input type="number" id="gridMarginL" placeholder="auto" min="0" step="1" class="input-narrow-sm">
+                        <input type="number" id="gridMarginL" placeholder="auto" min="0" step="1"
+                            class="input-narrow-sm">
                     </div>
                     <div class="input-container">
                         <label for="gridDpiInput">DPI:</label>
@@ -204,7 +205,8 @@
                     </div>
                     <div class="input-container">
                         <label for="gridMarginT">Margin:</label>
-                        <input type="number" id="gridMarginT" placeholder="auto" min="0" step="1" class="input-narrow-sm">
+                        <input type="number" id="gridMarginT" placeholder="auto" min="0" step="1"
+                            class="input-narrow-sm">
                     </div>
                 </div>
             </div>
@@ -263,6 +265,25 @@
                         <b>Tip:</b> This works best with PDFs created from layout software (InDesign,
                         Illustrator, etc.) where each card or image is a separately embedded bitmap.
                     </div>
+                </div>
+            </div>
+
+            <!-- PDF Extract Settings Row -->
+            <div class="controls hide-on-stuck" id="peSettingsRow">
+                <div class="input-container">
+                    <input type="checkbox" id="peDedupeCheckbox" checked>
+                    <label for="peDedupeCheckbox" title="Skip identical images">Deduplicate</label>
+                </div>
+
+                <div class="mode-toggle" style="margin-left: 10px;">
+                    <button id="peFormatPng" class="mode-btn active" title="Save as PNG">PNG</button>
+                    <button id="peFormatJpeg" class="mode-btn" title="Save as JPEG">JPEG</button>
+                </div>
+
+                <div class="input-container" style="margin-left: 10px;">
+                    <label for="peJpegQuality">JPEG Quality:</label>
+                    <input type="number" id="peJpegQuality" min="0.1" max="1.0" step="0.1" value="0.9"
+                        class="input-narrow-md" disabled>
                 </div>
             </div>
         </div>
@@ -520,9 +541,12 @@
                 <div class="info-tooltip">
                     <div class="info-icon">i</div>
                     <div class="tooltip-content">
-                        <b>FFT Descreening:</b> This tool uses Fast Fourier Transform (FFT) with radial normalization and soft masking to professionally remove scan moiré without blurring sharp text.<br><br>
-                        <b>Usage:</b> Adjust the <b>Peak Threshold</b> to detect moiré patterns (lower values detect more peaks). Increase <b>Notch Radius</b> to remove wider interference patterns.<br><br>
-                        <b>Other Methods:</b> Bilateral, Gaussian, and Median filters are also available for basic smoothing.
+                        <b>FFT Descreening:</b> This tool uses Fast Fourier Transform (FFT) with radial normalization
+                        and soft masking to professionally remove scan moiré without blurring sharp text.<br><br>
+                        <b>Usage:</b> Adjust the <b>Peak Threshold</b> to detect moiré patterns (lower values detect
+                        more peaks). Increase <b>Notch Radius</b> to remove wider interference patterns.<br><br>
+                        <b>Other Methods:</b> Bilateral, Gaussian, and Median filters are also available for basic
+                        smoothing.
                     </div>
                 </div>
             </div>

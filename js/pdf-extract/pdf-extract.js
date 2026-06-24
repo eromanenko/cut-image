@@ -3,6 +3,14 @@
 
 const dom = {};
 let extractedImages = []; // { blob, width, height, page, index, objectUrl }
+let processedHashes = new Set();
+
+async function hashBlob(blob) {
+    const buffer = await blob.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 function initDom() {
     dom.fileInput = document.getElementById('peFileInput');
@@ -16,6 +24,10 @@ function initDom() {
     dom.loading = document.getElementById('peLoading');
     dom.fileName = document.getElementById('peFileName');
     dom.statusText = document.getElementById('peStatusText');
+    dom.dedupeCheckbox = document.getElementById('peDedupeCheckbox');
+    dom.formatPng = document.getElementById('peFormatPng');
+    dom.formatJpeg = document.getElementById('peFormatJpeg');
+    dom.jpegQuality = document.getElementById('peJpegQuality');
 }
 
 function bindEvents() {
@@ -52,6 +64,18 @@ function bindEvents() {
     dom.selectAllBtn.addEventListener('click', () => setAllChecked(true));
     dom.unselectAllBtn.addEventListener('click', () => setAllChecked(false));
 
+    // Format selection
+    dom.formatPng.addEventListener('click', () => {
+        dom.formatPng.classList.add('active');
+        dom.formatJpeg.classList.remove('active');
+        dom.jpegQuality.disabled = true;
+    });
+    dom.formatJpeg.addEventListener('click', () => {
+        dom.formatJpeg.classList.add('active');
+        dom.formatPng.classList.remove('active');
+        dom.jpegQuality.disabled = false;
+    });
+
     // Download
     dom.downloadBtn.addEventListener('click', downloadSelected);
 }
@@ -73,6 +97,7 @@ async function handlePdfFile(file) {
 
     // Cleanup previous
     cleanup();
+    processedHashes.clear();
 
     try {
         const arrayBuffer = await file.arrayBuffer();
@@ -186,11 +211,20 @@ async function pushExtractedImage(imgData, pageNum) {
     const h = imgData.height || (imgData.bitmap ? imgData.bitmap.height : 0);
     if (w < 20 || h < 20) return;
 
-    const blob = await imageDataToBlob(imgData);
+    const format = dom.formatJpeg.classList.contains('active') ? 'image/jpeg' : 'image/png';
+    const quality = parseFloat(dom.jpegQuality.value) || 0.9;
+
+    const blob = await imageDataToBlob(imgData, format, quality);
     if (!blob) return;
 
     // Check if the image is a mask (uniform single-color image)
     if (await isUniformImage(blob)) return;
+
+    if (dom.dedupeCheckbox.checked) {
+        const hash = await hashBlob(blob);
+        if (processedHashes.has(hash)) return;
+        processedHashes.add(hash);
+    }
 
     const imgIndex = extractedImages.filter(img => img.page === pageNum).length + 1;
     const objectUrl = URL.createObjectURL(blob);
@@ -202,7 +236,8 @@ async function pushExtractedImage(imgData, pageNum) {
         page: pageNum,
         index: imgIndex,
         objectUrl,
-        selected: true
+        selected: true,
+        ext: format === 'image/jpeg' ? 'jpg' : 'png'
     });
 }
 
@@ -248,7 +283,11 @@ async function isUniformImage(blob) {
     }
 }
 
-async function imageDataToBlob(imgData) {
+async function imageDataToBlob(imgData, format = 'image/png', quality = 0.9) {
+    const convertCanvas = (canvas) => new Promise(resolve => {
+        if (format === 'image/jpeg') canvas.toBlob(resolve, format, quality);
+        else canvas.toBlob(resolve, format);
+    });
     try {
         // If it has a .bitmap (ImageBitmap) — modern pdf.js behavior
         if (imgData.bitmap && imgData.bitmap instanceof ImageBitmap) {
@@ -257,7 +296,7 @@ async function imageDataToBlob(imgData) {
             canvas.height = imgData.bitmap.height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(imgData.bitmap, 0, 0);
-            return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            return convertCanvas(canvas);
         }
 
         // If it's an HTMLImageElement (JPEG images from pdf.js)
@@ -267,7 +306,7 @@ async function imageDataToBlob(imgData) {
             canvas.height = imgData.naturalHeight || imgData.height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(imgData, 0, 0);
-            return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            return convertCanvas(canvas);
         }
 
         // If it has .data (raw pixel data from pdf.js)
@@ -306,7 +345,7 @@ async function imageDataToBlob(imgData) {
 
             const imageData = new ImageData(rgbaData, imgData.width, imgData.height);
             ctx.putImageData(imageData, 0, 0);
-            return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            return convertCanvas(canvas);
         }
 
         // If it has .src (a data URL or blob URL from pdf.js for JPEG)
@@ -322,7 +361,7 @@ async function imageDataToBlob(imgData) {
             canvas.height = img.naturalHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
-            return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            return convertCanvas(canvas);
         }
 
         console.warn('Unknown image data format:', imgData);
@@ -424,7 +463,7 @@ async function downloadSelected() {
         for (const img of selected) {
             const padPage = String(img.page).padStart(2, '0');
             const padIdx = String(img.index).padStart(2, '0');
-            const name = `${prefix}p${padPage}_${padIdx}.png`;
+            const name = `${prefix}p${padPage}_${padIdx}.${img.ext || 'png'}`;
             zip.file(name, img.blob);
         }
 
