@@ -75,7 +75,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.7.0</span>
+            <span class="app-version">v5.8.0</span>
         </div>
 
         <div class="tabs">
@@ -634,10 +634,57 @@
                     <!-- Items injected here -->
                 </ul>
             </div>
+            <div id="ceBatchProgressContainer" class="ce-batch-progress-container" style="display: none;">
+                <div class="ce-batch-progress-label-row">
+                    <span id="ceBatchProgressLabel" class="ce-batch-progress-label">Processing...</span>
+                </div>
+                <div class="ce-batch-progress-bar-wrap">
+                    <div id="ceBatchProgressBar" class="ce-batch-progress-bar"></div>
+                </div>
+            </div>
+            <div id="ceBatchSummaryContainer" class="ce-batch-summary-container" style="display: none;"></div>
             <div class="ce-modal-footer">
                 <input type="file" id="ceIniStatsLoadMoreInput" accept=".ini" class="hidden-file-input">
                 <button id="ceIniStatsLoadMoreBtn" class="btn-secondary">Load More</button>
+                <input type="file" id="ceBatchExportInput" accept="image/*" multiple class="hidden-file-input">
+                <button id="ceBatchExportBtn" class="btn-secondary">Batch Export&#8230;</button>
                 <button id="ceIniStatsOkBtn" class="btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Export Settings Modal -->
+    <div id="ceBatchSettingsModal" class="ce-modal" style="display: none;">
+        <div class="ce-modal-content ce-batch-settings-content">
+            <div class="ce-modal-header">
+                <h3>Batch Export Settings</h3>
+                <span class="ce-modal-close" id="ceBatchSettingsCancelX">&times;</span>
+            </div>
+            <div class="ce-modal-body ce-batch-settings-body">
+                <div class="ce-batch-settings-row">
+                    <label class="ce-batch-settings-label">Format</label>
+                    <div class="ce-batch-format-toggle">
+                        <label class="ce-batch-format-option">
+                            <input type="radio" name="ceBatchFormat" id="ceBatchFormatPng" value="png" checked>
+                            <span>PNG</span>
+                        </label>
+                        <label class="ce-batch-format-option">
+                            <input type="radio" name="ceBatchFormat" id="ceBatchFormatJpg" value="jpg">
+                            <span>JPG</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="ce-batch-settings-row" id="ceBatchQualityRow" style="display: none;">
+                    <label class="ce-batch-settings-label" for="ceBatchQualitySlider">
+                        Quality
+                        <span id="ceBatchQualityVal" class="ce-batch-quality-val">90%</span>
+                    </label>
+                    <input type="range" id="ceBatchQualitySlider" min="1" max="100" value="90" class="ce-batch-quality-slider">
+                </div>
+            </div>
+            <div class="ce-modal-footer">
+                <button id="ceBatchSettingsCancelBtn" class="btn-secondary">Cancel</button>
+                <button id="ceBatchSettingsConfirmBtn" class="btn-primary">Select Images&#8230;</button>
             </div>
         </div>
     </div>

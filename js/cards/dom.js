@@ -78,6 +78,25 @@ export function initDom() {
     dom.iniStatsLoadMoreBtn = document.getElementById("ceIniStatsLoadMoreBtn");
     dom.iniStatsLoadMoreInput = document.getElementById("ceIniStatsLoadMoreInput");
 
+    // Batch Export
+    dom.batchExportBtn = document.getElementById("ceBatchExportBtn");
+    dom.batchExportInput = document.getElementById("ceBatchExportInput");
+    dom.batchProgressContainer = document.getElementById("ceBatchProgressContainer");
+    dom.batchProgressBar = document.getElementById("ceBatchProgressBar");
+    dom.batchProgressLabel = document.getElementById("ceBatchProgressLabel");
+    dom.batchSummaryContainer = document.getElementById("ceBatchSummaryContainer");
+
+    // Batch Export Settings Modal
+    dom.batchSettingsModal = document.getElementById("ceBatchSettingsModal");
+    dom.batchSettingsCancelX = document.getElementById("ceBatchSettingsCancelX");
+    dom.batchSettingsCancelBtn = document.getElementById("ceBatchSettingsCancelBtn");
+    dom.batchSettingsConfirmBtn = document.getElementById("ceBatchSettingsConfirmBtn");
+    dom.batchFormatPng = document.getElementById("ceBatchFormatPng");
+    dom.batchFormatJpg = document.getElementById("ceBatchFormatJpg");
+    dom.batchQualityRow = document.getElementById("ceBatchQualityRow");
+    dom.batchQualitySlider = document.getElementById("ceBatchQualitySlider");
+    dom.batchQualityVal = document.getElementById("ceBatchQualityVal");
+
     // Settings Modal
     dom.settingsModal = document.getElementById("ceSettingsModal");
     dom.settingsCancelX = document.getElementById("ceSettingsCancelX");

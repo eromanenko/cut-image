@@ -8,6 +8,7 @@ import { updateButtonStates, applyModeUI, showIniStatsModal, pulseViewCoordsButt
 import { showAlert } from '../dialogs.js';
 import { initCalculator, openCalculator } from './calculator.js';
 import { saveCurrentToDatabase, serializeDatabaseToIni, parseIniToDatabase } from './ini-handler.js';
+import { runBatchExport, clearSummary } from './batch-export.js';
 import { switchMode } from './card-operations.js';
 import { handleZoomTitleMouseDown, handleZoomResizerMouseDown, handleZoomMouseMove, handleZoomMouseUp } from './zoom-ui.js';
 import { handleGlobalKeyDown, handleGlobalKeyUp } from './keyboard-handlers.js';
@@ -87,8 +88,8 @@ export function bindEvents() {
         });
     }
 
-    if (dom.iniStatsOkBtn) dom.iniStatsOkBtn.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; pulseViewCoordsButton(); dom.canvas.focus({ preventScroll: true }); });
-    if (dom.iniStatsCancelX) dom.iniStatsCancelX.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; pulseViewCoordsButton(); dom.canvas.focus({ preventScroll: true }); });
+    if (dom.iniStatsOkBtn) dom.iniStatsOkBtn.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; clearSummary(); pulseViewCoordsButton(); dom.canvas.focus({ preventScroll: true }); });
+    if (dom.iniStatsCancelX) dom.iniStatsCancelX.addEventListener('click', () => { dom.iniStatsModal.style.display = 'none'; clearSummary(); pulseViewCoordsButton(); dom.canvas.focus({ preventScroll: true }); });
 
     if (dom.iniStatsLoadMoreBtn && dom.iniStatsLoadMoreInput) {
         dom.iniStatsLoadMoreBtn.addEventListener('click', () => {
@@ -108,6 +109,55 @@ export function bindEvents() {
             reader.readAsText(file);
             e.target.value = '';
         });
+    }
+
+    if (dom.batchExportBtn && dom.batchSettingsModal) {
+        // "Batch Export…" → open settings modal
+        dom.batchExportBtn.addEventListener('click', () => {
+            dom.batchSettingsModal.style.display = 'flex';
+        });
+
+        // Format radio → show/hide quality row
+        const onFormatChange = () => {
+            const isJpg = dom.batchFormatJpg && dom.batchFormatJpg.checked;
+            if (dom.batchQualityRow) dom.batchQualityRow.style.display = isJpg ? 'flex' : 'none';
+        };
+        if (dom.batchFormatPng) dom.batchFormatPng.addEventListener('change', onFormatChange);
+        if (dom.batchFormatJpg) dom.batchFormatJpg.addEventListener('change', onFormatChange);
+
+        // Quality slider → update value label
+        if (dom.batchQualitySlider) {
+            dom.batchQualitySlider.addEventListener('input', () => {
+                if (dom.batchQualityVal) dom.batchQualityVal.textContent = dom.batchQualitySlider.value + '%';
+            });
+        }
+
+        // Close settings modal helpers
+        const closeBatchSettings = () => {
+            if (dom.batchSettingsModal) dom.batchSettingsModal.style.display = 'none';
+        };
+        if (dom.batchSettingsCancelX) dom.batchSettingsCancelX.addEventListener('click', closeBatchSettings);
+        if (dom.batchSettingsCancelBtn) dom.batchSettingsCancelBtn.addEventListener('click', closeBatchSettings);
+
+        // Confirm → close settings, open file picker
+        if (dom.batchSettingsConfirmBtn && dom.batchExportInput) {
+            dom.batchSettingsConfirmBtn.addEventListener('click', () => {
+                closeBatchSettings();
+                dom.batchExportInput.click();
+            });
+        }
+
+        // File picker change → run export with chosen settings
+        if (dom.batchExportInput) {
+            dom.batchExportInput.addEventListener('change', async (e) => {
+                const files = Array.from(e.target.files);
+                e.target.value = '';
+                if (!files.length) return;
+                const format = dom.batchFormatJpg && dom.batchFormatJpg.checked ? 'jpg' : 'png';
+                const quality = dom.batchQualitySlider ? parseInt(dom.batchQualitySlider.value, 10) : 90;
+                await runBatchExport(files, { format, quality });
+            });
+        }
     }
 
     // ── Settings Modal ──────────────────────────────────────────────────────

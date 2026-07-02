@@ -223,3 +223,179 @@
 #dsTuneModal .ce-modal-body {
     text-align: center;
 }
+
+/* ── Batch Export ─────────────────────────────── */
+
+.ce-batch-progress-container {
+    padding: 10px 24px 6px;
+    border-top: 1px solid #eee;
+}
+
+.ce-batch-progress-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+
+.ce-batch-progress-label {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ce-batch-progress-bar-wrap {
+    background: #e9ecef;
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.ce-batch-progress-bar {
+    height: 100%;
+    background: #007bff;
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.2s ease;
+}
+
+.ce-batch-summary-container {
+    padding: 10px 24px 4px;
+    border-top: 1px solid #eee;
+    font-size: 13px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.ce-batch-summary-container:hover {
+    opacity: 0.65;
+}
+
+.ce-batch-summary-ok {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    color: #28a745;
+    margin-bottom: 6px;
+}
+
+.ce-batch-summary-ok svg {
+    stroke: #28a745;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.ce-batch-summary-warn {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    color: #856404;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-top: 4px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.ce-batch-summary-warn svg {
+    stroke: #856404;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.ce-batch-summary-warn em {
+    font-style: normal;
+    font-weight: bold;
+}
+
+/* ── Batch Export Settings Modal ─────────────────── */
+
+.ce-batch-settings-content {
+    max-width: 320px;
+    width: 90%;
+}
+
+.ce-batch-settings-body {
+    padding: 20px 24px 16px;
+}
+
+.ce-batch-settings-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.ce-batch-settings-row:last-child {
+    margin-bottom: 0;
+}
+
+.ce-batch-settings-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Segmented format toggle */
+.ce-batch-format-toggle {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ce-batch-format-option {
+    flex: 1;
+    cursor: pointer;
+}
+
+.ce-batch-format-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ce-batch-format-option span {
+    display: block;
+    text-align: center;
+    padding: 7px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    background: #f8f9fa;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+}
+
+.ce-batch-format-option:not(:last-child) span {
+    border-right: 1px solid #ddd;
+}
+
+.ce-batch-format-option input[type="radio"]:checked + span {
+    background: #007bff;
+    color: #fff;
+}
+
+/* Quality slider */
+.ce-batch-quality-val {
+    font-size: 12px;
+    font-weight: 600;
+    color: #007bff;
+    min-width: 32px;
+    text-align: right;
+}
+
+.ce-batch-quality-slider {
+    width: 100%;
+    accent-color: #007bff;
+    cursor: pointer;
+}
