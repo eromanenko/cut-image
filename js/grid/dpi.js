@@ -1,20 +1,33 @@
 export function extractTiffDpi(ifd) {
     try {
-        let xRes = ifd.t282;
-        const resUnit = ifd.t296 || 2;
+        const xResArr = ifd.t282;
+        const resUnitArr = ifd.t296;
 
-        if (xRes) {
+        if (xResArr && xResArr.length > 0) {
+            // UTIF stores RATIONAL tags as already-divided floats in an array, e.g. [600]
+            // Older format may store [numerator, denominator], handle both cases
             let dpiValue;
-            if (Array.isArray(xRes)) {
-                dpiValue = xRes[0] / (xRes[1] || 1);
+            if (Array.isArray(xResArr)) {
+                if (xResArr.length >= 2 && xResArr[1] > 0) {
+                    // Raw rational [numerator, denominator]
+                    dpiValue = xResArr[0] / xResArr[1];
+                } else {
+                    // Already-divided value stored as single-element array by UTIF
+                    dpiValue = xResArr[0];
+                }
             } else {
-                dpiValue = xRes;
+                dpiValue = xResArr;
             }
+
+            // resUnitArr is also an array in UTIF, e.g. [2]; default to 2 (inch)
+            const resUnit = Array.isArray(resUnitArr) ? (resUnitArr[0] ?? 2) : (resUnitArr ?? 2);
 
             if (resUnit === 3) {
+                // Centimeters → inches
                 return Math.round(dpiValue * 2.54);
             }
-            if (resUnit === 2 && dpiValue > 0) {
+            if (dpiValue > 0) {
+                // resUnit === 2 (inch/DPI) or unknown → treat as DPI
                 return Math.round(dpiValue);
             }
         }
