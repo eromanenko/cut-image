@@ -111,50 +111,33 @@ export function bindEvents() {
         });
     }
 
-    if (dom.batchExportBtn && dom.batchSettingsModal) {
-        // "Batch Export…" → open settings modal
+    if (dom.batchExportBtn && dom.batchExportInput) {
         dom.batchExportBtn.addEventListener('click', () => {
-            dom.batchSettingsModal.style.display = 'flex';
+            dom.batchExportInput.click();
         });
 
         // Format radio → show/hide quality row
         const onFormatChange = () => {
-            const isJpg = dom.batchFormatJpg && dom.batchFormatJpg.checked;
-            if (dom.batchQualityRow) dom.batchQualityRow.style.display = isJpg ? 'flex' : 'none';
+            const isJpg = dom.exportFormatJpg && dom.exportFormatJpg.checked;
+            if (dom.exportQualityRow) dom.exportQualityRow.style.display = isJpg ? 'flex' : 'none';
         };
-        if (dom.batchFormatPng) dom.batchFormatPng.addEventListener('change', onFormatChange);
-        if (dom.batchFormatJpg) dom.batchFormatJpg.addEventListener('change', onFormatChange);
+        if (dom.exportFormatPng) dom.exportFormatPng.addEventListener('change', onFormatChange);
+        if (dom.exportFormatJpg) dom.exportFormatJpg.addEventListener('change', onFormatChange);
 
         // Quality slider → update value label
-        if (dom.batchQualitySlider) {
-            dom.batchQualitySlider.addEventListener('input', () => {
-                if (dom.batchQualityVal) dom.batchQualityVal.textContent = dom.batchQualitySlider.value + '%';
+        if (dom.exportQualitySlider) {
+            dom.exportQualitySlider.addEventListener('input', () => {
+                if (dom.exportQualityVal) dom.exportQualityVal.textContent = dom.exportQualitySlider.value + '%';
             });
         }
 
-        // Close settings modal helpers
-        const closeBatchSettings = () => {
-            if (dom.batchSettingsModal) dom.batchSettingsModal.style.display = 'none';
-        };
-        if (dom.batchSettingsCancelX) dom.batchSettingsCancelX.addEventListener('click', closeBatchSettings);
-        if (dom.batchSettingsCancelBtn) dom.batchSettingsCancelBtn.addEventListener('click', closeBatchSettings);
-
-        // Confirm → close settings, open file picker
-        if (dom.batchSettingsConfirmBtn && dom.batchExportInput) {
-            dom.batchSettingsConfirmBtn.addEventListener('click', () => {
-                closeBatchSettings();
-                dom.batchExportInput.click();
-            });
-        }
-
-        // File picker change → run export with chosen settings
         if (dom.batchExportInput) {
             dom.batchExportInput.addEventListener('change', async (e) => {
                 const files = Array.from(e.target.files);
                 e.target.value = '';
                 if (!files.length) return;
-                const format = dom.batchFormatJpg && dom.batchFormatJpg.checked ? 'jpg' : 'png';
-                const quality = dom.batchQualitySlider ? parseInt(dom.batchQualitySlider.value, 10) : 90;
+                const format = dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'jpg' : 'png';
+                const quality = dom.exportQualitySlider ? parseInt(dom.exportQualitySlider.value, 10) : 90;
                 await runBatchExport(files, { format, quality });
             });
         }

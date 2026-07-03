@@ -75,7 +75,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.8.2</span>
+            <span class="app-version">v5.9.0</span>
         </div>
 
         <div class="tabs">
@@ -657,41 +657,6 @@
         </div>
     </div>
 
-    <!-- Batch Export Settings Modal -->
-    <div id="ceBatchSettingsModal" class="ce-modal" style="display: none;">
-        <div class="ce-modal-content ce-batch-settings-content">
-            <div class="ce-modal-header">
-                <h3>Batch Export Settings</h3>
-                <span class="ce-modal-close" id="ceBatchSettingsCancelX">&times;</span>
-            </div>
-            <div class="ce-modal-body ce-batch-settings-body">
-                <div class="ce-batch-settings-row">
-                    <label class="ce-batch-settings-label">Format</label>
-                    <div class="ce-batch-format-toggle">
-                        <label class="ce-batch-format-option">
-                            <input type="radio" name="ceBatchFormat" id="ceBatchFormatPng" value="png" checked>
-                            <span>PNG</span>
-                        </label>
-                        <label class="ce-batch-format-option">
-                            <input type="radio" name="ceBatchFormat" id="ceBatchFormatJpg" value="jpg">
-                            <span>JPG</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="ce-batch-settings-row" id="ceBatchQualityRow" style="display: none;">
-                    <label class="ce-batch-settings-label" for="ceBatchQualitySlider">
-                        Quality
-                        <span id="ceBatchQualityVal" class="ce-batch-quality-val">90%</span>
-                    </label>
-                    <input type="range" id="ceBatchQualitySlider" min="1" max="100" value="90" class="ce-batch-quality-slider">
-                </div>
-            </div>
-            <div class="ce-modal-footer">
-                <button id="ceBatchSettingsCancelBtn" class="btn-secondary">Cancel</button>
-                <button id="ceBatchSettingsConfirmBtn" class="btn-primary">Select Images&#8230;</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Pixel Calculator Modal -->
     <div id="ceCalcModal" class="ce-modal" style="display: none;">
@@ -922,6 +887,33 @@
                                         </path>
                                     </svg>
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ce-calc-row">
+                    <div class="ce-calc-group">
+                        <label>Export Format</label>
+                        <div class="muted-small">
+                            Select format and quality for both single and batch exports.
+                        </div>
+                        <div style="display: flex; gap: 16px; align-items: center; margin-top: 6px;">
+                            <div class="ce-batch-format-toggle" style="margin: 0;">
+                                <label class="ce-batch-format-option">
+                                    <input type="radio" name="ceExportFormat" id="ceExportFormatPng" value="png" checked>
+                                    <span>PNG</span>
+                                </label>
+                                <label class="ce-batch-format-option">
+                                    <input type="radio" name="ceExportFormat" id="ceExportFormatJpg" value="jpg">
+                                    <span>JPG</span>
+                                </label>
+                            </div>
+                            
+                            <div id="ceExportQualityRow" style="display: none; align-items: center; gap: 8px; flex: 1;">
+                                <span style="font-size: 13px; color: var(--text);">Quality:</span>
+                                <input type="range" id="ceExportQualitySlider" min="1" max="100" value="90" style="flex: 1; accent-color: var(--accent);">
+                                <span id="ceExportQualityVal" style="font-size: 13px; width: 4ch;">90%</span>
                             </div>
                         </div>
                     </div>

@@ -99,7 +99,7 @@ async function renderPdfPage(pageNum) {
 }
 
 /** Extract a cut region from a canvas and return a DPI-stamped PNG blob. */
-async function extractRegionBlob(sourceCanvas, region, tempCanvas, tempCtx, dpi) {
+async function extractRegionBlob(sourceCanvas, region, tempCanvas, tempCtx, dpi, format = 'png', quality = 90) {
     const rX = Math.min(region.x, sourceCanvas.width);
     const rY = Math.min(region.y, sourceCanvas.height);
     const rW = Math.min(region.w, sourceCanvas.width - rX);
@@ -108,8 +108,20 @@ async function extractRegionBlob(sourceCanvas, region, tempCanvas, tempCtx, dpi)
     tempCanvas.width = rW;
     tempCanvas.height = rH;
     tempCtx.drawImage(sourceCanvas, rX, rY, rW, rH, 0, 0, rW, rH);
-    const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, 'image/png'));
-    return injectPngDpi(blob, dpi);
+    
+    if (format === 'jpg') {
+        const flatCanvas = document.createElement('canvas');
+        flatCanvas.width = tempCanvas.width;
+        flatCanvas.height = tempCanvas.height;
+        const flatCtx = flatCanvas.getContext('2d');
+        flatCtx.fillStyle = '#ffffff';
+        flatCtx.fillRect(0, 0, flatCanvas.width, flatCanvas.height);
+        flatCtx.drawImage(tempCanvas, 0, 0);
+        return new Promise(resolve => flatCanvas.toBlob(resolve, 'image/jpeg', quality / 100));
+    } else {
+        const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, 'image/png'));
+        return injectPngDpi(blob, dpi);
+    }
 }
 
 /** Return the mirrored cut region for paired (double-sided) export. */
@@ -126,7 +138,7 @@ function getMirroredRegion(region, pairingMode) {
 }
 
 /** Add paired front/back pages to the ZIP (prefix{N}a / prefix{N}b naming). */
-async function addPairedPagesToZip(zip, prefix, dpi, pairingMode, tempCanvas, tempCtx) {
+async function addPairedPagesToZip(zip, prefix, dpi, pairingMode, tempCanvas, tempCtx, format, quality, ext) {
     const numPairs = Math.floor(state.pdfDoc.numPages / 2);
     const totalCards = numPairs * state.cutRegions.length;
     const padLen = Math.max(totalCards.toString().length, 1);
@@ -141,12 +153,12 @@ async function addPairedPagesToZip(zip, prefix, dpi, pairingMode, tempCanvas, te
         for (const region of state.cutRegions) {
             const pad = String(cardNum).padStart(padLen, '0');
 
-            const frontBlob = await extractRegionBlob(oddCanvas, region, tempCanvas, tempCtx, dpi);
-            if (frontBlob) zip.file(`${prefix}${pad}a.png`, frontBlob);
+            const frontBlob = await extractRegionBlob(oddCanvas, region, tempCanvas, tempCtx, dpi, format, quality);
+            if (frontBlob) zip.file(`${prefix}${pad}a.${ext}`, frontBlob);
 
             const mirroredRegion = getMirroredRegion(region, pairingMode);
-            const backBlob = await extractRegionBlob(evenCanvas, mirroredRegion, tempCanvas, tempCtx, dpi);
-            if (backBlob) zip.file(`${prefix}${pad}b.png`, backBlob);
+            const backBlob = await extractRegionBlob(evenCanvas, mirroredRegion, tempCanvas, tempCtx, dpi, format, quality);
+            if (backBlob) zip.file(`${prefix}${pad}b.${ext}`, backBlob);
 
             cardNum++;
         }
@@ -155,16 +167,16 @@ async function addPairedPagesToZip(zip, prefix, dpi, pairingMode, tempCanvas, te
 }
 
 /** Add flat (non-paired) PDF pages to the ZIP (prefix{page}_{piece} naming). */
-async function addFlatPagesToZip(zip, prefix, dpi, startPage, endPage, tempCanvas, tempCtx) {
+async function addFlatPagesToZip(zip, prefix, dpi, startPage, endPage, tempCanvas, tempCtx, format, quality, ext) {
     for (let pageNum = startPage; pageNum <= endPage; pageNum++) {
         const pageCanvas = await renderPdfPage(pageNum);
 
         for (const region of state.cutRegions) {
-            const blob = await extractRegionBlob(pageCanvas, region, tempCanvas, tempCtx, dpi);
+            const blob = await extractRegionBlob(pageCanvas, region, tempCanvas, tempCtx, dpi, format, quality);
             if (blob) {
                 const padPage = String(pageNum).padStart(2, '0');
                 const padPiece = String(region.index).padStart(2, '0');
-                zip.file(`${prefix}${padPage}_${padPiece}.png`, blob);
+                zip.file(`${prefix}${padPage}_${padPiece}.${ext}`, blob);
             }
         }
         await new Promise(r => setTimeout(r, 15));
@@ -180,30 +192,28 @@ export async function generateAndDownloadZip() {
     const prefix = dom.prefixInput.value;
     const dpi = parseFloat((state.gridMode === 'grid' ? dom.gridDpiInput : dom.dpiInput).value) || 300;
 
+    const format = dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'jpg' : 'png';
+    const quality = dom.exportQualitySlider ? parseInt(dom.exportQualitySlider.value, 10) : 90;
+    const ext = format === 'jpg' ? 'jpg' : 'png';
+
     if (state.isPdf && state.pdfDoc) {
         const allPages = dom.allPagesCheckbox.checked;
         const pairingMode = dom.pairingModeSelect ? dom.pairingModeSelect.value : 'none';
 
         if (allPages && pairingMode !== 'none') {
-            await addPairedPagesToZip(zip, prefix, dpi, pairingMode, tempCanvas, tempCtx);
+            await addPairedPagesToZip(zip, prefix, dpi, pairingMode, tempCanvas, tempCtx, format, quality, ext);
         } else {
             const startPage = allPages ? 1 : state.currentPreviewPage;
             const endPage = allPages ? state.pdfDoc.numPages : state.currentPreviewPage;
-            await addFlatPagesToZip(zip, prefix, dpi, startPage, endPage, tempCanvas, tempCtx);
+            await addFlatPagesToZip(zip, prefix, dpi, startPage, endPage, tempCanvas, tempCtx, format, quality, ext);
         }
     } else {
         // Single image export
         for (const region of state.cutRegions) {
-            tempCanvas.width = region.w;
-            tempCanvas.height = region.h;
-            tempCtx.drawImage(
-                dom.sourceCanvas,
-                region.x, region.y, region.w, region.h,
-                0, 0, region.w, region.h
-            );
-            let blob = await new Promise(resolve => tempCanvas.toBlob(resolve, 'image/png'));
-            blob = await injectPngDpi(blob, dpi);
-            zip.file(`${prefix}${String(region.index).padStart(2, '0')}.png`, blob);
+            const blob = await extractRegionBlob(dom.sourceCanvas, region, tempCanvas, tempCtx, dpi, format, quality);
+            if (blob) {
+                zip.file(`${prefix}${String(region.index).padStart(2, '0')}.${ext}`, blob);
+            }
         }
     }
 

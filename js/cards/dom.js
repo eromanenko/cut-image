@@ -86,16 +86,12 @@ export function initDom() {
     dom.batchProgressLabel = document.getElementById("ceBatchProgressLabel");
     dom.batchSummaryContainer = document.getElementById("ceBatchSummaryContainer");
 
-    // Batch Export Settings Modal
-    dom.batchSettingsModal = document.getElementById("ceBatchSettingsModal");
-    dom.batchSettingsCancelX = document.getElementById("ceBatchSettingsCancelX");
-    dom.batchSettingsCancelBtn = document.getElementById("ceBatchSettingsCancelBtn");
-    dom.batchSettingsConfirmBtn = document.getElementById("ceBatchSettingsConfirmBtn");
-    dom.batchFormatPng = document.getElementById("ceBatchFormatPng");
-    dom.batchFormatJpg = document.getElementById("ceBatchFormatJpg");
-    dom.batchQualityRow = document.getElementById("ceBatchQualityRow");
-    dom.batchQualitySlider = document.getElementById("ceBatchQualitySlider");
-    dom.batchQualityVal = document.getElementById("ceBatchQualityVal");
+    // Export Settings (inside Settings Modal)
+    dom.exportFormatPng = document.getElementById("ceExportFormatPng");
+    dom.exportFormatJpg = document.getElementById("ceExportFormatJpg");
+    dom.exportQualityRow = document.getElementById("ceExportQualityRow");
+    dom.exportQualitySlider = document.getElementById("ceExportQualitySlider");
+    dom.exportQualityVal = document.getElementById("ceExportQualityVal");
 
     // Settings Modal
     dom.settingsModal = document.getElementById("ceSettingsModal");

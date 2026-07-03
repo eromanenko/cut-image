@@ -41,4 +41,8 @@ export function initDom() {
     dom.gridMarginL = document.getElementById("gridMarginL");
     dom.gridMarginT = document.getElementById("gridMarginT");
     dom.gridDpiInput = document.getElementById("gridDpiInput");
+
+    dom.exportFormatPng = document.getElementById("ceExportFormatPng");
+    dom.exportFormatJpg = document.getElementById("ceExportFormatJpg");
+    dom.exportQualitySlider = document.getElementById("ceExportQualitySlider");
 }

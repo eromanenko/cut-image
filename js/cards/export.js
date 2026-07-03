@@ -20,6 +20,10 @@ export async function exportCards() {
     dom.downloadButton.textContent = "Processing Archive...";
     const prefix = dom.prefixInput.value;
     const dpi = parseFloat(dom.dpiInput.value) || 300;
+    
+    const format = dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'jpg' : 'png';
+    const quality = dom.exportQualitySlider ? parseInt(dom.exportQualitySlider.value, 10) : 90;
+    const ext = format === 'jpg' ? 'jpg' : 'png';
 
     try {
         const zip = new JSZip();
@@ -105,12 +109,23 @@ export async function exportCards() {
                     0, 0, outW, outH
                 );
             }
-
-            let blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
-            blob = await injectPngDpi(blob, dpi);
+            let blob;
+            if (format === 'jpg') {
+                const flatCanvas = document.createElement('canvas');
+                flatCanvas.width = tempCanvas.width;
+                flatCanvas.height = tempCanvas.height;
+                const flatCtx = flatCanvas.getContext('2d');
+                flatCtx.fillStyle = '#ffffff';
+                flatCtx.fillRect(0, 0, flatCanvas.width, flatCanvas.height);
+                flatCtx.drawImage(tempCanvas, 0, 0);
+                blob = await new Promise(resolve => flatCanvas.toBlob(resolve, 'image/jpeg', quality / 100));
+            } else {
+                blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+                blob = await injectPngDpi(blob, dpi);
+            }
 
             const padIndex = String(i + 1).padStart(2, '0');
-            zip.file(`${prefix}${padIndex}.png`, blob);
+            zip.file(`${prefix}${padIndex}.${ext}`, blob);
         }
 
         srcMat.delete();

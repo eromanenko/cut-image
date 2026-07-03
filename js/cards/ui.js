@@ -61,7 +61,9 @@ const SETTINGS_KEY = 'ce_user_settings';
 const DEFAULT_SETTINGS = {
     shareData: true,
     lineColor: '#007bff',
-    lineOpacity: '0.50'
+    lineOpacity: '0.50',
+    exportFormat: 'png',
+    exportQuality: '90'
 };
 
 export function loadSettingsFromStorage() {
@@ -74,6 +76,15 @@ export function loadSettingsFromStorage() {
             if (dom.lineOpacity && data.lineOpacity) {
                 dom.lineOpacity.value = data.lineOpacity;
                 if (dom.lineOpacityVal) dom.lineOpacityVal.textContent = data.lineOpacity;
+            }
+            if (data.exportFormat) {
+                if (data.exportFormat === 'jpg' && dom.exportFormatJpg) dom.exportFormatJpg.checked = true;
+                else if (dom.exportFormatPng) dom.exportFormatPng.checked = true;
+                if (dom.exportQualityRow) dom.exportQualityRow.style.display = data.exportFormat === 'jpg' ? 'flex' : 'none';
+            }
+            if (data.exportQuality && dom.exportQualitySlider) {
+                dom.exportQualitySlider.value = data.exportQuality;
+                if (dom.exportQualityVal) dom.exportQualityVal.textContent = data.exportQuality + '%';
             }
             if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'block';
         } catch (e) {
@@ -90,12 +101,16 @@ export function saveSettingsToStorage() {
     const settings = {
         shareData: dom.shareDataCheckbox.checked,
         lineColor: dom.lineColor.value,
-        lineOpacity: dom.lineOpacity.value
+        lineOpacity: dom.lineOpacity.value,
+        exportFormat: dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'jpg' : 'png',
+        exportQuality: dom.exportQualitySlider ? dom.exportQualitySlider.value : '90'
     };
 
     const isDefault = settings.shareData === DEFAULT_SETTINGS.shareData &&
         settings.lineColor === DEFAULT_SETTINGS.lineColor &&
-        settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity;
+        settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity &&
+        settings.exportFormat === DEFAULT_SETTINGS.exportFormat &&
+        settings.exportQuality === DEFAULT_SETTINGS.exportQuality;
 
     if (!isDefault) {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -113,6 +128,14 @@ export function resetSettingsToDefault() {
     if (dom.lineOpacity) {
         dom.lineOpacity.value = DEFAULT_SETTINGS.lineOpacity;
         if (dom.lineOpacityVal) dom.lineOpacityVal.textContent = DEFAULT_SETTINGS.lineOpacity;
+    }
+    if (dom.exportFormatPng) {
+        dom.exportFormatPng.checked = true;
+        if (dom.exportQualityRow) dom.exportQualityRow.style.display = 'none';
+    }
+    if (dom.exportQualitySlider) {
+        dom.exportQualitySlider.value = DEFAULT_SETTINGS.exportQuality;
+        if (dom.exportQualityVal) dom.exportQualityVal.textContent = DEFAULT_SETTINGS.exportQuality + '%';
     }
     if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'none';
 }
@@ -147,6 +170,14 @@ export function updateSettingsSummary() {
     const padY = parseInt(dom.paddingY?.value) || 0;
     if (padX > 0 || padY > 0) {
         text += ` | Pad ${padY}×${padX}px`;
+    }
+
+    const format = dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'JPG' : 'PNG';
+    if (format === 'JPG') {
+        const quality = dom.exportQualitySlider ? dom.exportQualitySlider.value : '90';
+        text += ` | ${format} ${quality}%`;
+    } else {
+        text += ` | ${format}`;
     }
 
     dom.settingsSummaryText.textContent = text;
