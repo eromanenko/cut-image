@@ -173,6 +173,15 @@ function showSummary(processedCount, totalCards, notFound) {
            </div>`
         : '';
 
+    const loadErrorsHtml = (window._loadErrors || []).length > 0
+        ? `<div class="ce-batch-summary-warn">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;margin-top:2px">
+                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+               </svg>
+               <span>Failed to load image: ${(window._loadErrors || []).map(n => `<em>${n}</em>`).join(', ')}</span>
+           </div>`
+        : '';
+
     dom.batchSummaryContainer.innerHTML = `
         <div class="ce-batch-summary-ok">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;flex-shrink:0">
@@ -181,6 +190,7 @@ function showSummary(processedCount, totalCards, notFound) {
             <span>Done! <strong>${totalCards}</strong> card${totalCards !== 1 ? 's' : ''} from <strong>${processedCount}</strong> file${processedCount !== 1 ? 's' : ''} saved to ZIP.</span>
         </div>
         ${notFoundHtml}
+        ${loadErrorsHtml}
     `;
     dom.batchSummaryContainer.style.display = 'block';
     dom.batchSummaryContainer.addEventListener('click', clearSummary, { once: true });
@@ -223,6 +233,8 @@ export async function runBatchExport(files, settings = {}) {
     let totalCards = 0;
     let processedFiles = 0;
     const notFound = [];
+    const loadErrors = [];
+    window._loadErrors = loadErrors; // Hack to pass it to showSummary without changing its signature
 
     try {
         for (let fi = 0; fi < files.length; fi++) {
@@ -248,20 +260,36 @@ export async function runBatchExport(files, settings = {}) {
                 continue;
             }
 
-            // Load image into a canvas
-            let img;
+            const srcCanvas = document.createElement('canvas');
+            const srcCtx = srcCanvas.getContext('2d', { willReadFrequently: true });
+            
             try {
-                img = await loadImageFile(file);
+                const isTiff = file.type.includes('tiff') || file.name.toLowerCase().endsWith('.tif') || file.name.toLowerCase().endsWith('.tiff');
+                if (isTiff && typeof UTIF !== 'undefined') {
+                    const fileBuffer = await file.arrayBuffer();
+                    const ifds = UTIF.decode(fileBuffer);
+                    if (ifds.length === 0) throw new Error("Could not decode TIFF file.");
+                    UTIF.decodeImage(fileBuffer, ifds[0]);
+                    const rgba = UTIF.toRGBA8(ifds[0]);
+                    const w = ifds[0].width;
+                    const h = ifds[0].height;
+                    
+                    srcCanvas.width = w;
+                    srcCanvas.height = h;
+                    const imgData = srcCtx.createImageData(w, h);
+                    imgData.data.set(new Uint8Array(rgba));
+                    srcCtx.putImageData(imgData, 0, 0);
+                } else {
+                    const img = await loadImageFile(file);
+                    srcCanvas.width = img.naturalWidth;
+                    srcCanvas.height = img.naturalHeight;
+                    srcCtx.drawImage(img, 0, 0);
+                }
             } catch (e) {
                 console.warn(`Batch export: could not load ${fileName}`, e);
-                notFound.push(fileName);
+                loadErrors.push(fileName);
                 continue;
             }
-
-            const srcCanvas = document.createElement('canvas');
-            srcCanvas.width = img.naturalWidth;
-            srcCanvas.height = img.naturalHeight;
-            srcCanvas.getContext('2d').drawImage(img, 0, 0);
 
             const dpi = record.dpi || 300;
             const isRect = record.editMode === 'rect';

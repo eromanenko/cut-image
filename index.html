@@ -411,21 +411,21 @@
                         adjustable corners — and <b>Rectangular</b> (square icon) — all cards share the same fixed
                         width, height, and skew.<br><br>
                         <b>Save/Load:</b> Use the <b>Disk</b> icon to export all layout coordinates to a <b>.ini</b>
-                        file.
-                        Use the <b>Upload</b> icon to restore coordinates. Layouts are <b>auto-saved</b> per filename
-                        and
-                        restored when re-opening a file.<br><br>
+                        file. Use the <b>Upload</b> icon to restore coordinates. Layouts are <b>auto-saved</b> per
+                        filename and restored when re-opening a file.<br><br>
+                        <b>Export Settings:</b> Open <b>Settings (gear icon)</b> to configure the output format
+                        (<b>PNG</b> or <b>JPG</b>)
+                        and compression quality. These settings apply to both single and batch exports.<br><br>
+                        <b>Auto-Detect:</b> Open <b>Settings (gear icon)</b> to specify expected card sizes in mm
+                        for highly accurate detection.<br><br>
                         <b>Batch Export:</b> Open <b>Loaded Layouts</b> (Upload icon → view saved layouts), then click
-                        <b>Batch Export…</b>. Choose output format (<b>PNG</b> or <b>JPG</b>) and quality, then select
-                        any number of image files — all cards with matching saved layouts will be cut and packed into a
-                        <b>ZIP archive</b> automatically.<br><br>
+                        <b>Batch Export…</b> and select any number of image files — all cards with matching saved
+                        layouts will be cut and packed into a <b>ZIP archive</b> automatically.<br><br>
                         <span id="ceInstrFreeform">
                             <b>Instruction:</b> Upload a scanned image or PDF. <b>Click and drag</b> the red corners to
                             adjust borders, or drag the whole card from the center.<br><br>
                             <b>Draw Shape:</b> Click the <b>Lasso icon</b> to manually draw custom polygons. Click to
                             add points, press <b>Enter</b> to close the shape, or <b>Esc</b> to cancel.<br><br>
-                            <b>Auto-Detect:</b> Open <b>Settings (gear icon)</b> to specify expected card sizes in mm
-                            for highly accurate detection.<br><br>
                             <b>Navigation:</b> <b>Tab</b> cycles through corners. <b>Enter</b> jumps between cards.
                             <b>Arrow Keys</b> move points (Ctrl = 10px steps).<br><br>
                             <b>Zoom Window:</b> <b>+</b> / <b>-</b> adjusts magnification. <b>Z</b> toggles zoom window.
@@ -901,7 +901,8 @@
                         <div style="display: flex; gap: 16px; align-items: center; margin-top: 6px;">
                             <div class="ce-batch-format-toggle" style="margin: 0;">
                                 <label class="ce-batch-format-option">
-                                    <input type="radio" name="ceExportFormat" id="ceExportFormatPng" value="png" checked>
+                                    <input type="radio" name="ceExportFormat" id="ceExportFormatPng" value="png"
+                                        checked>
                                     <span>PNG</span>
                                 </label>
                                 <label class="ce-batch-format-option">
@@ -909,10 +910,11 @@
                                     <span>JPG</span>
                                 </label>
                             </div>
-                            
+
                             <div id="ceExportQualityRow" style="display: none; align-items: center; gap: 8px; flex: 1;">
                                 <span style="font-size: 13px; color: var(--text);">Quality:</span>
-                                <input type="range" id="ceExportQualitySlider" min="1" max="100" value="90" style="flex: 1; accent-color: var(--accent);">
+                                <input type="range" id="ceExportQualitySlider" min="1" max="100" value="90"
+                                    style="flex: 1; accent-color: var(--accent);">
                                 <span id="ceExportQualityVal" style="font-size: 13px; width: 4ch;">90%</span>
                             </div>
                         </div>
