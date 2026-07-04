@@ -75,7 +75,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.9.0</span>
+            <span class="app-version">v5.10.0</span>
         </div>
 
         <div class="tabs">
@@ -394,14 +394,19 @@
 
                 <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
 
-                <div class="input-container zoom-checkbox-container">
-                    <input type="checkbox" id="ceZoomCheckbox" checked>
-                    <label for="ceZoomCheckbox" title="Toggle Zoom Window (Z)">Zoom Window</label>
-                </div>
-
                 <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
 
                 <button id="ceDownloadButton" disabled title="Download Cards (S)">Download</button>
+
+                <button id="ceSettingsBtn" class="icon-btn" title="Open Settings">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                        </path>
+                    </svg>
+                </button>
 
                 <!-- Info Tooltip -->
                 <div class="info-tooltip">
@@ -413,9 +418,7 @@
                         <b>Save/Load:</b> Use the <b>Disk</b> icon to export all layout coordinates to a <b>.ini</b>
                         file. Use the <b>Upload</b> icon to restore coordinates. Layouts are <b>auto-saved</b> per
                         filename and restored when re-opening a file.<br><br>
-                        <b>Export Settings:</b> Open <b>Settings (gear icon)</b> to configure the output format
-                        (<b>PNG</b> or <b>JPG</b>)
-                        and compression quality. These settings apply to both single and batch exports.<br><br>
+                        <b>Settings:</b> Open <b>Settings (gear icon)</b> to configure line colors/opacity, toggle the <b>Zoom Window</b> or <b>Minimap</b>, set the <b>Padding</b>, and adjust output format/quality (<b>PNG/JPG</b>).<br><br>
                         <b>Auto-Detect:</b> Open <b>Settings (gear icon)</b> to specify expected card sizes in mm
                         for highly accurate detection.<br><br>
                         <b>Batch Export:</b> Open <b>Loaded Layouts</b> (Upload icon → view saved layouts), then click
@@ -428,7 +431,7 @@
                             add points, press <b>Enter</b> to close the shape, or <b>Esc</b> to cancel.<br><br>
                             <b>Navigation:</b> <b>Tab</b> cycles through corners. <b>Enter</b> jumps between cards.
                             <b>Arrow Keys</b> move points (Ctrl = 10px steps).<br><br>
-                            <b>Zoom Window:</b> <b>+</b> / <b>-</b> adjusts magnification. <b>Z</b> toggles zoom window.
+                            <b>Zoom Window:</b> Open Settings to toggle. <b>+</b> / <b>-</b> adjusts magnification. <b>Z</b> toggles it quickly.
                         </span>
                         <span id="ceInstrRect" style="display:none;">
                             <b>Rectangle Mode:</b> All cards are identical parallelograms defined by global
@@ -439,7 +442,7 @@
                             steps).<br><br>
                             <b>Rotate:</b> Press <b>/</b> (0.05&deg; CW) or <b>Shift+/</b> (0.05&deg; CCW). <b>Enter</b>
                             / <b>Shift+Enter</b> to jump between cards.<br><br>
-                            <b>Zoom Window:</b> Shows all 4 corners simultaneously. Align each corner to the <b>yellow
+                            <b>Zoom Window:</b> Open Settings to toggle. Shows all 4 corners simultaneously. Align each corner to the <b>yellow
                                 frame</b>. <b>+</b> / <b>-</b> to adjust magnification.
                         </span>
                     </div>
@@ -452,15 +455,6 @@
             <div class="controls hide-on-stuck settings-summary-row" id="ceSettingsSummaryRow">
                 <span id="ceSettingsSummaryText" class="settings-summary-text">Sizes not set |
                     DPI 300</span>
-                <button id="ceSettingsBtn" class="icon-btn settings-btn-bare" title="Open Settings">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path
-                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                        </path>
-                    </svg>
-                </button>
             </div>
 
             <!-- Rect-mode Controls (Rectangle mode only) -->
@@ -500,6 +494,12 @@
                 <div id="ceZoomTitle" class="zoom-window-header">Zoom Preview</div>
                 <canvas id="ceZoomCanvas" width="300" height="300" style="display: block;"></canvas>
                 <div id="ceZoomResizer" class="zoom-window-resizer"></div>
+            </div>
+
+            <!-- Minimap Window Container -->
+            <div id="ceMinimapContainer" class="minimap-window" style="display: none;">
+                <div id="ceMinimapTitle" class="minimap-window-header">Overview</div>
+                <canvas id="ceMinimapCanvas" style="display: block;"></canvas>
             </div>
 
             <!-- Additional controls for PDF navigation -->
@@ -806,6 +806,16 @@
                                 style="margin-left: 5px; cursor: pointer; flex: 1;" title="Change line opacity">
                             <span id="ceLineOpacityVal"
                                 style="display:inline-block; width: 4ch; text-align: right;">0.50</span>
+                        </div>
+                        <div class="input-container" style="justify-content: flex-start; margin-top: 10px; gap: 20px;">
+                            <label style="display: flex; align-items: center; gap: 5px; text-transform: none; font-weight: normal;">
+                                <input type="checkbox" id="ceZoomCheckbox" checked>
+                                Zoom Window
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; text-transform: none; font-weight: normal;">
+                                <input type="checkbox" id="ceMinimapCheckbox" checked>
+                                Minimap
+                            </label>
                         </div>
                     </div>
                 </div>

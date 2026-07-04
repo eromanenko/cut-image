@@ -11,6 +11,7 @@ import { saveCurrentToDatabase, serializeDatabaseToIni, parseIniToDatabase } fro
 import { runBatchExport, clearSummary } from './batch-export.js';
 import { switchMode } from './card-operations.js';
 import { handleZoomTitleMouseDown, handleZoomResizerMouseDown, handleZoomMouseMove, handleZoomMouseUp } from './zoom-ui.js';
+import { handleMinimapTitleMouseDown, handleMinimapMouseMove, handleMinimapMouseUp } from './minimap-ui.js';
 import { handleGlobalKeyDown, handleGlobalKeyUp } from './keyboard-handlers.js';
 import { handleCanvasMouseDown, handleCanvasMouseMove, handleGlobalMouseUp } from './mouse-handlers.js';
 
@@ -270,10 +271,21 @@ export function bindEvents() {
         redraw();
     });
 
-    dom.zoomCheckbox.addEventListener("change", updateZoomWindow);
+    dom.zoomCheckbox.addEventListener("change", () => {
+        saveSettingsToStorage();
+        updateZoomWindow();
+    });
+
+    dom.minimapCheckbox.addEventListener("change", () => {
+        saveSettingsToStorage();
+        updateZoomWindow(); // This will trigger updateMinimapWindow if we call it from there, or we can just call redraw
+        redraw();
+    });
 
     dom.zoomTitle.addEventListener("mousedown", handleZoomTitleMouseDown);
     dom.zoomResizer.addEventListener("mousedown", handleZoomResizerMouseDown);
+
+    dom.minimapTitle.addEventListener("mousedown", handleMinimapTitleMouseDown);
 
     // ── PDF Pagination ───────────────────────────────────────────────────────
     dom.prevPageBtn.addEventListener("click", () => {
@@ -296,9 +308,13 @@ export function bindEvents() {
     dom.canvas.addEventListener("mousedown", handleCanvasMouseDown);
     dom.canvas.addEventListener("mousemove", handleCanvasMouseMove);
 
-    window.addEventListener("mousemove", handleZoomMouseMove);
+    window.addEventListener("mousemove", (e) => {
+        handleZoomMouseMove(e);
+        handleMinimapMouseMove(e);
+    });
     window.addEventListener("mouseup", () => {
         handleZoomMouseUp();
+        handleMinimapMouseUp();
         handleGlobalMouseUp();
     });
 

@@ -75,6 +75,36 @@ canvas {
     /* Amber/Orange color to stand out */
 }
 
+/* ============================================================
+   Draggable Minimap Window
+   ============================================================ */
+.minimap-window {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    /* Dimensions are set dynamically based on image aspect ratio */
+}
+
+.minimap-window-header {
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    padding: 4px 8px;
+    text-align: center;
+    cursor: move;
+    user-select: none;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
 .zoom-window-resizer {
     position: absolute;
     right: 0;

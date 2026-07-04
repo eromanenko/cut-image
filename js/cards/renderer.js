@@ -57,6 +57,7 @@ export function redraw() {
     dom.ctx.restore();
 
     updateZoomWindow();
+    updateMinimapWindow();
 }
 
 // ---------------------------------------------------------------------------
@@ -533,5 +534,81 @@ function updateZoomWindowRect() {
     dom.zoomCtx.textBaseline = 'alphabetic';
 }
 
+// ---------------------------------------------------------------------------
+// Minimap window
+// ---------------------------------------------------------------------------
 
+export function updateMinimapWindow() {
+    if (!dom.minimapCheckbox || !dom.minimapCheckbox.checked || !state.isImageLoaded) {
+        if (dom.minimapContainer) dom.minimapContainer.style.display = 'none';
+        return;
+    }
+
+    dom.minimapContainer.style.display = 'block';
+
+    const maxDim = 150;
+    const imgW = dom.sourceCanvas.width;
+    const imgH = dom.sourceCanvas.height;
+    
+    let scale = 1;
+    if (imgW > imgH) {
+        scale = maxDim / imgW;
+    } else {
+        scale = maxDim / imgH;
+    }
+
+    const mapW = imgW * scale;
+    const mapH = imgH * scale;
+
+    dom.minimapCanvas.width = mapW;
+    dom.minimapCanvas.height = mapH;
+
+    // Draw background (white background, transparent image)
+    dom.minimapCtx.fillStyle = '#ffffff';
+    dom.minimapCtx.fillRect(0, 0, mapW, mapH);
+    dom.minimapCtx.globalAlpha = 0.5;
+    dom.minimapCtx.drawImage(dom.sourceCanvas, 0, 0, mapW, mapH);
+    dom.minimapCtx.globalAlpha = 1.0;
+
+    // Get cards
+    const isRect = state.editMode === 'rect';
+    let cards = [];
+    let activeIndex = -1;
+    if (isRect) {
+        cards = state.rectCards.map(c => getRectCardCorners(c, state.rectWidth, state.rectHeight, state.rectSkew));
+        activeIndex = state.selectedRectCardIndex;
+    } else {
+        cards = state.detectedCards;
+        if (state.selectedPoint) {
+            activeIndex = cards.findIndex(card => card.includes(state.selectedPoint));
+        }
+    }
+
+    // Draw cards
+    for (let i = 0; i < cards.length; i++) {
+        const pts = cards[i];
+        if (pts.length < 3) continue;
+
+        dom.minimapCtx.beginPath();
+        dom.minimapCtx.moveTo(pts[0].x * scale, pts[0].y * scale);
+        for (let j = 1; j < pts.length; j++) {
+            dom.minimapCtx.lineTo(pts[j].x * scale, pts[j].y * scale);
+        }
+        dom.minimapCtx.closePath();
+
+        if (i === activeIndex) {
+            dom.minimapCtx.fillStyle = 'rgba(0, 123, 255, 0.6)'; // Blue
+            dom.minimapCtx.fill();
+            dom.minimapCtx.lineWidth = 1.5;
+            dom.minimapCtx.strokeStyle = '#0056b3'; // Darker blue
+            dom.minimapCtx.stroke();
+        } else {
+            dom.minimapCtx.fillStyle = 'rgba(0, 0, 0, 0.6)'; // Dark gray/black for high contrast
+            dom.minimapCtx.fill();
+            dom.minimapCtx.lineWidth = 1;
+            dom.minimapCtx.strokeStyle = 'rgba(0, 0, 0, 0.9)'; // Almost black border
+            dom.minimapCtx.stroke();
+        }
+    }
+}
 

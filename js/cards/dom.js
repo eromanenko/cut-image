@@ -30,6 +30,14 @@ export function initDom() {
     dom.zoomTitle = document.getElementById("ceZoomTitle");
     dom.zoomResizer = document.getElementById("ceZoomResizer");
 
+    dom.minimapCheckbox = document.getElementById("ceMinimapCheckbox");
+    dom.minimapContainer = document.getElementById("ceMinimapContainer");
+    dom.minimapTitle = document.getElementById("ceMinimapTitle");
+    dom.minimapCanvas = document.getElementById("ceMinimapCanvas");
+    if (dom.minimapCanvas) {
+        dom.minimapCtx = dom.minimapCanvas.getContext("2d");
+    }
+
     dom.sizeListContainer = document.getElementById("ceSizeListContainer");
     dom.addSizeBtn = document.getElementById("ceAddSizeBtn");
     dom.dpiInput = document.getElementById("ceDpiInput");

@@ -63,7 +63,9 @@ const DEFAULT_SETTINGS = {
     lineColor: '#007bff',
     lineOpacity: '0.50',
     exportFormat: 'png',
-    exportQuality: '90'
+    exportQuality: '90',
+    showMinimap: true,
+    showZoom: true
 };
 
 export function loadSettingsFromStorage() {
@@ -86,6 +88,12 @@ export function loadSettingsFromStorage() {
                 dom.exportQualitySlider.value = data.exportQuality;
                 if (dom.exportQualityVal) dom.exportQualityVal.textContent = data.exportQuality + '%';
             }
+            if (data.showMinimap !== undefined && dom.minimapCheckbox) {
+                dom.minimapCheckbox.checked = data.showMinimap;
+            }
+            if (data.showZoom !== undefined && dom.zoomCheckbox) {
+                dom.zoomCheckbox.checked = data.showZoom;
+            }
             if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'block';
         } catch (e) {
             console.error("Error parsing settings", e);
@@ -103,14 +111,18 @@ export function saveSettingsToStorage() {
         lineColor: dom.lineColor.value,
         lineOpacity: dom.lineOpacity.value,
         exportFormat: dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'jpg' : 'png',
-        exportQuality: dom.exportQualitySlider ? dom.exportQualitySlider.value : '90'
+        exportQuality: dom.exportQualitySlider ? dom.exportQualitySlider.value : '90',
+        showMinimap: dom.minimapCheckbox ? dom.minimapCheckbox.checked : true,
+        showZoom: dom.zoomCheckbox ? dom.zoomCheckbox.checked : true
     };
 
     const isDefault = settings.shareData === DEFAULT_SETTINGS.shareData &&
         settings.lineColor === DEFAULT_SETTINGS.lineColor &&
         settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity &&
         settings.exportFormat === DEFAULT_SETTINGS.exportFormat &&
-        settings.exportQuality === DEFAULT_SETTINGS.exportQuality;
+        settings.exportQuality === DEFAULT_SETTINGS.exportQuality &&
+        settings.showMinimap === DEFAULT_SETTINGS.showMinimap &&
+        settings.showZoom === DEFAULT_SETTINGS.showZoom;
 
     if (!isDefault) {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -136,6 +148,12 @@ export function resetSettingsToDefault() {
     if (dom.exportQualitySlider) {
         dom.exportQualitySlider.value = DEFAULT_SETTINGS.exportQuality;
         if (dom.exportQualityVal) dom.exportQualityVal.textContent = DEFAULT_SETTINGS.exportQuality + '%';
+    }
+    if (dom.minimapCheckbox) {
+        dom.minimapCheckbox.checked = DEFAULT_SETTINGS.showMinimap;
+    }
+    if (dom.zoomCheckbox) {
+        dom.zoomCheckbox.checked = DEFAULT_SETTINGS.showZoom;
     }
     if (dom.settingsResetBtn) dom.settingsResetBtn.style.display = 'none';
 }
