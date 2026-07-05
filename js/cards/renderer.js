@@ -136,10 +136,18 @@ function redrawFreeformMode() {
             let cx = card.reduce((sum, p) => sum + p.x, 0) / card.length;
             let cy = card.reduce((sum, p) => sum + p.y, 0) / card.length;
 
-            const drawLabel = (ctx, text, x, y, color = "#007bff") => {
-                const metrics = ctx.measureText(text);
-                const width = metrics.width + 12 * scale;
-                const height = 24 * scale;
+            const drawLabel = (ctx, lines, x, y, color = "#007bff") => {
+                if (!Array.isArray(lines)) lines = [lines];
+                
+                let maxWidth = 0;
+                for (const line of lines) {
+                    const metrics = ctx.measureText(line);
+                    if (metrics.width > maxWidth) maxWidth = metrics.width;
+                }
+
+                const width = maxWidth + 12 * scale;
+                const lineHeight = 16 * scale;
+                const height = (lines.length * lineHeight) + 8 * scale;
 
                 ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 if (ctx.roundRect) {
@@ -154,7 +162,10 @@ function redrawFreeformMode() {
                 ctx.stroke();
 
                 ctx.fillStyle = color;
-                ctx.fillText(text, x, y);
+                const startY = y - (lines.length - 1) * lineHeight / 2;
+                for (let j = 0; j < lines.length; j++) {
+                    ctx.fillText(lines[j], x, startY + j * lineHeight);
+                }
             };
 
             for (let k = 0; k < card.length; k++) {
@@ -165,7 +176,9 @@ function redrawFreeformMode() {
                 const dist = Math.round(Math.hypot(ptNext.x - pt.x, ptNext.y - pt.y));
                 const mx = (pt.x + ptNext.x) / 2;
                 const my = (pt.y + ptNext.y) / 2;
-                drawLabel(dom.ctx, `${dist} px`, mx, my);
+                const dpiNum = parseFloat(dom.dpiInput?.value) || 300;
+                const distMm = (dist * 25.4 / dpiNum).toFixed(1);
+                drawLabel(dom.ctx, [`${dist} px`, `${distMm} mm`], mx, my);
 
                 const v1x = ptPrev.x - pt.x;
                 const v1y = ptPrev.y - pt.y;
@@ -300,8 +313,13 @@ function redrawRectMode() {
             dom.ctx.textAlign = 'center';
             dom.ctx.textBaseline = 'middle';
 
+            const dpiNum = parseFloat(dom.dpiInput?.value) || 300;
+            const wMm = (state.rectWidth * 25.4 / dpiNum).toFixed(1);
+            const hMm = (state.rectHeight * 25.4 / dpiNum).toFixed(1);
+
             const info = [
                 `${state.rectWidth} × ${state.rectHeight} px`,
+                `(${wMm} × ${hMm} mm)`,
                 state.rectSkew !== 0 ? `skew ${state.rectSkew} px` : null,
                 card.angle !== 0 ? `${card.angle.toFixed(1)}\u00B0` : null,
             ].filter(Boolean).join('  ·  ');

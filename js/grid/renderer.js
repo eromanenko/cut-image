@@ -82,14 +82,21 @@ function drawDimensions() {
         const dist = Math.round(xLines[i+1] - xLines[i]);
         if (dist < 10) continue; 
         const midX = (xLines[i] + xLines[i+1]) / 2;
-        const text = dist + "px";
+        const dpiNum = parseFloat(dom.dpiInput?.value) || 300;
+        const distMm = (dist * 25.4 / dpiNum).toFixed(1);
+        const textPx = dist + "px";
+        const textMm = distMm + "mm";
         
-        const metrics = dom.ctx.measureText(text);
+        const metricsPx = dom.ctx.measureText(textPx);
+        const metricsMm = dom.ctx.measureText(textMm);
+        const w = Math.max(metricsPx.width, metricsMm.width);
+
         dom.ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-        dom.ctx.fillRect(midX - metrics.width / 2 - 3, 5, metrics.width + 6, 16);
+        dom.ctx.fillRect(midX - w / 2 - 3, 5, w + 6, 30);
         
         dom.ctx.fillStyle = "red";
-        dom.ctx.fillText(text, midX, 7);
+        dom.ctx.fillText(textPx, midX, 7);
+        dom.ctx.fillText(textMm, midX, 21);
     }
 
     // Vertical segments (left)
@@ -99,13 +106,20 @@ function drawDimensions() {
         const dist = Math.round(yLines[i+1] - yLines[i]);
         if (dist < 10) continue;
         const midY = (yLines[i] + yLines[i+1]) / 2;
-        const text = dist + "px";
+        const dpiNum = parseFloat(dom.dpiInput?.value) || 300;
+        const distMm = (dist * 25.4 / dpiNum).toFixed(1);
+        const textPx = dist + "px";
+        const textMm = distMm + "mm";
 
-        const metrics = dom.ctx.measureText(text);
+        const metricsPx = dom.ctx.measureText(textPx);
+        const metricsMm = dom.ctx.measureText(textMm);
+        const w = Math.max(metricsPx.width, metricsMm.width);
+
         dom.ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-        dom.ctx.fillRect(5, midY - 9, metrics.width + 6, 18);
+        dom.ctx.fillRect(5, midY - 16, w + 6, 32);
 
         dom.ctx.fillStyle = "red";
-        dom.ctx.fillText(text, 8, midY);
+        dom.ctx.fillText(textPx, 8, midY - 7);
+        dom.ctx.fillText(textMm, 8, midY + 7);
     }
 }
