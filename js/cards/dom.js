@@ -100,6 +100,7 @@ export function initDom() {
     dom.exportQualityRow = document.getElementById("ceExportQualityRow");
     dom.exportQualitySlider = document.getElementById("ceExportQualitySlider");
     dom.exportQualityVal = document.getElementById("ceExportQualityVal");
+    dom.batchZipSizeInput = document.getElementById("ceBatchZipSizeInput");
 
     // Settings Modal
     dom.settingsModal = document.getElementById("ceSettingsModal");

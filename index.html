@@ -75,7 +75,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.10.0</span>
+            <span class="app-version">v5.10.1</span>
         </div>
 
         <div class="tabs">
@@ -927,6 +927,21 @@
                                     style="flex: 1; accent-color: var(--accent);">
                                 <span id="ceExportQualityVal" style="font-size: 13px; width: 4ch;">90%</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ce-calc-row">
+                    <div class="ce-calc-group">
+                        <label>Batch Export Memory Limit</label>
+                        <div class="muted-small">
+                            Maximum ZIP archive size before creating a new part. Prevents browser crashes.
+                        </div>
+                        <div class="input-container" style="margin-top: 8px; width: fit-content;">
+                            <label for="ceBatchZipSizeInput"
+                                style="text-transform: none; font-size: 13px; color: var(--text); font-weight: normal; margin-bottom: 0;">MB:</label>
+                            <input type="number" id="ceBatchZipSizeInput" value="1000" min="50" step="50"
+                                class="input-narrow-sm" style="width: 90px;">
                         </div>
                     </div>
                 </div>

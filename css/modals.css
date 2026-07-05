@@ -399,3 +399,39 @@
     accent-color: #007bff;
     cursor: pointer;
 }
+
+/* ============================================================
+   Settings Modal Layout (2 columns)
+   ============================================================ */
+#ceSettingsModal .ce-modal-content {
+    width: 720px;
+    max-width: 95vw;
+}
+
+#ceSettingsModal .ce-modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 20px;
+}
+
+#ceSettingsModal .ce-calc-row {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+    height: 100%;
+}
+
+#ceSettingsModal .ce-calc-group {
+    background-color: var(--surface-2);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+@media (max-width: 680px) {
+    #ceSettingsModal .ce-modal-body {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}

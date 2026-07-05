@@ -229,12 +229,32 @@ export async function runBatchExport(files, settings = {}) {
         dom.batchExportBtn.textContent = 'Processing…';
     }
 
-    const zip = new JSZip();
+    let zip = new JSZip();
+    let zipPart = 1;
+    let currentZipSize = 0;
+    const maxMb = parseFloat(dom.batchZipSizeInput?.value) || 1000;
+    const MAX_ZIP_SIZE = maxMb * 1024 * 1024;
+
     let totalCards = 0;
     let processedFiles = 0;
     const notFound = [];
     const loadErrors = [];
     window._loadErrors = loadErrors; // Hack to pass it to showSummary without changing its signature
+
+    const downloadZip = async (currentZip, part) => {
+        showProgress(`Generating archive part ${part}…`, 99);
+        await new Promise(r => setTimeout(r, 0));
+        const content = await currentZip.generateAsync({ type: 'blob' });
+        const date = new Date().toISOString().slice(0, 10);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = `cards_batch_${date}_part${part}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+    };
+
 
     try {
         for (let fi = 0; fi < files.length; fi++) {
@@ -319,7 +339,17 @@ export async function runBatchExport(files, settings = {}) {
                 const blob = await cutCardToBlob(srcCanvas, pts, outW, outH, dpi, format, quality);
                 const padIndex = String(i + 1).padStart(2, '0');
                 zip.file(`${prefix}-${padIndex}.${ext}`, blob);
+                currentZipSize += blob.size;
                 totalCards++;
+
+                if (currentZipSize >= MAX_ZIP_SIZE) {
+                    await downloadZip(zip, zipPart);
+                    zipPart++;
+                    zip = new JSZip();
+                    currentZipSize = 0;
+                    // Small delay to allow GC
+                    await new Promise(r => setTimeout(r, 500));
+                }
             }
 
             processedFiles++;
@@ -335,18 +365,26 @@ export async function runBatchExport(files, settings = {}) {
             return;
         }
 
-        showProgress('Generating archive…', 99);
-        await new Promise(r => setTimeout(r, 0));
+        if (currentZipSize > 0 || zipPart === 1 && totalCards > 0) {
+            if (zipPart === 1) {
+                showProgress('Generating archive…', 99);
+                await new Promise(r => setTimeout(r, 0));
+                const content = await zip.generateAsync({ type: 'blob' });
+                const date = new Date().toISOString().slice(0, 10);
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(content);
+                a.download = `cards_batch_${date}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            } else {
+                if (Object.keys(zip.files).length > 0) {
+                    await downloadZip(zip, zipPart);
+                }
+            }
+        }
 
-        const content = await zip.generateAsync({ type: 'blob' });
-        const date = new Date().toISOString().slice(0, 10);
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(content);
-        a.download = `cards_batch_${date}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
 
     } catch (e) {
         console.error('Batch export error:', e);
