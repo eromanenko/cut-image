@@ -40,7 +40,22 @@ export function loadCurrentFromDatabase() {
     const key = getCurrentFileKey();
     if (!key) return false;
 
-    const record = state.coordsDatabase[key];
+    let record = state.coordsDatabase[key];
+    
+    // Fallback: match by prefix up to the last dot inclusive
+    if (!record) {
+        const lastDotIndex = key.lastIndexOf('.');
+        if (lastDotIndex !== -1) {
+            const prefix = key.substring(0, lastDotIndex + 1);
+            for (const dbKey of Object.keys(state.coordsDatabase)) {
+                if (dbKey.startsWith(prefix)) {
+                    record = state.coordsDatabase[dbKey];
+                    break;
+                }
+            }
+        }
+    }
+
     if (!record) return false;
 
     // Apply record to state

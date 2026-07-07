@@ -269,8 +269,21 @@ export async function runBatchExport(files, settings = {}) {
             // Yield to browser so the UI can repaint
             await new Promise(r => setTimeout(r, 0));
 
-            // Look up record in database by exact filename
-            const record = db[baseName];
+            // Look up record in database by exact filename or prefix
+            let record = db[baseName];
+            if (!record) {
+                const lastDotIndex = baseName.lastIndexOf('.');
+                if (lastDotIndex !== -1) {
+                    const prefix = baseName.substring(0, lastDotIndex + 1);
+                    for (const k of Object.keys(db)) {
+                        if (k.startsWith(prefix)) {
+                            record = db[k];
+                            break;
+                        }
+                    }
+                }
+            }
+
             const cardList = record
                 ? (record.editMode === 'freeform' ? (record.cards || []) : (record.rectCards || []))
                 : [];

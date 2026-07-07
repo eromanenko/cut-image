@@ -233,8 +233,16 @@ def main():
         for section in config.sections():
             img_path = section
             if not os.path.exists(img_path):
-                print(f"  Warning: Image '{img_path}' not found, skipping...")
-                continue
+                prefix = img_path.rsplit('.', 1)[0] + '.' if '.' in img_path else img_path + '.'
+                candidates = [f for f in os.listdir('.') if f.startswith(prefix) and os.path.isfile(f)]
+                valid_exts = {'.png', '.jpg', '.jpeg', '.tif', '.tiff', '.bmp', '.webp'}
+                candidates = [f for f in candidates if os.path.splitext(f)[1].lower() in valid_exts]
+                
+                if candidates:
+                    img_path = candidates[0]
+                else:
+                    print(f"  Warning: Image '{img_path}' not found, skipping...")
+                    continue
 
             print(f"  Processing image: {img_path}")
 
