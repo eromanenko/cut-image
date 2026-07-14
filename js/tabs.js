@@ -49,4 +49,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, { passive: true });
     }
+
+    // Handle global paste event
+    document.addEventListener('paste', (e) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        
+        let file = null;
+        for (const item of items) {
+            if (item.type.startsWith('image/') || item.type === 'application/pdf') {
+                file = item.getAsFile();
+                break;
+            }
+        }
+        
+        if (file) {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                const fileInput = activeTab.querySelector('input[type="file"]');
+                if (fileInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    fileInput.files = dt.files;
+                    fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        }
+    });
 });

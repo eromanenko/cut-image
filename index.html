@@ -75,7 +75,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.10.1</span>
+            <span class="app-version">v5.10.2</span>
         </div>
 
         <div class="tabs">
@@ -418,7 +418,9 @@
                         <b>Save/Load:</b> Use the <b>Disk</b> icon to export all layout coordinates to a <b>.ini</b>
                         file. Use the <b>Upload</b> icon to restore coordinates. Layouts are <b>auto-saved</b> per
                         filename and restored when re-opening a file.<br><br>
-                        <b>Settings:</b> Open <b>Settings (gear icon)</b> to configure line colors/opacity, toggle the <b>Zoom Window</b> or <b>Minimap</b>, set the <b>Padding</b>, and adjust output format/quality (<b>PNG/JPG</b>).<br><br>
+                        <b>Settings:</b> Open <b>Settings (gear icon)</b> to configure line colors/opacity, toggle the
+                        <b>Zoom Window</b> or <b>Minimap</b>, set the <b>Padding</b>, and adjust output format/quality
+                        (<b>PNG/JPG</b>).<br><br>
                         <b>Auto-Detect:</b> Open <b>Settings (gear icon)</b> to specify expected card sizes in mm
                         for highly accurate detection.<br><br>
                         <b>Batch Export:</b> Open <b>Loaded Layouts</b> (Upload icon → view saved layouts), then click
@@ -431,7 +433,8 @@
                             add points, press <b>Enter</b> to close the shape, or <b>Esc</b> to cancel.<br><br>
                             <b>Navigation:</b> <b>Tab</b> cycles through corners. <b>Enter</b> jumps between cards.
                             <b>Arrow Keys</b> move points (Ctrl = 10px steps).<br><br>
-                            <b>Zoom Window:</b> Open Settings to toggle. <b>+</b> / <b>-</b> adjusts magnification. <b>Z</b> toggles it quickly.
+                            <b>Zoom Window:</b> Open Settings to toggle. <b>+</b> / <b>-</b> adjusts magnification.
+                            <b>Z</b> toggles it quickly.
                         </span>
                         <span id="ceInstrRect" style="display:none;">
                             <b>Rectangle Mode:</b> All cards are identical parallelograms defined by global
@@ -442,7 +445,8 @@
                             steps).<br><br>
                             <b>Rotate:</b> Press <b>/</b> (0.05&deg; CW) or <b>Shift+/</b> (0.05&deg; CCW). <b>Enter</b>
                             / <b>Shift+Enter</b> to jump between cards.<br><br>
-                            <b>Zoom Window:</b> Open Settings to toggle. Shows all 4 corners simultaneously. Align each corner to the <b>yellow
+                            <b>Zoom Window:</b> Open Settings to toggle. Shows all 4 corners simultaneously. Align each
+                            corner to the <b>yellow
                                 frame</b>. <b>+</b> / <b>-</b> to adjust magnification.
                         </span>
                     </div>
@@ -808,11 +812,13 @@
                                 style="display:inline-block; width: 4ch; text-align: right;">0.50</span>
                         </div>
                         <div class="input-container" style="justify-content: flex-start; margin-top: 10px; gap: 20px;">
-                            <label style="display: flex; align-items: center; gap: 5px; text-transform: none; font-weight: normal;">
+                            <label
+                                style="display: flex; align-items: center; gap: 5px; text-transform: none; font-weight: normal;">
                                 <input type="checkbox" id="ceZoomCheckbox" checked>
                                 Zoom Window
                             </label>
-                            <label style="display: flex; align-items: center; gap: 5px; text-transform: none; font-weight: normal;">
+                            <label
+                                style="display: flex; align-items: center; gap: 5px; text-transform: none; font-weight: normal;">
                                 <input type="checkbox" id="ceMinimapCheckbox" checked>
                                 Minimap
                             </label>
