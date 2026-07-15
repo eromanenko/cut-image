@@ -13,3 +13,8 @@ venv/
 # Python bytecode cache
 __pycache__/
 *.pyc
+
+# ML Dataset and Runs
+scripts/dataset/
+scripts/runs/
+scripts/dataset.yaml
