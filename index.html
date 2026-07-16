@@ -28,6 +28,7 @@
     <title>Image & PDF Slicer</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <!-- Load libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/utif@3.1.0/UTIF.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -75,7 +76,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v5.10.2</span>
+            <span class="app-version">v6.0.0</span>
         </div>
 
         <div class="tabs">
@@ -954,6 +955,11 @@
 
                 <div class="ce-calc-row">
                     <div class="ce-calc-group">
+                        <label>Detection Engine</label>
+                        <select id="ceDetectionEngineSelect" class="input-narrow-sm" style="width: 100%; margin-bottom: 8px;">
+                            <option value="ai">AI Detection (YOLOv8)</option>
+                            <option value="cv">Classic Detection (OpenCV)</option>
+                        </select>
                         <label>Data Sharing</label>
                         <div class="muted-small">
                             This data is collected anonymously and helps us train AI models to improve the accuracy of

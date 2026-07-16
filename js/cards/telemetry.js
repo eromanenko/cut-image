@@ -72,6 +72,11 @@ export async function sendTelemetryData() {
     const cardCount = state.editMode === 'rect' ? state.rectCards.length : state.detectedCards.length;
     if (cardCount === 0) return;
 
+    if (!state.userEditedCoords) {
+        console.log("Telemetry skipped: no manual edits made (model predicted perfectly).");
+        return;
+    }
+
     try {
         console.log("Preparing telemetry data...");
         const imageBase64 = getCompressedImageBase64();

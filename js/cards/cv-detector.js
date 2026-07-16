@@ -152,7 +152,7 @@ export async function detectCards() {
         await showAlert("No cards could be automatically detected. Make sure the background contrasts with the cards.");
     }
 
-    import('./ini-handler.js').then(m => m.saveCurrentToDatabase());
+    import('./ini-handler.js').then(m => m.saveCurrentToDatabase(true, false));
 
     redraw();
     updateButtonStates();
@@ -175,9 +175,27 @@ export async function handleAutoDetect() {
 
     setTimeout(async () => {
         try {
-            await detectCards();
+            if (state.detectionEngine === 'ai') {
+                const { detectCardsML } = await import('./ml-detector.js');
+                const count = await detectCardsML();
+                if (count === 0) {
+                    await showAlert("No cards detected by AI. Try OpenCV mode in Settings.");
+                } else {
+                    // Similar post-processing as OpenCV
+                    if (state.editMode === 'freeform') {
+                        state.selectedPoint = state.detectedCards[0][0];
+                        scrollToCorner(state.selectedPoint, 0);
+                    }
+                    state.userEditedCoords = false;
+                    import('./ini-handler.js').then(m => m.saveCurrentToDatabase(true, false));
+                    redraw();
+                }
+            } else {
+                await detectCards();
+                state.userEditedCoords = false;
+            }
         } catch (err) {
-            console.error("OpenCV Processing Error:", err);
+            console.error("Processing Error:", err);
             await showAlert("An error occurred during card detection.");
         } finally {
             dom.processButton.disabled    = false;

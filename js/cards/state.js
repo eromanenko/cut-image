@@ -56,11 +56,15 @@ export const state = {
     currentFileName: "",
     
     hasUnsavedChanges: false,
+    userEditedCoords: false,
+    
+    detectionEngine: 'ai', // 'ai' or 'cv'
 };
 
 export function resetState() {
     state.detectedCards = [];
     state.isImageLoaded = false;
+    state.userEditedCoords = false;
     state.pdfDoc = null;
     state.isPdf = false;
 

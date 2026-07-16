@@ -60,6 +60,7 @@ export function updateButtonStates() {
 const SETTINGS_KEY = 'ce_user_settings';
 const DEFAULT_SETTINGS = {
     shareData: true,
+    detectionEngine: 'ai',
     lineColor: '#007bff',
     lineOpacity: '0.50',
     exportFormat: 'png',
@@ -74,6 +75,10 @@ export function loadSettingsFromStorage() {
         try {
             const data = JSON.parse(saved);
             if (dom.shareDataCheckbox) dom.shareDataCheckbox.checked = data.shareData !== false;
+            if (data.detectionEngine && dom.detectionEngineSelect) {
+                dom.detectionEngineSelect.value = data.detectionEngine;
+                state.detectionEngine = data.detectionEngine;
+            }
             if (dom.lineColor && data.lineColor) dom.lineColor.value = data.lineColor;
             if (dom.lineOpacity && data.lineOpacity) {
                 dom.lineOpacity.value = data.lineOpacity;
@@ -108,6 +113,7 @@ export function saveSettingsToStorage() {
 
     const settings = {
         shareData: dom.shareDataCheckbox.checked,
+        detectionEngine: dom.detectionEngineSelect ? dom.detectionEngineSelect.value : 'ai',
         lineColor: dom.lineColor.value,
         lineOpacity: dom.lineOpacity.value,
         exportFormat: dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'jpg' : 'png',
@@ -116,7 +122,12 @@ export function saveSettingsToStorage() {
         showZoom: dom.zoomCheckbox ? dom.zoomCheckbox.checked : true
     };
 
+    if (dom.detectionEngineSelect) {
+        state.detectionEngine = settings.detectionEngine;
+    }
+
     const isDefault = settings.shareData === DEFAULT_SETTINGS.shareData &&
+        settings.detectionEngine === DEFAULT_SETTINGS.detectionEngine &&
         settings.lineColor === DEFAULT_SETTINGS.lineColor &&
         settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity &&
         settings.exportFormat === DEFAULT_SETTINGS.exportFormat &&
@@ -136,6 +147,10 @@ export function saveSettingsToStorage() {
 export function resetSettingsToDefault() {
     localStorage.removeItem(SETTINGS_KEY);
     if (dom.shareDataCheckbox) dom.shareDataCheckbox.checked = DEFAULT_SETTINGS.shareData;
+    if (dom.detectionEngineSelect) {
+        dom.detectionEngineSelect.value = DEFAULT_SETTINGS.detectionEngine;
+        state.detectionEngine = DEFAULT_SETTINGS.detectionEngine;
+    }
     if (dom.lineColor) dom.lineColor.value = DEFAULT_SETTINGS.lineColor;
     if (dom.lineOpacity) {
         dom.lineOpacity.value = DEFAULT_SETTINGS.lineOpacity;
@@ -197,6 +212,9 @@ export function updateSettingsSummary() {
     } else {
         text += ` | ${format}`;
     }
+
+    const engineStr = state.detectionEngine === 'ai' ? 'ML' : 'OpenCV';
+    text += ` | ${engineStr}`;
 
     dom.settingsSummaryText.textContent = text;
 }

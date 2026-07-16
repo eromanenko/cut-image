@@ -12,7 +12,7 @@ export function getCurrentFileKey() {
     return state.currentFileName;
 }
 
-export function saveCurrentToDatabase(isEdit = true) {
+export function saveCurrentToDatabase(isEdit = true, isUserAction = true) {
     const key = getCurrentFileKey();
     if (!key) return;
 
@@ -33,6 +33,9 @@ export function saveCurrentToDatabase(isEdit = true) {
     state.coordsDatabase[key] = record;
     if (isEdit) {
         state.hasUnsavedChanges = true;
+        if (isUserAction) {
+            state.userEditedCoords = true;
+        }
     }
 }
 
@@ -74,6 +77,8 @@ export function loadCurrentFromDatabase() {
         state.rectSkew = record.rectSkew || 0;
         state.detectedCards = [];
     }
+
+    state.userEditedCoords = false;
 
     // Update UI toggle
     applyModeUI(state.editMode);
