@@ -25,6 +25,16 @@ export function resetState() {
     dom.resetButton.disabled = true;
     state.pdfDoc = null;
     state.isPdf = false;
+
+    // Clear grid form
+    if (dom.gridCardW) dom.gridCardW.value = '';
+    if (dom.gridCardH) dom.gridCardH.value = '';
+    if (dom.gridCardsX) dom.gridCardsX.value = '';
+    if (dom.gridCardsY) dom.gridCardsY.value = '';
+    if (dom.gridGapX) dom.gridGapX.value = '0';
+    if (dom.gridGapY) dom.gridGapY.value = '0';
+    if (dom.gridMarginL) dom.gridMarginL.value = '';
+    if (dom.gridMarginT) dom.gridMarginT.value = '';
 }
 
 export function resetLines() {
