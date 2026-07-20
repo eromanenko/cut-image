@@ -28,6 +28,7 @@ function initDom() {
     dom.formatPng = document.getElementById('peFormatPng');
     dom.formatJpeg = document.getElementById('peFormatJpeg');
     dom.jpegQuality = document.getElementById('peJpegQuality');
+    dom.pairingModeSelect = document.getElementById('pePairingModeSelect');
 }
 
 function bindEvents() {
@@ -78,6 +79,12 @@ function bindEvents() {
 
     // Download
     dom.downloadBtn.addEventListener('click', downloadSelected);
+
+    // Pairing Mode
+    dom.pairingModeSelect.addEventListener('change', () => {
+        recalculatePairs();
+        renderGallery(dom.fileName.textContent);
+    });
 }
 
 // ── PDF Processing ──────────────────────────────────────────────────────────
@@ -121,6 +128,7 @@ async function handlePdfFile(file) {
             return;
         }
 
+        recalculatePairs();
         renderGallery(file.name);
     } catch (err) {
         console.error('Error processing PDF:', err);
@@ -150,12 +158,34 @@ async function extractImagesFromPage(page, pageNum) {
     const opList = await page.getOperatorList();
     const seenNames = new Set(); // avoid duplicates
 
+    let transformStack = [];
+    let currentTransform = [1, 0, 0, 1, 0, 0];
+    const OPS = pdfjsLib.OPS;
+
+    function applyTransform(m1, m2) {
+        return [
+            m1[0] * m2[0] + m1[1] * m2[2],
+            m1[0] * m2[1] + m1[1] * m2[3],
+            m1[2] * m2[0] + m1[3] * m2[2],
+            m1[2] * m2[1] + m1[3] * m2[3],
+            m1[4] * m2[0] + m1[5] * m2[2] + m2[4],
+            m1[4] * m2[1] + m1[5] * m2[3] + m2[5]
+        ];
+    }
+
     for (let i = 0; i < opList.fnArray.length; i++) {
         const fn = opList.fnArray[i];
         const args = opList.argsArray[i];
 
-        // Named image XObjects
-        if (fn === pdfjsLib.OPS.paintImageXObject || fn === pdfjsLib.OPS.paintJpegImageXObject) {
+        if (fn === OPS.save) {
+            transformStack.push([...currentTransform]);
+        } else if (fn === OPS.restore) {
+            if (transformStack.length > 0) {
+                currentTransform = transformStack.pop();
+            }
+        } else if (fn === OPS.transform) {
+            currentTransform = applyTransform(args, currentTransform);
+        } else if (fn === OPS.paintImageXObject || fn === OPS.paintJpegImageXObject) {
             const imgName = args[0];
             if (seenNames.has(imgName)) continue;
             seenNames.add(imgName);
@@ -163,14 +193,11 @@ async function extractImagesFromPage(page, pageNum) {
             const imgData = await getImageObj(page, imgName);
             if (!imgData) continue;
 
-            await pushExtractedImage(imgData, pageNum);
-        }
-
-        // Inline images (data embedded directly in content stream)
-        if (fn === pdfjsLib.OPS.paintInlineImageXObject || fn === pdfjsLib.OPS.paintInlineImageXObjectGroup) {
+            await pushExtractedImage(imgData, pageNum, currentTransform, page.view);
+        } else if (fn === OPS.paintInlineImageXObject || fn === OPS.paintInlineImageXObjectGroup) {
             const imgData = args[0];
             if (!imgData || !imgData.width || !imgData.height) continue;
-            await pushExtractedImage(imgData, pageNum);
+            await pushExtractedImage(imgData, pageNum, currentTransform, page.view);
         }
     }
 }
@@ -206,7 +233,7 @@ function getImageObj(page, name) {
  * Convert imgData to blob and push to extractedImages if valid.
  * Skips mask-like images (uniform gray rectangles).
  */
-async function pushExtractedImage(imgData, pageNum) {
+async function pushExtractedImage(imgData, pageNum, ctm, pageView) {
     const w = imgData.width || (imgData.bitmap ? imgData.bitmap.width : 0);
     const h = imgData.height || (imgData.bitmap ? imgData.bitmap.height : 0);
     if (w < 20 || h < 20) return;
@@ -229,6 +256,13 @@ async function pushExtractedImage(imgData, pageNum) {
     const imgIndex = extractedImages.filter(img => img.page === pageNum).length + 1;
     const objectUrl = URL.createObjectURL(blob);
 
+    // Calculate center on page using CTM
+    let centerX = 0, centerY = 0;
+    if (ctm) {
+        centerX = ctm[0] * 0.5 + ctm[2] * 0.5 + ctm[4];
+        centerY = ctm[1] * 0.5 + ctm[3] * 0.5 + ctm[5];
+    }
+
     extractedImages.push({
         blob,
         width: w,
@@ -237,8 +271,84 @@ async function pushExtractedImage(imgData, pageNum) {
         index: imgIndex,
         objectUrl,
         selected: true,
-        ext: format === 'image/jpeg' ? 'jpg' : 'png'
+        ext: format === 'image/jpeg' ? 'jpg' : 'png',
+        centerX,
+        centerY,
+        pageView,
+        exportName: `p${String(pageNum).padStart(2, '0')}_${String(imgIndex).padStart(2, '0')}`
     });
+}
+
+function recalculatePairs() {
+    const pairingMode = dom.pairingModeSelect.value;
+    
+    // Reset export names to default first
+    extractedImages.forEach(img => {
+        img.exportName = `p${String(img.page).padStart(2, '0')}_${String(img.index).padStart(2, '0')}`;
+        img.isPaired = false;
+    });
+
+    if (pairingMode === 'none') return;
+
+    // Group by page
+    const byPage = new Map();
+    extractedImages.forEach(img => {
+        if (!byPage.has(img.page)) byPage.set(img.page, []);
+        byPage.get(img.page).push(img);
+    });
+
+    let pairCounter = 1;
+    const pages = Array.from(byPage.keys()).sort((a, b) => a - b);
+    
+    for (const pageNum of pages) {
+        if (pageNum % 2 === 0) continue; // Skip even pages (backs) in the outer loop
+        
+        const fronts = byPage.get(pageNum) || [];
+        const backs = byPage.get(pageNum + 1) || []; // Next page is the back
+
+        if (backs.length === 0) continue;
+
+        for (const front of fronts) {
+            if (front.isPaired) continue;
+
+            // Find matching back
+            let bestMatch = null;
+            let minDistance = 100; // Tolerance in PDF points
+
+            for (const back of backs) {
+                if (back.isPaired) continue;
+                
+                let expectedX = front.centerX;
+                let expectedY = front.centerY;
+                
+                if (pairingMode === 'horizontal' && front.pageView) {
+                    const pageWidth = front.pageView[2] - front.pageView[0];
+                    expectedX = pageWidth - front.centerX;
+                } else if (pairingMode === 'vertical' && front.pageView) {
+                    const pageHeight = front.pageView[3] - front.pageView[1];
+                    expectedY = pageHeight - front.centerY;
+                }
+
+                const dx = expectedX - back.centerX;
+                const dy = expectedY - back.centerY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    bestMatch = back;
+                }
+            }
+
+            if (bestMatch) {
+                const padIdx = String(pairCounter).padStart(2, '0');
+                front.exportName = `card_${padIdx}a`;
+                bestMatch.exportName = `card_${padIdx}b`;
+                front.isPaired = true;
+                bestMatch.isPaired = true;
+                pairCounter++;
+            }
+        }
+    }
 }
 
 /**
@@ -405,7 +515,7 @@ function renderGallery(fileName) {
 
         const info = document.createElement('div');
         info.className = 'pe-info';
-        info.textContent = `p${img.page} #${img.index} — ${img.width}×${img.height}`;
+        info.textContent = `${img.exportName} — ${img.width}×${img.height}`;
 
         // Click on item toggles selection
         item.addEventListener('click', (e) => {
@@ -461,9 +571,7 @@ async function downloadSelected() {
         const prefix = dom.prefixInput.value || '';
 
         for (const img of selected) {
-            const padPage = String(img.page).padStart(2, '0');
-            const padIdx = String(img.index).padStart(2, '0');
-            const name = `${prefix}p${padPage}_${padIdx}.${img.ext || 'png'}`;
+            const name = `${prefix}${img.exportName}.${img.ext || 'png'}`;
             zip.file(name, img.blob);
         }
 

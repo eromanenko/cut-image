@@ -57,7 +57,8 @@ button:disabled {
 #ceProcessButton,
 #ceDownloadButton,
 #dsProcessBtn,
-#dsDownloadBtn {
+#dsDownloadBtn,
+#peDownloadBtn {
     background-color: var(--accent);
     color: #fff;
     border-color: var(--accent);
@@ -69,7 +70,8 @@ button:disabled {
 #ceProcessButton:hover:not(:disabled),
 #ceDownloadButton:hover:not(:disabled),
 #dsProcessBtn:hover:not(:disabled),
-#dsDownloadBtn:hover:not(:disabled) {
+#dsDownloadBtn:hover:not(:disabled),
+#peDownloadBtn:hover:not(:disabled) {
     background-color: var(--accent-hover);
     border-color: var(--accent-hover);
     box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
