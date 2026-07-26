@@ -58,7 +58,7 @@ export const state = {
     hasUnsavedChanges: false,
     userEditedCoords: false,
     
-    detectionEngine: 'ai', // 'ai' or 'cv'
+    detectionEngine: 'cv', // 'ai', 'cv', or 'hough'
 };
 
 export function resetState() {

@@ -190,6 +190,10 @@ export async function handleAutoDetect() {
                     import('./ini-handler.js').then(m => m.saveCurrentToDatabase(true, false));
                     redraw();
                 }
+            } else if (state.detectionEngine === 'hough') {
+                const { detectCardsHough } = await import('./hough-detector.js');
+                await detectCardsHough();
+                state.userEditedCoords = false;
             } else {
                 await detectCards();
                 state.userEditedCoords = false;

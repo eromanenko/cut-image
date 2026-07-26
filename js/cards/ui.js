@@ -59,8 +59,8 @@ export function updateButtonStates() {
 
 const SETTINGS_KEY = 'ce_user_settings';
 const DEFAULT_SETTINGS = {
-    shareData: true,
-    detectionEngine: 'ai',
+    shareData: false,
+    detectionEngine: 'cv',
     lineColor: '#007bff',
     lineOpacity: '0.50',
     exportFormat: 'png',
@@ -213,7 +213,7 @@ export function updateSettingsSummary() {
         text += ` | ${format}`;
     }
 
-    const engineStr = state.detectionEngine === 'ai' ? 'ML' : 'OpenCV';
+    const engineStr = state.detectionEngine === 'ai' ? 'ML' : (state.detectionEngine === 'hough' ? 'Hough' : 'OpenCV');
     text += ` | ${engineStr}`;
 
     dom.settingsSummaryText.textContent = text;
