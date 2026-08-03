@@ -93,9 +93,6 @@ export function handleFileUpload(event) {
                     const h = ifds[0].height;
 
                     const tiffDpi = extractTiffDpi(ifds[0]);
-                    if (tiffDpi && dom.dpiInput) {
-                        dom.dpiInput.value = tiffDpi;
-                    }
 
                     dom.sourceCanvas.width = w;
                     dom.sourceCanvas.height = h;
@@ -110,6 +107,12 @@ export function handleFileUpload(event) {
                     
                     loadCurrentFromDatabase();
 
+                    // Re-apply detected DPI after loadCurrentFromDatabase() to prevent
+                    // the stored record from overwriting the actual scan resolution.
+                    if (tiffDpi && dom.dpiInput) {
+                        dom.dpiInput.value = tiffDpi;
+                    }
+
                     redraw();
                     updateButtonStates();
                 } catch (err) {
@@ -118,9 +121,6 @@ export function handleFileUpload(event) {
                 }
             } else {
                 const detectedDpi = extractImageDpi(new Uint8Array(fileBuffer), file.type);
-                if (detectedDpi && dom.dpiInput) {
-                    dom.dpiInput.value = detectedDpi;
-                }
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -136,6 +136,12 @@ export function handleFileUpload(event) {
                         dom.canvas.parentElement.style.display = 'inline-block';
                         
                         loadCurrentFromDatabase();
+
+                        // Re-apply detected DPI after loadCurrentFromDatabase() to prevent
+                        // the stored record from overwriting the actual scan resolution.
+                        if (detectedDpi && dom.dpiInput) {
+                            dom.dpiInput.value = detectedDpi;
+                        }
 
                         redraw();
                         updateButtonStates();
