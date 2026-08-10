@@ -93,6 +93,4 @@ export function resetState() {
     state.dragRectStartX = 0;
     state.dragRectStartY = 0;
     state.hoveredRectCardIndex = -1;
-
-    state.expectedCardCount = null;
 }
