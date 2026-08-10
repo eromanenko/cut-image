@@ -137,6 +137,9 @@ export function showToast(message) {
     toast.textContent = message;
     toast.classList.add('show');
     
+    const audio = new Audio('assets/notification.mp3');
+    audio.play().catch(e => console.warn('Could not play notification sound:', e));
+    
     // Clear existing timeout
     if (toast.hideTimeout) clearTimeout(toast.hideTimeout);
     
