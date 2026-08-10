@@ -124,3 +124,101 @@ export function showConfirm(message) {
         setTimeout(() => okBtn.focus(), 10);
     });
 }
+
+export function showToast(message) {
+    const container = createDialogsContainer();
+    let toast = document.getElementById('ce-toast-notification');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'ce-toast-notification';
+        toast.className = 'ce-toast';
+        container.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    // Clear existing timeout
+    if (toast.hideTimeout) clearTimeout(toast.hideTimeout);
+    
+    toast.hideTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+export function showCardCountDialog(sourceCanvas) {
+    return new Promise((resolve) => {
+        const container = createDialogsContainer();
+        
+        const modal = document.createElement('div');
+        modal.className = 'ce-modal';
+        modal.style.display = 'flex';
+        modal.style.zIndex = '10001';
+        
+        // Generate grid buttons
+        let gridHtml = '';
+        for (let i = 1; i <= 16; i++) {
+            gridHtml += `<button class="btn-secondary count-btn" data-count="${i}">${i}</button>`;
+        }
+        gridHtml += `<button class="btn-primary count-btn" data-count="null" style="grid-column: span 4;">Auto</button>`;
+        
+        let thumbHtml = '';
+        if (sourceCanvas) {
+            thumbHtml = `<div style="text-align:center; margin-bottom: 10px;"><canvas id="cc-thumb-canvas" style="display: block; margin: 0 auto; max-width:100%; max-height:150px; border:1px solid var(--border); border-radius:4px;"></canvas></div>`;
+        }
+
+        modal.innerHTML = `
+            <div class="ce-modal-content" style="max-width: 320px; width: 90%;">
+                <div class="ce-modal-header">
+                    <h3>Expected Cards</h3>
+                    <span class="ce-modal-close">&times;</span>
+                </div>
+                <div class="ce-modal-body">
+                    ${thumbHtml}
+                    <p style="text-align: center; margin:0 0 10px 0; font-size:13px; color:var(--text-subtle);">Select how many cards are on this scan:</p>
+                    <div class="ce-count-grid">
+                        ${gridHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(modal);
+
+        if (sourceCanvas) {
+            const thumbCanvas = modal.querySelector('#cc-thumb-canvas');
+            if (thumbCanvas) {
+                const scale = Math.min(300 / sourceCanvas.width, 150 / sourceCanvas.height);
+                thumbCanvas.width = sourceCanvas.width * scale;
+                thumbCanvas.height = sourceCanvas.height * scale;
+                const ctx = thumbCanvas.getContext('2d');
+                ctx.drawImage(sourceCanvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+            }
+        }
+        
+        const closeBtn = modal.querySelector('.ce-modal-close');
+        
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                cleanup(undefined);
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+
+        const cleanup = (value) => {
+            document.removeEventListener('keydown', handleKeyDown);
+            modal.remove();
+            resolve(value);
+        };
+        
+        closeBtn.addEventListener('click', () => cleanup(undefined));
+        
+        modal.querySelectorAll('.count-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const val = e.target.getAttribute('data-count');
+                cleanup(val === 'null' ? null : parseInt(val, 10));
+            });
+        });
+    });
+}

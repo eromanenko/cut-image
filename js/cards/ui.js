@@ -216,6 +216,10 @@ export function updateSettingsSummary() {
     const engineStr = state.detectionEngine === 'ai' ? 'ML' : (state.detectionEngine === 'hough' ? 'Hough' : 'OpenCV');
     text += ` | ${engineStr}`;
 
+    if (state.expectedCardCount !== null) {
+        text += ` | ${state.expectedCardCount} cards`;
+    }
+
     dom.settingsSummaryText.textContent = text;
 }
 
@@ -250,6 +254,19 @@ export function pulseViewCoordsButton() {
             }
         }, 1000);
     }
+}
+
+export function blinkOverviewWindow() {
+    const minimapContainer = document.getElementById('ceMinimapContainer');
+    if (!minimapContainer) return;
+    minimapContainer.classList.remove('blink-warning');
+    void minimapContainer.offsetWidth; // Trigger reflow
+    minimapContainer.classList.add('blink-warning');
+
+    // Automatically remove the class after the animation completes
+    setTimeout(() => {
+        minimapContainer.classList.remove('blink-warning');
+    }, 1500);
 }
 
 export function scrollToCorner(point, cornerIndex) {

@@ -59,6 +59,8 @@ export const state = {
     userEditedCoords: false,
     
     detectionEngine: 'cv', // 'ai', 'cv', or 'hough'
+
+    expectedCardCount: null, // null means "Auto", otherwise an integer
 };
 
 export function resetState() {
@@ -91,4 +93,6 @@ export function resetState() {
     state.dragRectStartX = 0;
     state.dragRectStartY = 0;
     state.hoveredRectCardIndex = -1;
+
+    state.expectedCardCount = null;
 }

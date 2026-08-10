@@ -1,8 +1,7 @@
 import { state } from './state.js';
 import { dom } from './dom.js';
-import { orderPoints } from './utils.js';
+import { orderPoints, sortDetectedCards, getPolygonArea } from './utils.js';
 import { fitRectCardToDetected } from './rect-mode.js';
-import { sortDetectedCards } from './utils.js';
 
 let session = null;
 let isSessionLoading = false;
@@ -152,12 +151,28 @@ export async function detectCardsML() {
 
     sortDetectedCards();
 
+    if (state.expectedCardCount !== null && state.detectedCards.length > state.expectedCardCount) {
+        state.detectedCards.sort((a, b) => {
+            return getPolygonArea(b) - getPolygonArea(a);
+        });
+        state.detectedCards = state.detectedCards.slice(0, state.expectedCardCount);
+        sortDetectedCards();
+    }
+
     // Populate rect mode cards if needed
     if (state.editMode === 'rect') {
         if (state.rectWidth > 0 && state.rectHeight > 0) {
             state.rectCards = state.detectedCards.map(corners => fitRectCardToDetected(corners));
             state.detectedCards.length = 0;
             state.selectedRectCardIndex = state.rectCards.length > 0 ? 0 : -1;
+        }
+    }
+
+    if (state.expectedCardCount !== null) {
+        const total = state.editMode === 'rect' ? state.rectCards.length : state.detectedCards.length;
+        if (total < state.expectedCardCount) {
+            import('../dialogs.js').then(d => d.showToast(`Only ${total} of ${state.expectedCardCount} cards found`));
+            import('./ui.js').then(ui => ui.blinkOverviewWindow());
         }
     }
 

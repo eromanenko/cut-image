@@ -1,6 +1,6 @@
 import { dom, getTargetSizes } from './dom.js';
 import { state } from './state.js';
-import { orderPoints, sortDetectedCards } from './utils.js';
+import { orderPoints, sortDetectedCards, getPolygonArea } from './utils.js';
 import { fitRectCardToDetected } from './rect-mode.js';
 import { updateButtonStates, scrollToCorner } from './ui.js';
 import { showAlert } from '../dialogs.js';
@@ -142,6 +142,14 @@ export async function detectCardsHough() {
 
     sortDetectedCards();
 
+    if (state.expectedCardCount !== null && state.detectedCards.length > state.expectedCardCount) {
+        state.detectedCards.sort((a, b) => {
+            return getPolygonArea(b) - getPolygonArea(a);
+        });
+        state.detectedCards = state.detectedCards.slice(0, state.expectedCardCount);
+        sortDetectedCards();
+    }
+
     if (state.editMode === 'rect') {
         if (state.rectWidth <= 0 || state.rectHeight <= 0) {
             await showAlert("Please set Width and Height (px) for Rectangle mode before Auto-Detect.");
@@ -160,8 +168,16 @@ export async function detectCardsHough() {
         }
     }
 
-    if (state.detectedCards.length === 0 && state.rectCards.length === 0) {
-        await showAlert("No cards could be automatically detected by Hough Transform.");
+    if (state.expectedCardCount !== null) {
+        const total = state.editMode === 'rect' ? state.rectCards.length : state.detectedCards.length;
+        if (total < state.expectedCardCount) {
+            import('../dialogs.js').then(d => d.showToast(`Only ${total} of ${state.expectedCardCount} cards found`));
+            import('./ui.js').then(ui => ui.blinkOverviewWindow());
+        }
+    } else {
+        if (state.detectedCards.length === 0 && state.rectCards.length === 0) {
+            await showAlert("No cards could be automatically detected by Hough Transform.");
+        }
     }
 
     import('./ini-handler.js').then(m => m.saveCurrentToDatabase(true, false));

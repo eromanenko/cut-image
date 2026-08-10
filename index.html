@@ -76,7 +76,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v6.2.1</span>
+            <span class="app-version">v6.3.0</span>
         </div>
 
         <div class="tabs">
@@ -403,7 +403,7 @@
                     </svg>
                 </button>
 
-                <button id="ceProcessButton" disabled title="Auto-Detect Cards (A)">Auto-Detect</button>
+                <button id="ceProcessButton" disabled title="Auto-Detect Cards (A). Shift+A or Shift+Click to set card count">Auto-Detect</button>
 
                 <input type="text" id="cePrefixInput" placeholder="Prefix (e.g. name-)" class="input-wide">
 
@@ -433,7 +433,7 @@
                         <b>Zoom Window</b> or <b>Minimap</b>, set the <b>Padding</b>, and adjust output format/quality
                         (<b>PNG/JPG</b>).<br><br>
                         <b>Auto-Detect:</b> Open <b>Settings (gear icon)</b> to specify expected card sizes in mm
-                        for highly accurate detection.<br><br>
+                        for highly accurate detection. Use <b>Shift+Click</b> on the Auto-Detect button (or <b>Shift+A</b>) to specify the exact number of cards on the scan.<br><br>
                         <b>Batch Export:</b> Open <b>Loaded Layouts</b> (Upload icon → view saved layouts), then click
                         <b>Batch Export…</b> and select any number of image files — all cards with matching saved
                         layouts will be cut and packed into a <b>ZIP archive</b> automatically.<br><br>
@@ -443,7 +443,7 @@
                             <b>Draw Shape:</b> Click the <b>Lasso icon</b> to manually draw custom polygons. Click to
                             add points, press <b>Enter</b> to close the shape, or <b>Esc</b> to cancel.<br><br>
                             <b>Navigation:</b> <b>Tab</b> cycles through corners. <b>Enter</b> jumps between cards.
-                            <b>Arrow Keys</b> move points (Ctrl = 10px steps).<br><br>
+                            <b>Arrow Keys</b> move points (Shift = move edge, Ctrl = move whole card).<br><br>
                             <b>Zoom Window:</b> Open Settings to toggle. <b>+</b> / <b>-</b> adjusts magnification.
                             <b>Z</b> toggles it quickly.
                         </span>
@@ -452,8 +452,7 @@
                             <b>Width</b>, <b>Height</b>, and <b>Skew</b> (px) values above.<br><br>
                             <b>Add card:</b> Click empty area on canvas — a new card appears at the click position. Drag
                             to reposition.<br><br>
-                            <b>Move:</b> Drag any card. <b>Arrow Keys</b> for precise 1px steps (Ctrl = 10px
-                            steps).<br><br>
+                            <b>Move:</b> Drag any card. <b>Arrow Keys</b> for precise 1px steps.<br><br>
                             <b>Rotate:</b> Press <b>/</b> (0.05&deg; CW) or <b>Shift+/</b> (0.05&deg; CCW). <b>Enter</b>
                             / <b>Shift+Enter</b> to jump between cards.<br><br>
                             <b>Zoom Window:</b> Open Settings to toggle. Shows all 4 corners simultaneously. Align each

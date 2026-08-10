@@ -581,6 +581,18 @@ export function updateMinimapWindow() {
     dom.minimapCanvas.width = mapW;
     dom.minimapCanvas.height = mapH;
 
+    if (state.originalFileName) {
+        let titleText = state.originalFileName;
+        // ~6.5px per char at 11px font size, subtracting 16px for padding
+        const maxLen = Math.max(10, Math.floor((mapW - 16) / 6.5));
+        if (titleText.length > maxLen) {
+            titleText = '...' + titleText.substring(titleText.length - (maxLen - 3));
+        }
+        dom.minimapTitle.textContent = titleText;
+    } else {
+        dom.minimapTitle.textContent = "Overview";
+    }
+
     // Draw background (white background, transparent image)
     dom.minimapCtx.fillStyle = '#ffffff';
     dom.minimapCtx.fillRect(0, 0, mapW, mapH);

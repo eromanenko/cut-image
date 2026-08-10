@@ -6,6 +6,7 @@ import { deleteSelectedCard, deleteSelectedRectCard } from './card-operations.js
 import { saveCurrentToDatabase } from './ini-handler.js';
 import { updateButtonStates, scrollToCorner, scrollToRectCard } from './ui.js';
 import { getPadding } from './utils.js';
+import { handleAutoDetect } from './cv-detector.js';
 
 let isRotatingCard = false;
 let rotationDelta = 0;
@@ -97,7 +98,7 @@ function handleFreeformKeyDown(e) {
 
     if (!state.selectedPoint) return;
 
-    let step    = (e.ctrlKey || e.metaKey) ? 10 : 1;
+    let step = 1;
     let handled = false;
     let dx = 0, dy = 0;
 
@@ -120,20 +121,30 @@ function handleFreeformKeyDown(e) {
         const actualDx = state.selectedPoint.x - oldX;
         const actualDy = state.selectedPoint.y - oldY;
 
-        if (e.shiftKey && (actualDx !== 0 || actualDy !== 0)) {
+        if ((e.shiftKey || e.ctrlKey || e.metaKey) && (actualDx !== 0 || actualDy !== 0)) {
             const cardIndex = state.detectedCards.findIndex(card => card.includes(state.selectedPoint));
             if (cardIndex !== -1) {
-                const card       = state.detectedCards[cardIndex];
+                const card = state.detectedCards[cardIndex];
                 if (card.length === 4) {
                     const pointIndex = card.indexOf(state.selectedPoint);
 
-                    if (actualDx !== 0) {
-                        const partnerXIndex = 3 - pointIndex;
-                        card[partnerXIndex].x = Math.max(-pad.x, Math.min(imgW + pad.x, card[partnerXIndex].x + actualDx));
-                    }
-                    if (actualDy !== 0) {
-                        const partnerYIndex = pointIndex ^ 1;
-                        card[partnerYIndex].y = Math.max(-pad.y, Math.min(imgH + pad.y, card[partnerYIndex].y + actualDy));
+                    if (e.ctrlKey || e.metaKey) {
+                        // Move the entire card
+                        for (let i = 0; i < 4; i++) {
+                            if (i === pointIndex) continue;
+                            card[i].x = Math.max(-pad.x, Math.min(imgW + pad.x, card[i].x + actualDx));
+                            card[i].y = Math.max(-pad.y, Math.min(imgH + pad.y, card[i].y + actualDy));
+                        }
+                    } else if (e.shiftKey) {
+                        // Move just the edge
+                        if (actualDx !== 0) {
+                            const partnerXIndex = 3 - pointIndex;
+                            card[partnerXIndex].x = Math.max(-pad.x, Math.min(imgW + pad.x, card[partnerXIndex].x + actualDx));
+                        }
+                        if (actualDy !== 0) {
+                            const partnerYIndex = pointIndex ^ 1;
+                            card[partnerYIndex].y = Math.max(-pad.y, Math.min(imgH + pad.y, card[partnerYIndex].y + actualDy));
+                        }
                     }
                 }
             }
@@ -257,7 +268,7 @@ export function handleGlobalKeyDown(e) {
         const key = e.key.toLowerCase();
         const code = e.code;
         if (key === 'o' || key === 'о' || code === 'KeyO') { dom.fileInput.click(); e.preventDefault(); return; }
-        if (key === 'a' || key === 'ф' || code === 'KeyA') { if (!dom.processButton.disabled) dom.processButton.click(); e.preventDefault(); return; }
+        if (key === 'a' || key === 'ф' || code === 'KeyA') { if (!dom.processButton.disabled) handleAutoDetect(e); e.preventDefault(); return; }
         if (key === 's' || key === 'і' || key === 'ы' || code === 'KeyS') { if (!dom.downloadButton.disabled) dom.downloadButton.click(); e.preventDefault(); return; }
         if (key === 'z' || key === 'я' || code === 'KeyZ') {
             dom.zoomCheckbox.checked = !dom.zoomCheckbox.checked;

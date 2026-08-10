@@ -105,3 +105,11 @@ export function sortDetectedCards() {
         return cyA - cyB;
     });
 }
+
+export function getPolygonArea(pts) {
+    let area = 0;
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+        area += (pts[j].x + pts[i].x) * (pts[j].y - pts[i].y);
+    }
+    return Math.abs(area / 2);
+}
