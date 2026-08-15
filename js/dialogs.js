@@ -157,12 +157,12 @@ export function showCardCountDialog(sourceCanvas) {
         modal.style.display = 'flex';
         modal.style.zIndex = '10001';
         
-        // Generate grid buttons
         let gridHtml = '';
         for (let i = 1; i <= 16; i++) {
-            gridHtml += `<button class="btn-secondary count-btn" data-count="${i}">${i}</button>`;
+            const tooltip = i <= 9 ? ` title="Hotkey: ${i}"` : '';
+            gridHtml += `<button class="btn-secondary count-btn" data-count="${i}"${tooltip}>${i}</button>`;
         }
-        gridHtml += `<button class="btn-primary count-btn" data-count="null" style="grid-column: span 4;">Auto</button>`;
+        gridHtml += `<button class="btn-primary count-btn" data-count="null" style="grid-column: span 4;" title="Hotkey: 0">Auto</button>`;
         
         let thumbHtml = '';
         if (sourceCanvas) {

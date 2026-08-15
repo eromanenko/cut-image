@@ -83,7 +83,7 @@ function handleFreeformKeyDown(e) {
         return;
     }
 
-    // Colour cycle (freeform only)
+    // Color cycle (freeform only)
     if (!e.ctrlKey && !e.metaKey && !e.altKey) {
         const key = e.key.toLowerCase();
         if (key === 'c' || key === 'с') {
@@ -102,10 +102,10 @@ function handleFreeformKeyDown(e) {
     let handled = false;
     let dx = 0, dy = 0;
 
-    if      (e.key === "ArrowLeft")  { dx = -step; handled = true; }
-    else if (e.key === "ArrowRight") { dx =  step; handled = true; }
-    else if (e.key === "ArrowUp")    { dy = -step; handled = true; }
-    else if (e.key === "ArrowDown")  { dy =  step; handled = true; }
+    if (e.key === "ArrowLeft") { dx = -step; handled = true; }
+    else if (e.key === "ArrowRight") { dx = step; handled = true; }
+    else if (e.key === "ArrowUp") { dy = -step; handled = true; }
+    else if (e.key === "ArrowDown") { dy = step; handled = true; }
     else if (e.key === "Delete" || e.key === "Backspace") { deleteSelectedCard(); handled = true; }
 
     if (handled && (dx !== 0 || dy !== 0)) {
@@ -151,9 +151,9 @@ function handleFreeformKeyDown(e) {
         }
     }
 
-    if (handled) { 
-        e.preventDefault(); 
-        redraw(); 
+    if (handled) {
+        e.preventDefault();
+        redraw();
         if (dx !== 0 || dy !== 0) saveCurrentToDatabase();
     }
 }
@@ -175,7 +175,7 @@ function handleRectKeyDown(e) {
             }
         }
 
-        const card    = state.rectCards[state.selectedRectCardIndex];
+        const card = state.rectCards[state.selectedRectCardIndex];
         const corners = getRectCardCorners(card);
         scrollToRectCard(card, corners);
         updateButtonStates();
@@ -190,16 +190,16 @@ function handleRectKeyDown(e) {
     if (e.code === 'Slash') {
         e.preventDefault();
         if (e.repeat) return; // ignore auto-repeat, we handle it smoothly
-        
+
         const delta = e.shiftKey ? -0.05 : 0.05;
         // immediate first step
         rotateRectCard(card, delta);
         redraw();
-        
+
         isRotatingCard = true;
         rotationDelta = delta;
         rotationTargetCard = card;
-        
+
         // start continuous rotation after a small delay
         setTimeout(() => {
             if (isRotatingCard) requestAnimationFrame(rotationLoop);
@@ -212,10 +212,10 @@ function handleRectKeyDown(e) {
     let dx = 0, dy = 0;
     let handled = false;
 
-    if      (e.key === "ArrowLeft")  { dx = -step; handled = true; }
-    else if (e.key === "ArrowRight") { dx =  step; handled = true; }
-    else if (e.key === "ArrowUp")    { dy = -step; handled = true; }
-    else if (e.key === "ArrowDown")  { dy =  step; handled = true; }
+    if (e.key === "ArrowLeft") { dx = -step; handled = true; }
+    else if (e.key === "ArrowRight") { dx = step; handled = true; }
+    else if (e.key === "ArrowUp") { dy = -step; handled = true; }
+    else if (e.key === "ArrowDown") { dy = step; handled = true; }
     else if (e.key === "Delete" || e.key === "Backspace") {
         deleteSelectedRectCard();
         handled = true;
@@ -225,9 +225,9 @@ function handleRectKeyDown(e) {
         moveRectCard(card, dx, dy);
     }
 
-    if (handled) { 
-        e.preventDefault(); 
-        redraw(); 
+    if (handled) {
+        e.preventDefault();
+        redraw();
         if (dx !== 0 || dy !== 0) saveCurrentToDatabase();
     }
 }
@@ -271,8 +271,17 @@ export function handleGlobalKeyDown(e) {
         if (key === 'a' || key === 'ф' || code === 'KeyA') { if (!dom.processButton.disabled) handleAutoDetect(e); e.preventDefault(); return; }
         if (key === 's' || key === 'і' || key === 'ы' || code === 'KeyS') { if (!dom.downloadButton.disabled) dom.downloadButton.click(); e.preventDefault(); return; }
         if (key === 'z' || key === 'я' || code === 'KeyZ') {
-            dom.zoomCheckbox.checked = !dom.zoomCheckbox.checked;
-            dom.zoomCheckbox.dispatchEvent(new Event('change'));
+            if (dom.zoomCheckbox) {
+                dom.zoomCheckbox.checked = !dom.zoomCheckbox.checked;
+                dom.zoomCheckbox.dispatchEvent(new Event('change'));
+            }
+            return;
+        }
+        if (key === 'm' || key === 'ь' || code === 'KeyM') {
+            if (dom.minimapCheckbox) {
+                dom.minimapCheckbox.checked = !dom.minimapCheckbox.checked;
+                dom.minimapCheckbox.dispatchEvent(new Event('change'));
+            }
             return;
         }
         if (key === '+' || key === '=') {
@@ -290,6 +299,20 @@ export function handleGlobalKeyDown(e) {
                 state.zoomLevel = Math.max(1, Math.round((state.zoomLevel - 0.5) * 10) / 10);
             }
             redraw(); return;
+        }
+        if (key >= '0' && key <= '9') {
+            const count = key === '0' ? null : parseInt(key, 10);
+
+            // If card count dialog is open, we should close it by simulating a click
+            const btn = document.querySelector(`.count-btn[data-count="${key === '0' ? 'null' : key}"]`);
+            if (btn) {
+                btn.click();
+            } else {
+                state.expectedCardCount = count;
+                import('./ui.js').then(ui => ui.updateSettingsSummary());
+                import('../dialogs.js').then(d => d.showToast(count === null ? 'Auto card count' : `Expected cards: ${count}`));
+            }
+            e.preventDefault(); return;
         }
     }
 

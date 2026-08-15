@@ -13,6 +13,12 @@ export async function exportCards() {
 
     if (cardCount === 0) return;
 
+    if (state.expectedCardCount !== null && cardCount !== state.expectedCardCount) {
+        const { showConfirm } = await import('../dialogs.js');
+        const proceed = await showConfirm(`Detected cards count (${cardCount}) does not match the expected count (${state.expectedCardCount}). Continue downloading?`);
+        if (!proceed) return;
+    }
+
     // Send telemetry in the background if the user agreed
     sendTelemetryData();
 
