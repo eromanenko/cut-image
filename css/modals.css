@@ -228,6 +228,55 @@
     text-align: center;
 }
 
+/* ── Tip Banner (Download Scripts) ──────────────── */
+.ce-modal-tip-banner {
+    display: flex;
+    gap: 12px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-top: 16px;
+    align-items: flex-start;
+}
+
+.tip-icon {
+    stroke: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.tip-content {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.tip-content strong {
+    color: var(--text-heading, #111);
+}
+
+.tip-links {
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.tip-link {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.tip-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.tip-separator {
+    margin: 0 4px;
+    color: var(--text-muted);
+}
+
 /* ── Batch Export ─────────────────────────────── */
 
 .ce-batch-progress-container {
