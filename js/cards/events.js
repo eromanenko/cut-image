@@ -97,17 +97,27 @@ export function bindEvents() {
             dom.iniStatsLoadMoreInput.click();
         });
         dom.iniStatsLoadMoreInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                parseIniToDatabase(ev.target.result, true); // true = merge
-                state.hasUnsavedChanges = false;
-                showIniStatsModal(state.coordsDatabase);
-                updateButtonStates();
-                dom.canvas.focus({ preventScroll: true });
-            };
-            reader.readAsText(file);
+            const fileList = e.target.files;
+            if (!fileList || fileList.length === 0) return;
+            
+            const files = Array.from(fileList);
+            const totalFiles = files.length;
+            let filesRead = 0;
+            
+            for (let i = 0; i < totalFiles; i++) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    parseIniToDatabase(ev.target.result, true); // true = merge
+                    filesRead++;
+                    if (filesRead === totalFiles) {
+                        state.hasUnsavedChanges = false;
+                        showIniStatsModal(state.coordsDatabase);
+                        updateButtonStates();
+                        dom.canvas.focus({ preventScroll: true });
+                    }
+                };
+                reader.readAsText(files[i]);
+            }
             e.target.value = '';
         });
     }
