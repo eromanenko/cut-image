@@ -12,9 +12,10 @@
 cd scripts
 pip install -r requirements.txt
 python download_dataset.py
+python prepare_training.py
 ```
 
-**Результат:** На вашому диску з'явиться папка `dataset/`, що містить підпапки `images/` та `labels/` з готовими для навчання даними. Також поруч має бути створений конфігураційний файл `dataset.yaml`.
+**Результат:** На вашому диску з'явиться папка `dataset/`, що містить підпапки `images/` та `labels/`, які скрипт `prepare_training.py` автоматично розділить на `train/` (для навчання) та `val/` (для перевірки). Також буде згенерований правильний конфігураційний файл `dataset.yaml`.
 
 ## 2. Вибір обладнання (Hardware)
 
