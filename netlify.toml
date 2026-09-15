@@ -1,3 +1,9 @@
 [build]
   functions = "netlify/functions"
   ignore = "if [ \"$CACHED_COMMIT_REF\" = \"$COMMIT_REF\" ]; then exit 1; else git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- index.html css/ js/ netlify/ package.json package-lock.json; fi"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
