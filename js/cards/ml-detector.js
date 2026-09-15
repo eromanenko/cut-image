@@ -23,6 +23,7 @@ export async function initML() {
             throw new Error("ONNX Runtime Web is not loaded. Check your internet connection.");
         }
         // Load the ONNX model
+        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
         session = await ort.InferenceSession.create('models/best.onnx', { executionProviders: ['wasm'] });
         console.log("ML Model loaded successfully");
     } catch (e) {
