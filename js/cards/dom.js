@@ -101,6 +101,7 @@ export function initDom() {
     dom.exportQualitySlider = document.getElementById("ceExportQualitySlider");
     dom.exportQualityVal = document.getElementById("ceExportQualityVal");
     dom.batchZipSizeInput = document.getElementById("ceBatchZipSizeInput");
+    dom.includeIniCheckbox = document.getElementById("ceIncludeIniCheckbox");
 
     // Settings Modal
     dom.settingsModal = document.getElementById("ceSettingsModal");

@@ -6,6 +6,14 @@ import { fitRectCardToDetected } from './rect-mode.js';
 let session = null;
 let isSessionLoading = false;
 
+// ⚠️ UPGRADE GUIDE for onnxruntime-web >= 1.22
+// ort.min.js no longer includes the wasm backend by default.
+// Migration steps:
+//   1. In index.html replace the script tag with:
+//      <script type="module" src="https://cdn.jsdelivr.net/npm/onnxruntime-web@latest/dist/ort.wasm.bundle.min.mjs"></script>
+//   2. Remove "import { ort }" pattern — the global `ort` will still be set on window.
+//   3. Update wasmPaths version below to match.
+//   4. Optionally switch executionProviders to ['webgpu', 'wasm'] for GPU acceleration.
 export async function initML() {
     if (session) return;
     if (isSessionLoading) {

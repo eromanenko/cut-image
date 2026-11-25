@@ -4,7 +4,7 @@ import { redraw, updateZoomWindow } from './renderer.js';
 import { handleAutoDetect } from './cv-detector.js';
 import { exportCards } from './export.js';
 import { handleFileUpload, renderPdfPageForPreview } from './file-loader.js';
-import { updateButtonStates, applyModeUI, showIniStatsModal, pulseViewCoordsButton, updateSettingsSummary, loadSettingsFromStorage, saveSettingsToStorage, resetSettingsToDefault } from './ui.js';
+import { updateButtonStates, applyModeUI, showIniStatsModal, pulseViewCoordsButton, updateSettingsSummary, loadSettingsFromStorage, saveSettingsToStorage, resetSettingsToDefault, isIniEnabled } from './ui.js';
 import { showAlert } from '../dialogs.js';
 import { initCalculator, openCalculator } from './calculator.js';
 import { saveCurrentToDatabase, serializeDatabaseToIni, parseIniToDatabase } from './ini-handler.js';
@@ -334,7 +334,7 @@ export function bindEvents() {
 
     // ── Warn before leaving with unsaved changes ──
     window.addEventListener("beforeunload", (e) => {
-        if (state.hasUnsavedChanges) {
+        if (state.hasUnsavedChanges && isIniEnabled()) {
             e.preventDefault();
             e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
             return e.returnValue;

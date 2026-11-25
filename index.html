@@ -28,6 +28,10 @@
     <title>Image & PDF Slicer</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <!-- Load libraries -->
+    <!-- ⚠️ UPGRADE WARNING: onnxruntime-web is pinned at 1.21.0.
+         Starting from v1.22+, ort.min.js is a slim bundle WITHOUT the wasm backend.
+         To upgrade, switch to ESM entry points (e.g. ort.wasm.bundle.min.mjs)
+         and add type="module" — see ml-detector.js for details. -->
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/utif@3.1.0/UTIF.js"></script>
@@ -76,7 +80,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v6.4.4</span>
+            <span class="app-version">v6.5.0</span>
         </div>
 
         <div class="tabs">
@@ -964,6 +968,10 @@
                                 <span id="ceExportQualityVal" style="font-size: 13px; width: 4ch;">90%</span>
                             </div>
                         </div>
+                        <label style="display:flex; align-items:center; gap:8px; margin-top:10px; text-transform:none; font-size:13px; color:var(--text); font-weight:normal;">
+                            <input type="checkbox" id="ceIncludeIniCheckbox">
+                            Include INI file with card cut coordinates in ZIP
+                        </label>
                     </div>
                 </div>
 

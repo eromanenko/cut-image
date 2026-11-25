@@ -65,9 +65,14 @@ const DEFAULT_SETTINGS = {
     lineOpacity: '0.50',
     exportFormat: 'png',
     exportQuality: '90',
+    includeIni: false,
     showMinimap: true,
     showZoom: true
 };
+
+export function isIniEnabled() {
+    return !!(dom.includeIniCheckbox && dom.includeIniCheckbox.checked);
+}
 
 export function loadSettingsFromStorage() {
     const saved = localStorage.getItem(SETTINGS_KEY);
@@ -92,6 +97,9 @@ export function loadSettingsFromStorage() {
             if (data.exportQuality && dom.exportQualitySlider) {
                 dom.exportQualitySlider.value = data.exportQuality;
                 if (dom.exportQualityVal) dom.exportQualityVal.textContent = data.exportQuality + '%';
+            }
+            if (dom.includeIniCheckbox) {
+                dom.includeIniCheckbox.checked = data.includeIni === true;
             }
             if (data.showMinimap !== undefined && dom.minimapCheckbox) {
                 dom.minimapCheckbox.checked = data.showMinimap;
@@ -118,6 +126,7 @@ export function saveSettingsToStorage() {
         lineOpacity: dom.lineOpacity.value,
         exportFormat: dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'jpg' : 'png',
         exportQuality: dom.exportQualitySlider ? dom.exportQualitySlider.value : '90',
+        includeIni: isIniEnabled(),
         showMinimap: dom.minimapCheckbox ? dom.minimapCheckbox.checked : true,
         showZoom: dom.zoomCheckbox ? dom.zoomCheckbox.checked : true
     };
@@ -132,6 +141,7 @@ export function saveSettingsToStorage() {
         settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity &&
         settings.exportFormat === DEFAULT_SETTINGS.exportFormat &&
         settings.exportQuality === DEFAULT_SETTINGS.exportQuality &&
+        settings.includeIni === DEFAULT_SETTINGS.includeIni &&
         settings.showMinimap === DEFAULT_SETTINGS.showMinimap &&
         settings.showZoom === DEFAULT_SETTINGS.showZoom;
 
@@ -163,6 +173,9 @@ export function resetSettingsToDefault() {
     if (dom.exportQualitySlider) {
         dom.exportQualitySlider.value = DEFAULT_SETTINGS.exportQuality;
         if (dom.exportQualityVal) dom.exportQualityVal.textContent = DEFAULT_SETTINGS.exportQuality + '%';
+    }
+    if (dom.includeIniCheckbox) {
+        dom.includeIniCheckbox.checked = DEFAULT_SETTINGS.includeIni;
     }
     if (dom.minimapCheckbox) {
         dom.minimapCheckbox.checked = DEFAULT_SETTINGS.showMinimap;
@@ -211,6 +224,10 @@ export function updateSettingsSummary() {
         text += ` | ${format} ${quality}%`;
     } else {
         text += ` | ${format}`;
+    }
+
+    if (isIniEnabled()) {
+        text += ` | +INI`;
     }
 
     const engineStr = state.detectionEngine === 'ai' ? 'ML' : (state.detectionEngine === 'hough' ? 'Hough' : 'OpenCV');

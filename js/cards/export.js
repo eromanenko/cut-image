@@ -1,6 +1,6 @@
 import { dom } from './dom.js';
 import { state } from './state.js';
-import { updateButtonStates } from './ui.js';
+import { updateButtonStates, isIniEnabled } from './ui.js';
 import { getRectCardCorners } from './rect-mode.js';
 import { injectPngDpi } from '../grid/png-modifier.js';
 import { generateCurrentIniFileContent } from './ini-handler.js';
@@ -136,9 +136,11 @@ export async function exportCards() {
 
         srcMat.delete();
 
-        const iniContent = generateCurrentIniFileContent();
-        if (iniContent) {
-            zip.file(`${state.originalFileName}.ini`, iniContent);
+        if (isIniEnabled()) {
+            const iniContent = generateCurrentIniFileContent();
+            if (iniContent) {
+                zip.file(`${state.originalFileName}.ini`, iniContent);
+            }
         }
 
         const content = await zip.generateAsync({ type: "blob" });
