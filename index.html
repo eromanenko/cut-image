@@ -63,8 +63,8 @@
         // Load OpenCV with CDN fallback and per-source timeout
         (function loadOpenCvWithFallback() {
             const sources = [
-                'https://docs.opencv.org/4.8.0/opencv.js',
-                'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.8.0-release.10/dist/opencv.js'
+                'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.8.0-release.10/dist/opencv.js',
+                'https://docs.opencv.org/4.8.0/opencv.js'
             ];
             let index = 0;
 
@@ -83,7 +83,7 @@
 
                 const timer = setTimeout(function () {
                     failAndNext();
-                }, 60000);
+                }, 20000);
 
                 function finishReady() {
                     if (settled) return;
@@ -147,7 +147,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v6.6.0</span>
+            <span class="app-version">v6.6.1</span>
         </div>
 
         <div class="tabs">
