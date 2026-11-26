@@ -6,7 +6,7 @@ import { showAlert, showConfirm } from '../dialogs.js';
 export function updateButtonStates() {
     const isRect = state.editMode === 'rect';
 
-    dom.processButton.disabled = !(state.isCvReady && state.isImageLoaded);
+    dom.processButton.disabled = !state.isImageLoaded || (state.detectionEngine !== 'ai' && !state.isCvReady);
 
     if (dom.saveCoordsButton) {
         dom.saveCoordsButton.disabled = Object.keys(state.coordsDatabase || {}).length === 0 && !state.isImageLoaded;

@@ -164,6 +164,7 @@ export function bindEvents() {
         dom.settingsModal.style.display = 'none';
         saveSettingsToStorage();
         updateSettingsSummary();
+        updateButtonStates();
         redraw();
         dom.canvas.focus({ preventScroll: true });
     };
@@ -174,6 +175,7 @@ export function bindEvents() {
         dom.settingsResetBtn.addEventListener('click', () => {
             resetSettingsToDefault();
             updateSettingsSummary();
+            updateButtonStates();
             redraw();
         });
     }

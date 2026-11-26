@@ -6,6 +6,7 @@ import { injectPngDpi } from '../grid/png-modifier.js';
 import { generateCurrentIniFileContent } from './ini-handler.js';
 import { showAlert } from '../dialogs.js';
 import { sendTelemetryData } from './telemetry.js';
+import { createWarper } from './warp.js';
 
 export async function exportCards() {
     const isRect = state.editMode === 'rect';
@@ -31,13 +32,14 @@ export async function exportCards() {
     const quality = dom.exportQualitySlider ? parseInt(dom.exportQualitySlider.value, 10) : 90;
     const ext = format === 'jpg' ? 'jpg' : 'png';
 
+    let warper = null;
     try {
         const zip = new JSZip();
-        let srcMat = cv.imread(dom.sourceCanvas);
+        warper = createWarper(dom.sourceCanvas);
 
         for (let i = 0; i < cardCount; i++) {
             let pts = isRect ? getRectCardCorners(state.rectCards[i]) : state.detectedCards[i];
-            const tempCanvas = document.createElement('canvas');
+            let tempCanvas;
 
             if (pts.length === 4) {
                 let outW, outH;
@@ -53,29 +55,9 @@ export async function exportCards() {
                     outH = Math.round(Math.max(heightA, heightB));
                 }
 
-                let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                    pts[0].x, pts[0].y,
-                    pts[1].x, pts[1].y,
-                    pts[2].x, pts[2].y,
-                    pts[3].x, pts[3].y,
-                ]);
-
-                let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                    0, 0,
-                    outW - 1, 0,
-                    outW - 1, outH - 1,
-                    0, outH - 1,
-                ]);
-
-                let M = cv.getPerspectiveTransform(srcTri, dstTri);
-                let dst = new cv.Mat();
-                let dsize = new cv.Size(outW, outH);
-
-                cv.warpPerspective(srcMat, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
-                cv.imshow(tempCanvas, dst);
-
-                srcTri.delete(); dstTri.delete(); M.delete(); dst.delete();
+                tempCanvas = warper.warp(pts, outW, outH);
             } else {
+                tempCanvas = document.createElement('canvas');
                 // For N-sided polygons, find bounding box and mask
                 let minX = Infinity, minY = Infinity;
                 let maxX = -Infinity, maxY = -Infinity;
@@ -134,7 +116,8 @@ export async function exportCards() {
             zip.file(`${prefix}${padIndex}.${ext}`, blob);
         }
 
-        srcMat.delete();
+        warper.dispose();
+        warper = null;
 
         if (isIniEnabled()) {
             const iniContent = generateCurrentIniFileContent();
@@ -156,6 +139,7 @@ export async function exportCards() {
         console.error(e);
         await showAlert("Error generating card archive.");
     } finally {
+        if (warper) warper.dispose();
         dom.downloadButton.disabled = false;
         updateButtonStates();
     }

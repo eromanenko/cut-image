@@ -202,8 +202,8 @@ export async function detectCards() {
 }
 
 export async function handleAutoDetect(e) {
-    if (!state.isCvReady) {
-        await showAlert("OpenCV is not ready yet.");
+    if (state.detectionEngine !== 'ai' && !state.isCvReady) {
+        await showAlert("OpenCV is not available (still loading or failed to load). Switch to AI Detection in Settings, or reload the page.");
         return;
     }
 

@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { dom } from './dom.js';
 import { injectPngDpi } from '../grid/png-modifier.js';
+import { createWarper } from './warp.js';
 
 // ---------------------------------------------------------------------------
 // Geometry helpers (standalone, no state dependency)
@@ -72,33 +73,17 @@ function loadImageFile(file) {
  * Returns a Blob (PNG).
  */
 async function cutCardToBlob(srcCanvas, pts, outW, outH, dpi, format = 'png', quality = 90) {
-    const tempCanvas = document.createElement('canvas');
+    let tempCanvas;
 
     if (pts.length === 4) {
-        // Perspective transform via OpenCV
-        const srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-            pts[0].x, pts[0].y,
-            pts[1].x, pts[1].y,
-            pts[2].x, pts[2].y,
-            pts[3].x, pts[3].y,
-        ]);
-        const dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-            0, 0,
-            outW - 1, 0,
-            outW - 1, outH - 1,
-            0, outH - 1,
-        ]);
-
-        const srcMat = cv.imread(srcCanvas);
-        const M = cv.getPerspectiveTransform(srcTri, dstTri);
-        const dst = new cv.Mat();
-        const dsize = new cv.Size(outW, outH);
-
-        cv.warpPerspective(srcMat, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
-        cv.imshow(tempCanvas, dst);
-
-        srcTri.delete(); dstTri.delete(); srcMat.delete(); M.delete(); dst.delete();
+        const warper = createWarper(srcCanvas);
+        try {
+            tempCanvas = warper.warp(pts, outW, outH);
+        } finally {
+            warper.dispose();
+        }
     } else {
+        tempCanvas = document.createElement('canvas');
         // Polygon clip (N-sided)
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         for (const p of pts) {

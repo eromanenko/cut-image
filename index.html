@@ -55,13 +55,80 @@
 
         window.onOpenCvError = function () {
             const statusLabel = document.getElementById('opencvStatus');
-            if (statusLabel) statusLabel.textContent = 'Failed to load OpenCV. Please check your internet connection.';
+            if (statusLabel) statusLabel.textContent = 'OpenCV failed to load. Classic/Hough detection and Descreen are unavailable — AI Detection and export still work.';
             const dsStatusLabel = document.getElementById('dsOpencvStatus');
-            if (dsStatusLabel) dsStatusLabel.textContent = 'Failed to load OpenCV. Please check your internet connection.';
+            if (dsStatusLabel) dsStatusLabel.textContent = 'Failed to load OpenCV (required for Descreen). Please check your internet connection and reload.';
         };
+
+        // Load OpenCV with CDN fallback and per-source timeout
+        (function loadOpenCvWithFallback() {
+            const sources = [
+                'https://docs.opencv.org/4.8.0/opencv.js',
+                'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.8.0-release.10/dist/opencv.js'
+            ];
+            let index = 0;
+
+            function tryLoad() {
+                if (index >= sources.length) {
+                    window.onOpenCvError();
+                    return;
+                }
+
+                const src = sources[index++];
+                let settled = false;
+                const script = document.createElement('script');
+                script.async = true;
+                script.type = 'text/javascript';
+                script.src = src;
+
+                const timer = setTimeout(function () {
+                    failAndNext();
+                }, 60000);
+
+                function finishReady() {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    window.onOpenCvReady();
+                }
+
+                function failAndNext() {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                    try { delete window.cv; } catch (_) { window.cv = undefined; }
+                    tryLoad();
+                }
+
+                script.onerror = failAndNext;
+                script.onload = function () {
+                    if (settled) return;
+                    const cvObj = window.cv;
+                    if (cvObj && typeof cvObj.then === 'function') {
+                        try {
+                            cvObj.then(function (resolvedCv) {
+                                if (resolvedCv && resolvedCv.Mat) window.cv = resolvedCv;
+                                finishReady();
+                            }, failAndNext);
+                        } catch (err) {
+                            console.error('OpenCV init error', err);
+                            failAndNext();
+                        }
+                    } else if (cvObj && cvObj.Mat) {
+                        finishReady();
+                    } else {
+                        window.cv = cvObj || {};
+                        window.cv.onRuntimeInitialized = finishReady;
+                    }
+                };
+
+                document.head.appendChild(script);
+            }
+
+            tryLoad();
+        })();
     </script>
-    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" onerror="onOpenCvError();"
-        type="text/javascript"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -80,7 +147,7 @@
     <header class="main-header">
         <div class="app-title-group">
             <h1 class="app-title">Image & PDF Slicer</h1>
-            <span class="app-version">v6.5.0</span>
+            <span class="app-version">v6.5.1</span>
         </div>
 
         <div class="tabs">
@@ -968,7 +1035,8 @@
                                 <span id="ceExportQualityVal" style="font-size: 13px; width: 4ch;">90%</span>
                             </div>
                         </div>
-                        <label style="display:flex; align-items:center; gap:8px; margin-top:10px; text-transform:none; font-size:13px; color:var(--text); font-weight:normal;">
+                        <label
+                            style="display:flex; align-items:center; gap:8px; margin-top:10px; text-transform:none; font-size:13px; color:var(--text); font-weight:normal;">
                             <input type="checkbox" id="ceIncludeIniCheckbox">
                             Include INI file with card cut coordinates in ZIP
                         </label>
