@@ -112,6 +112,7 @@ export function initDom() {
     dom.settingsBtn = document.getElementById("ceSettingsBtn");
     dom.shareDataCheckbox = document.getElementById("ceShareDataCheckbox");
     dom.detectionEngineSelect = document.getElementById("ceDetectionEngineSelect");
+    dom.refineCornersCheckbox = document.getElementById("ceRefineCornersCheckbox");
     dom.settingsResetBtn = document.getElementById("ceSettingsResetBtn");
 
     // Padding inputs (not persisted)

@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { dom } from './dom.js';
 import { orderPoints, sortDetectedCards, getPolygonArea } from './utils.js';
 import { fitRectCardToDetected } from './rect-mode.js';
+import { refineCardCorners } from './edge-refine.js';
 
 let session = null;
 let isSessionLoading = false;
@@ -132,6 +133,9 @@ export async function detectCardsML() {
         }
     }
 
+    const shouldRefine = dom.refineCornersCheckbox ? dom.refineCornersCheckbox.checked : true;
+    const refineBand = Math.min(60, Math.max(10, Math.round(6 / scale)));
+
     // Convert from letterbox space back to original canvas space
     for (const d of finalDetections) {
         const origCx = (d.cx - padX) / scale;
@@ -155,7 +159,12 @@ export async function detectCardsML() {
             { x: origCx + dx1 - dx2, y: origCy + dy1 - dy2 }
         ];
 
-        state.detectedCards.push(orderPoints(corners));
+        const ordered = orderPoints(corners);
+        if (shouldRefine) {
+            state.detectedCards.push(orderPoints(refineCardCorners(dom.sourceCanvas, ordered, { band: refineBand })));
+        } else {
+            state.detectedCards.push(ordered);
+        }
     }
 
     sortDetectedCards();

@@ -61,6 +61,7 @@ const SETTINGS_KEY = 'ce_user_settings';
 const DEFAULT_SETTINGS = {
     shareData: false,
     detectionEngine: 'cv',
+    refineCorners: true,
     lineColor: '#007bff',
     lineOpacity: '0.50',
     exportFormat: 'png',
@@ -83,6 +84,9 @@ export function loadSettingsFromStorage() {
             if (data.detectionEngine && dom.detectionEngineSelect) {
                 dom.detectionEngineSelect.value = data.detectionEngine;
                 state.detectionEngine = data.detectionEngine;
+            }
+            if (dom.refineCornersCheckbox) {
+                dom.refineCornersCheckbox.checked = data.refineCorners !== false;
             }
             if (dom.lineColor && data.lineColor) dom.lineColor.value = data.lineColor;
             if (dom.lineOpacity && data.lineOpacity) {
@@ -122,6 +126,7 @@ export function saveSettingsToStorage() {
     const settings = {
         shareData: dom.shareDataCheckbox.checked,
         detectionEngine: dom.detectionEngineSelect ? dom.detectionEngineSelect.value : 'ai',
+        refineCorners: dom.refineCornersCheckbox ? dom.refineCornersCheckbox.checked : true,
         lineColor: dom.lineColor.value,
         lineOpacity: dom.lineOpacity.value,
         exportFormat: dom.exportFormatJpg && dom.exportFormatJpg.checked ? 'jpg' : 'png',
@@ -137,6 +142,7 @@ export function saveSettingsToStorage() {
 
     const isDefault = settings.shareData === DEFAULT_SETTINGS.shareData &&
         settings.detectionEngine === DEFAULT_SETTINGS.detectionEngine &&
+        settings.refineCorners === DEFAULT_SETTINGS.refineCorners &&
         settings.lineColor === DEFAULT_SETTINGS.lineColor &&
         settings.lineOpacity === DEFAULT_SETTINGS.lineOpacity &&
         settings.exportFormat === DEFAULT_SETTINGS.exportFormat &&
@@ -160,6 +166,9 @@ export function resetSettingsToDefault() {
     if (dom.detectionEngineSelect) {
         dom.detectionEngineSelect.value = DEFAULT_SETTINGS.detectionEngine;
         state.detectionEngine = DEFAULT_SETTINGS.detectionEngine;
+    }
+    if (dom.refineCornersCheckbox) {
+        dom.refineCornersCheckbox.checked = DEFAULT_SETTINGS.refineCorners;
     }
     if (dom.lineColor) dom.lineColor.value = DEFAULT_SETTINGS.lineColor;
     if (dom.lineOpacity) {
@@ -230,7 +239,10 @@ export function updateSettingsSummary() {
         text += ` | +INI`;
     }
 
-    const engineStr = state.detectionEngine === 'ai' ? 'ML' : (state.detectionEngine === 'hough' ? 'Hough' : 'OpenCV');
+    const isRefineEnabled = dom.refineCornersCheckbox ? dom.refineCornersCheckbox.checked : true;
+    const engineStr = state.detectionEngine === 'ai'
+        ? (isRefineEnabled ? 'ML' : 'ML (raw)')
+        : (state.detectionEngine === 'hough' ? 'Hough' : 'OpenCV');
     text += ` | ${engineStr}`;
 
     if (state.expectedCardCount !== null) {
